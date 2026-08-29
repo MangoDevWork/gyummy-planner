@@ -1,0 +1,1192 @@
+[
+  {
+    "id": "ing_001",
+    "name": "All-Purpose Flour",
+    "defaultValue": 125,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_002",
+    "name": "Granulated Sugar",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_003",
+    "name": "Brown Sugar",
+    "defaultValue": 50,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_004",
+    "name": "Baking Powder",
+    "defaultValue": 5,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_005",
+    "name": "Baking Soda",
+    "defaultValue": 2.5,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_006",
+    "name": "Unsalted Butter",
+    "defaultValue": 30,
+    "defaultUnit": "g",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_007",
+    "name": "Olive Oil",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_008",
+    "name": "Vegetable Oil",
+    "defaultValue": 30,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_009",
+    "name": "Whole Milk",
+    "defaultValue": 250,
+    "defaultUnit": "ml",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_010",
+    "name": "Heavy Cream",
+    "defaultValue": 60,
+    "defaultUnit": "ml",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_011",
+    "name": "Egg",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_012",
+    "name": "Chicken Breast",
+    "defaultValue": 450,
+    "defaultUnit": "g",
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": "ing_013",
+    "name": "Ground Beef",
+    "defaultValue": 500,
+    "defaultUnit": "g",
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": "ing_014",
+    "name": "Pork Chops",
+    "defaultValue": 400,
+    "defaultUnit": "g",
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": "ing_015",
+    "name": "Salmon Fillet",
+    "defaultValue": 300,
+    "defaultUnit": "g",
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": "ing_016",
+    "name": "Yellow Onion",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_017",
+    "name": "Garlic Clove",
+    "defaultValue": 3,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_018",
+    "name": "Ginger Root",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_019",
+    "name": "Roma Tomato",
+    "defaultValue": 2,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_020",
+    "name": "Carrot",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_021",
+    "name": "Celery Stalk",
+    "defaultValue": 2,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_022",
+    "name": "Bell Pepper",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_023",
+    "name": "Spinach",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_024",
+    "name": "Potato",
+    "defaultValue": 2,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_025",
+    "name": "Lemon Juice",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_026",
+    "name": "Lime Juice",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_027",
+    "name": "Light Soy Sauce",
+    "defaultValue": 30,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_028",
+    "name": "Dark Soy Sauce",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_029",
+    "name": "Toasted Sesame Oil",
+    "defaultValue": 5,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_030",
+    "name": "Rice Vinegar",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_031",
+    "name": "Shaoxing Rice Wine",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_032",
+    "name": "Oyster Sauce",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_033",
+    "name": "Hoisin Sauce",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_034",
+    "name": "Chili Crisp / Chili Oil",
+    "defaultValue": 10,
+    "defaultUnit": "ml",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_035",
+    "name": "Doubanjiang (Spicy Broad Bean Paste)",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_036",
+    "name": "Gochujang (Korean Chili Paste)",
+    "defaultValue": 30,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_037",
+    "name": "Gochugaru (Korean Chili Flakes)",
+    "defaultValue": 10,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_038",
+    "name": "Doenjang (Korean Soybean Paste)",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_039",
+    "name": "Miso Paste (White/Red)",
+    "defaultValue": 30,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_040",
+    "name": "Mirin",
+    "defaultValue": 30,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_041",
+    "name": "Sake",
+    "defaultValue": 30,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_042",
+    "name": "Dashi Powder",
+    "defaultValue": 5,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_043",
+    "name": "Katsuobushi (Bonito Flakes)",
+    "defaultValue": 5,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_044",
+    "name": "Kombu (Dried Kelp)",
+    "defaultValue": 10,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_045",
+    "name": "Wakame (Dried Seaweed)",
+    "defaultValue": 5,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_046",
+    "name": "Nori Sheets",
+    "defaultValue": 2,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_047",
+    "name": "Jasmine Rice",
+    "defaultValue": 200,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_048",
+    "name": "Koshihikari Rice (Sushi Rice)",
+    "defaultValue": 200,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_049",
+    "name": "Glutinous Rice",
+    "defaultValue": 200,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_050",
+    "name": "Ramen Noodles (Fresh)",
+    "defaultValue": 150,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_051",
+    "name": "Udon Noodles (Fresh)",
+    "defaultValue": 200,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_052",
+    "name": "Soba Noodles (Dried)",
+    "defaultValue": 90,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_053",
+    "name": "Rice Vermicelli",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_054",
+    "name": "Lo Mein Noodles",
+    "defaultValue": 150,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_055",
+    "name": "Napa Cabbage",
+    "defaultValue": 200,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_056",
+    "name": "Bok Choy",
+    "defaultValue": 150,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_057",
+    "name": "Gai Lan (Chinese Broccoli)",
+    "defaultValue": 150,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_058",
+    "name": "Shiitake Mushrooms (Fresh)",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_059",
+    "name": "Shiitake Mushrooms (Dried)",
+    "defaultValue": 4,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_060",
+    "name": "Wood Ear Mushrooms",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_061",
+    "name": "Enoki Mushrooms",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_062",
+    "name": "Bamboo Shoots (Canned)",
+    "defaultValue": 75,
+    "defaultUnit": "g",
+    "category": "Canned Goods"
+  },
+  {
+    "id": "ing_063",
+    "name": "Water Chestnuts (Canned)",
+    "defaultValue": 50,
+    "defaultUnit": "g",
+    "category": "Canned Goods"
+  },
+  {
+    "id": "ing_064",
+    "name": "Lotus Root",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_065",
+    "name": "Spring Onion / Scallion",
+    "defaultValue": 2,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_066",
+    "name": "Garlic Chives",
+    "defaultValue": 50,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_067",
+    "name": "Bean Sprouts",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_068",
+    "name": "Firm Tofu",
+    "defaultValue": 200,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_069",
+    "name": "Silken Tofu",
+    "defaultValue": 300,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_070",
+    "name": "Fried Tofu Puffs",
+    "defaultValue": 6,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_071",
+    "name": "Sichuan Peppercorns",
+    "defaultValue": 3,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_072",
+    "name": "Five-Spice Powder",
+    "defaultValue": 2,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_073",
+    "name": "White Pepper Powder",
+    "defaultValue": 1,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_074",
+    "name": "MSG (Monosodium Glutamate)",
+    "defaultValue": 1,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_075",
+    "name": "Rock Sugar",
+    "defaultValue": 20,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_076",
+    "name": "Dried Shrimp",
+    "defaultValue": 10,
+    "defaultUnit": "g",
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": "ing_077",
+    "name": "Century Egg",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_078",
+    "name": "Salted Duck Egg",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_079",
+    "name": "Pork Belly",
+    "defaultValue": 500,
+    "defaultUnit": "g",
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": "ing_080",
+    "name": "Fish Sauce",
+    "defaultValue": 30,
+    "defaultUnit": "ml",
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": "ing_081",
+    "name": "Sweet Soy Sauce (Kecap Manis)",
+    "defaultValue": 30,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_082",
+    "name": "Coconut Milk",
+    "defaultValue": 400,
+    "defaultUnit": "ml",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_083",
+    "name": "Coconut Cream",
+    "defaultValue": 100,
+    "defaultUnit": "ml",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_084",
+    "name": "Tamarind Paste / Concentrate",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_085",
+    "name": "Palm Sugar",
+    "defaultValue": 25,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_086",
+    "name": "Shrimp Paste (Belacan/Gapi)",
+    "defaultValue": 5,
+    "defaultUnit": "g",
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": "ing_087",
+    "name": "Thai Bird's Eye Chili",
+    "defaultValue": 3,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_088",
+    "name": "Lemongrass Stalk",
+    "defaultValue": 2,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_089",
+    "name": "Galangal",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_090",
+    "name": "Makrut Lime Leaves",
+    "defaultValue": 4,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_091",
+    "name": "Thai Basil Leaves",
+    "defaultValue": 20,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_092",
+    "name": "Coriander Root",
+    "defaultValue": 2,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_093",
+    "name": "Coriander Leaves (Cilantro)",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_094",
+    "name": "Calamansi Lime juice",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_095",
+    "name": "Green Papaya (Shredded)",
+    "defaultValue": 150,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_096",
+    "name": "Banana Blossoms",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_097",
+    "name": "Rice Paper Wrappers",
+    "defaultValue": 8,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_098",
+    "name": "Thai Red Curry Paste",
+    "defaultValue": 30,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_099",
+    "name": "Thai Green Curry Paste",
+    "defaultValue": 30,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_100",
+    "name": "Massaman Curry Paste",
+    "defaultValue": 45,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_101",
+    "name": "Laksa Paste",
+    "defaultValue": 50,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_102",
+    "name": "Sambal Oelek",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_103",
+    "name": "Candu / Candlenuts",
+    "defaultValue": 4,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_104",
+    "name": "Pandanus Leaves",
+    "defaultValue": 2,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_105",
+    "name": "Ghee (Clarified Butter)",
+    "defaultValue": 30,
+    "defaultUnit": "g",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_106",
+    "name": "Basmati Rice",
+    "defaultValue": 200,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_107",
+    "name": "Atta (Whole Wheat Flour)",
+    "defaultValue": 120,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_108",
+    "name": "Besan (Gram/Chickpea Flour)",
+    "defaultValue": 60,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_109",
+    "name": "Toor Dal (Pigeon Peas)",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Frozen"
+  },
+  {
+    "id": "ing_110",
+    "name": "Red Lentils (Masoor Dal)",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_111",
+    "name": "Chana Dal (Split Chickpeas)",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Frozen"
+  },
+  {
+    "id": "ing_112",
+    "name": "Plain Yogurt / Curd / Dahi",
+    "defaultValue": 120,
+    "defaultUnit": "g",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_113",
+    "name": "Paneer",
+    "defaultValue": 200,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_114",
+    "name": "Garam Masala",
+    "defaultValue": 5,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_115",
+    "name": "Turmeric Powder",
+    "defaultValue": 3,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_116",
+    "name": "Kashmiri Chili Powder",
+    "defaultValue": 5,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_117",
+    "name": "Cumin Seeds",
+    "defaultValue": 4,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_118",
+    "name": "Ground Cumin",
+    "defaultValue": 4,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_119",
+    "name": "Coriander Seeds",
+    "defaultValue": 4,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_120",
+    "name": "Ground Coriander",
+    "defaultValue": 5,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_121",
+    "name": "Mustard Seeds (Black/Yellow)",
+    "defaultValue": 3,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_122",
+    "name": "Fenugreek Leaves (Kasuri Methi)",
+    "defaultValue": 2,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_123",
+    "name": "Fenugreek Seeds",
+    "defaultValue": 1,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_124",
+    "name": "Cardamom Pods (Green)",
+    "defaultValue": 4,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_125",
+    "name": "Cardamom Pods (Black)",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_126",
+    "name": "Cloves",
+    "defaultValue": 4,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_127",
+    "name": "Cinnamon Stick",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_128",
+    "name": "Asafoetida (Hing)",
+    "defaultValue": 0.5,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_129",
+    "name": "Curry Leaves",
+    "defaultValue": 10,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_130",
+    "name": "Amchur (Mango Powder)",
+    "defaultValue": 3,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_131",
+    "name": "Chaat Masala",
+    "defaultValue": 3,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_132",
+    "name": "Tamarind Pulp",
+    "defaultValue": 30,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_133",
+    "name": "Coconut Oil",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_134",
+    "name": "Mustard Oil",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_135",
+    "name": "Jaggery",
+    "defaultValue": 30,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_136",
+    "name": "Tahini",
+    "defaultValue": 60,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_137",
+    "name": "Chickpeas (Canned)",
+    "defaultValue": 240,
+    "defaultUnit": "g",
+    "category": "Frozen"
+  },
+  {
+    "id": "ing_138",
+    "name": "Couscous",
+    "defaultValue": 150,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_139",
+    "name": "Bulgur Wheat",
+    "defaultValue": 150,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_140",
+    "name": "Sumac",
+    "defaultValue": 4,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_141",
+    "name": "Za'atar",
+    "defaultValue": 10,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_142",
+    "name": "Pomegranate Molasses",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_143",
+    "name": "Orange Blossom Water",
+    "defaultValue": 5,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_144",
+    "name": "Rose Water",
+    "defaultValue": 5,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_145",
+    "name": "Feta Cheese",
+    "defaultValue": 100,
+    "defaultUnit": "g",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_146",
+    "name": "Halloumi Cheese",
+    "defaultValue": 200,
+    "defaultUnit": "g",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_147",
+    "name": "Kalamata Olives",
+    "defaultValue": 50,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_148",
+    "name": "Pine Nuts",
+    "defaultValue": 20,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_149",
+    "name": "Corn Masa Harina",
+    "defaultValue": 120,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_150",
+    "name": "Black Beans (Canned)",
+    "defaultValue": 240,
+    "defaultUnit": "g",
+    "category": "Canned Goods"
+  },
+  {
+    "id": "ing_151",
+    "name": "Pinto Beans (Dried)",
+    "defaultValue": 200,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_152",
+    "name": "Jalapeno Pepper",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_153",
+    "name": "Serrano Chili",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_154",
+    "name": "Dried Ancho Chili",
+    "defaultValue": 2,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_155",
+    "name": "Dried Guajillo Chili",
+    "defaultValue": 2,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_156",
+    "name": "Chipotle Peppers in Adobo",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_157",
+    "name": "Cilantro / Coriander Leaves",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_158",
+    "name": "Avocado",
+    "defaultValue": 1,
+    "defaultUnit": "pc",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_159",
+    "name": "Tomatillo",
+    "defaultValue": 4,
+    "defaultUnit": "pc",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_160",
+    "name": "Cotija Cheese",
+    "defaultValue": 50,
+    "defaultUnit": "g",
+    "category": "Dairy & Eggs"
+  },
+  {
+    "id": "ing_161",
+    "name": "Achiote Paste",
+    "defaultValue": 15,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_162",
+    "name": "Mexican Oregano",
+    "defaultValue": 2,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_163",
+    "name": "Sea Salt",
+    "defaultValue": 5,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_164",
+    "name": "Black Pepper",
+    "defaultValue": 2,
+    "defaultUnit": "g",
+    "category": "Produce"
+  },
+  {
+    "id": "ing_165",
+    "name": "Honey",
+    "defaultValue": 20,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_166",
+    "name": "Maple Syrup",
+    "defaultValue": 30,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_167",
+    "name": "Red Wine Vinegar",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_168",
+    "name": "Balsamic Vinegar",
+    "defaultValue": 15,
+    "defaultUnit": "ml",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_169",
+    "name": "Mayonnaise",
+    "defaultValue": 30,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  },
+  {
+    "id": "ing_170",
+    "name": "Dijon Mustard",
+    "defaultValue": 10,
+    "defaultUnit": "g",
+    "category": "Pantry & Spices"
+  }
+]
