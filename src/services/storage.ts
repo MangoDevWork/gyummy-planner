@@ -111,7 +111,22 @@ export function saveAppData(data: AppData): void {
     if (data.currentProfile) {
       setActiveProfile(data.currentProfile);
       const familyKey = getFamilyStorageKey(data.currentProfile.familyName);
-      localStorage.setItem(familyKey, JSON.stringify(data));
+
+      // Lightweight filter: Only save user custom dishes, family cookbook dishes, or favorited dishes
+      // to keep localStorage tiny (~50KB) and prevent quota errors with 3,000+ system recipes.
+      const persistedDishes = data.dishes.filter((d) => {
+        if (d.isFamilyRecipe) return true;
+        if (d.favoritedByMembers && d.favoritedByMembers.length > 0) return true;
+        if (!d.id.startsWith('dish_scraped_') && !d.id.startsWith('dish_csv_')) return true;
+        return false;
+      });
+
+      const payloadToSave = {
+        ...data,
+        dishes: persistedDishes
+      };
+
+      localStorage.setItem(familyKey, JSON.stringify(payloadToSave));
     } else {
       setActiveProfile(null);
     }

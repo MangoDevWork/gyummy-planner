@@ -12,12 +12,39 @@ import { SettingsView } from './components/settings/SettingsView';
 import { AuthModal } from './components/auth/AuthModal';
 import { MealScheduleSettingsModal } from './components/settings/MealScheduleSettingsModal';
 
+import { loadMasterSystemRecipes } from './services/systemRecipesService';
+
 export function App() {
   const [appData, setAppData] = useState<AppData>(() => loadAppData());
   const [activeTab, setActiveTab] = useState<TabType>('planner');
   const [isDishCreatorOpen, setIsDishCreatorOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isOnboardingScheduleOpen, setIsOnboardingScheduleOpen] = useState(false);
+
+  // Load master system recipes (3,000+ recipes) from static asset / IndexedDB on launch
+  useEffect(() => {
+    loadMasterSystemRecipes().then((systemRecipes) => {
+      if (systemRecipes && systemRecipes.length > 0) {
+        setAppData((prev) => {
+          const userDishMap = new Map<string, Dish>();
+          prev.dishes.forEach((d) => userDishMap.set(d.id, d));
+
+          // Merge: user customized dishes take priority, append remaining system recipes
+          const merged: Dish[] = [...prev.dishes];
+          systemRecipes.forEach((sysDish) => {
+            if (!userDishMap.has(sysDish.id)) {
+              merged.push(sysDish);
+            }
+          });
+
+          return {
+            ...prev,
+            dishes: merged
+          };
+        });
+      }
+    });
+  }, []);
 
   // Sync to local storage whenever appData changes
   useEffect(() => {
