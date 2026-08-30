@@ -3,7 +3,13 @@ import path from 'path';
 
 /**
  * Gyummy Planner - High-Volume Multi-Site Batch Scraper Engine
- * Scrapes 100 to 1,500+ recipes from RecipeTin Eats, iCook Taiwan, Taste.com.au, Food.com, etc.
+ * Supports 1-command bulk scraping for:
+ * 1. recipetineats   (RecipeTin Eats - 1,500+ recipes)
+ * 2. thewoksoflife   (The Woks of Life - 1,200+ Asian recipes)
+ * 3. taste           (Taste.com.au - Quick Dinners & Family Meals)
+ * 4. food            (Food.com - 30-Minute Dinners & Top Rated)
+ * 5. icook           (iCook Taiwan - 家常菜 Home Cooking)
+ * 6. justonecookbook (Just One Cookbook - Japanese Recipes)
  */
 
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
@@ -23,26 +29,26 @@ function detectCategory(name, keywords = []) {
 
 function detectCuisine(name, textContent = '') {
   const combined = (name + ' ' + textContent).toLowerCase();
-  if (combined.includes('japanese') || combined.includes('teriyaki') || combined.includes('miso') || combined.includes('sushi') || combined.includes('ramen') || combined.includes('udon') || combined.includes('日式') || combined.includes('照燒')) return 'Japanese';
+  if (combined.includes('japanese') || combined.includes('teriyaki') || combined.includes('miso') || combined.includes('sushi') || combined.includes('ramen') || combined.includes('udon') || combined.includes('日式') || combined.includes('照燒') || combined.includes('katsu')) return 'Japanese';
   if (combined.includes('korean') || combined.includes('kimchi') || combined.includes('bulgogi') || combined.includes('bibimbap') || combined.includes('韓式') || combined.includes('泡菜')) return 'Korean';
-  if (combined.includes('chinese') || combined.includes('cantonese') || combined.includes('szechuan') || combined.includes('dim sum') || combined.includes('dumpling') || combined.includes('fried rice') || combined.includes('wok') || combined.includes('中式') || combined.includes('台式') || combined.includes('港式') || combined.includes('家常菜')) return 'Cantonese';
-  if (combined.includes('thai') || combined.includes('pad thai') || combined.includes('tom yum') || combined.includes('泰式') || combined.includes('綠咖哩')) return 'Thai';
+  if (combined.includes('chinese') || combined.includes('cantonese') || combined.includes('szechuan') || combined.includes('sichuan') || combined.includes('dim sum') || combined.includes('dumpling') || combined.includes('fried rice') || combined.includes('wok') || combined.includes('中式') || combined.includes('台式') || combined.includes('港式') || combined.includes('家常菜') || combined.includes('chow mein')) return 'Cantonese';
+  if (combined.includes('thai') || combined.includes('pad thai') || combined.includes('tom yum') || combined.includes('泰式') || combined.includes('綠咖哩') || combined.includes('curry')) return 'Thai';
   if (combined.includes('vietnamese') || combined.includes('pho') || combined.includes('lemongrass') || combined.includes('banh mi') || combined.includes('越式')) return 'Vietnamese';
-  if (combined.includes('italian') || combined.includes('pasta') || combined.includes('pizza') || combined.includes('risotto') || combined.includes('bolognese') || combined.includes('義式') || combined.includes('義大利麵')) return 'Italian';
-  if (combined.includes('mexican') || combined.includes('taco') || combined.includes('burrito') || combined.includes('salsa') || combined.includes('fajita') || combined.includes('墨西哥')) return 'Mexican';
-  if (combined.includes('mediterranean') || combined.includes('greek') || combined.includes('hummus') || combined.includes('地中海')) return 'Mediterranean';
-  if (combined.includes('roast') || combined.includes('burger') || combined.includes('steak') || combined.includes('pie') || combined.includes('stew') || combined.includes('西式')) return 'Western';
+  if (combined.includes('italian') || combined.includes('pasta') || combined.includes('pizza') || combined.includes('risotto') || combined.includes('bolognese') || combined.includes('carbonara') || combined.includes('義式')) return 'Italian';
+  if (combined.includes('mexican') || combined.includes('taco') || combined.includes('burrito') || combined.includes('salsa') || combined.includes('fajita') || combined.includes('enchilada') || combined.includes('墨西哥')) return 'Mexican';
+  if (combined.includes('mediterranean') || combined.includes('greek') || combined.includes('hummus') || combined.includes('tzatziki') || combined.includes('地中海')) return 'Mediterranean';
+  if (combined.includes('roast') || combined.includes('burger') || combined.includes('steak') || combined.includes('pie') || combined.includes('stew') || combined.includes('schnitzel') || combined.includes('西式')) return 'Western';
   return 'Asian';
 }
 
 function detectIngredientCategory(name) {
   const n = name.toLowerCase();
-  if (n.includes('chicken') || n.includes('beef') || n.includes('pork') || n.includes('fish') || n.includes('salmon') || n.includes('shrimp') || n.includes('prawn') || n.includes('meat') || n.includes('fillet') || n.includes('steak') || n.includes('bacon') || n.includes('sausage') || n.includes('雞') || n.includes('牛') || n.includes('豬') || n.includes('魚') || n.includes('蝦') || n.includes('肉') || n.includes('海鮮')) return 'Meat & Seafood';
-  if (n.includes('egg') || n.includes('milk') || n.includes('cheese') || n.includes('butter') || n.includes('cream') || n.includes('yogurt') || n.includes('蛋') || n.includes('奶') || n.includes('起司') || n.includes('乳酪') || n.includes('奶油')) return 'Dairy & Eggs';
-  if (n.includes('onion') || n.includes('garlic') || n.includes('tomato') || n.includes('ginger') || n.includes('scallion') || n.includes('pepper') || n.includes('spinach') || n.includes('carrot') || n.includes('potato') || n.includes('mushroom') || n.includes('herb') || n.includes('lemon') || n.includes('basil') || n.includes('葱') || n.includes('蒜') || n.includes('薑') || n.includes('菜') || n.includes('菇') || n.includes('番茄') || n.includes('洋蔥') || n.includes('蘿蔔')) return 'Produce';
-  if (n.includes('bread') || n.includes('toast') || n.includes('bun') || n.includes('bagel') || n.includes('pita') || n.includes('tortilla') || n.includes('麵包') || n.includes('吐司')) return 'Bakery';
+  if (n.includes('chicken') || n.includes('beef') || n.includes('pork') || n.includes('fish') || n.includes('salmon') || n.includes('shrimp') || n.includes('prawn') || n.includes('meat') || n.includes('fillet') || n.includes('steak') || n.includes('bacon') || n.includes('sausage') || n.includes('lamb') || n.includes('mince') || n.includes('雞') || n.includes('牛') || n.includes('豬') || n.includes('魚') || n.includes('蝦') || n.includes('肉') || n.includes('海鮮')) return 'Meat & Seafood';
+  if (n.includes('egg') || n.includes('milk') || n.includes('cheese') || n.includes('butter') || n.includes('cream') || n.includes('yogurt') || n.includes('parmesan') || n.includes('mozzarella') || n.includes('蛋') || n.includes('奶') || n.includes('起司') || n.includes('乳酪') || n.includes('奶油')) return 'Dairy & Eggs';
+  if (n.includes('onion') || n.includes('garlic') || n.includes('tomato') || n.includes('ginger') || n.includes('scallion') || n.includes('pepper') || n.includes('capsicum') || n.includes('spinach') || n.includes('carrot') || n.includes('potato') || n.includes('mushroom') || n.includes('herb') || n.includes('lemon') || n.includes('lime') || n.includes('basil') || n.includes('coriander') || n.includes('cilantro') || n.includes('zucchini') || n.includes('broccoli') || n.includes('cabbage') || n.includes('葱') || n.includes('蒜') || n.includes('薑') || n.includes('菜') || n.includes('菇') || n.includes('番茄') || n.includes('洋蔥') || n.includes('蘿蔔')) return 'Produce';
+  if (n.includes('bread') || n.includes('toast') || n.includes('bun') || n.includes('bagel') || n.includes('pita') || n.includes('tortilla') || n.includes('wrap') || n.includes('麵包') || n.includes('吐司')) return 'Bakery';
   if (n.includes('frozen') || n.includes('peas') || n.includes('ice cream') || n.includes('冷凍')) return 'Frozen';
-  if (n.includes('canned') || n.includes('can of') || n.includes('tinned') || n.includes('beans') || n.includes('罐頭')) return 'Canned Goods';
+  if (n.includes('canned') || n.includes('can of') || n.includes('tinned') || n.includes('beans') || n.includes('chickpeas') || n.includes('lentils') || n.includes('罐頭')) return 'Canned Goods';
   return 'Pantry & Spices';
 }
 
@@ -108,7 +114,11 @@ function parseIngredientString(rawStr, idx) {
 
 async function fetchHtml(url) {
   const res = await fetch(url, {
-    headers: { 'User-Agent': USER_AGENT }
+    headers: {
+      'User-Agent': USER_AGENT,
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9'
+    }
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
   return await res.text();
@@ -169,21 +179,21 @@ function extractRecipeFromJsonLd(html, sourceUrl) {
           imageEmoji: '🍲',
           tags: [parsed.recipeCuisine, 'Web Import'].filter(Boolean),
           favoritedByMembers: [],
-          isFamilyRecipe: false, // In System Library so family can pick and choose
+          isFamilyRecipe: false, // Goes into System Library so user can select
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           ingredients
         };
       }
     } catch (e) {
-      // Continue parsing other tags
+      // Continue parsing other script tags
     }
   }
   return null;
 }
 
 // -------------------------------------------------------------
-// Site Crawlers
+// Site URL Crawlers
 // -------------------------------------------------------------
 
 async function getRecipeTinEatsUrls(limit = 100) {
@@ -196,7 +206,6 @@ async function getRecipeTinEatsUrls(limit = 100) {
   ];
 
   const recipeUrls = new Set();
-
   for (const smUrl of sitemaps) {
     if (recipeUrls.size >= limit) break;
     try {
@@ -204,18 +213,114 @@ async function getRecipeTinEatsUrls(limit = 100) {
       const locs = xml.match(/<loc>(https:\/\/www\.recipetineats\.com\/[^<]+)<\/loc>/g) || [];
       for (const loc of locs) {
         const url = loc.replace(/<loc>|<\/loc>/g, '').trim();
-        // Exclude non-recipe blog / travel / collection posts
         if (!url.includes('/blog/') && !url.includes('/category/') && !url.includes('-map/') && !url.includes('/contact/')) {
           recipeUrls.add(url);
           if (recipeUrls.size >= limit) break;
         }
       }
     } catch (e) {
-      console.warn(`Warning: Could not fetch sitemap ${smUrl}:`, e.message);
+      console.warn(`Warning: Sitemap ${smUrl}:`, e.message);
+    }
+  }
+  return Array.from(recipeUrls);
+}
+
+async function getTheWoksOfLifeUrls(limit = 100) {
+  console.log('📡 Fetching The Woks of Life sitemaps...');
+  const sitemaps = [
+    'https://thewoksoflife.com/post-sitemap.xml',
+    'https://thewoksoflife.com/post-sitemap2.xml',
+    'https://thewoksoflife.com/post-sitemap3.xml'
+  ];
+
+  const recipeUrls = new Set();
+  for (const smUrl of sitemaps) {
+    if (recipeUrls.size >= limit) break;
+    try {
+      const xml = await fetchHtml(smUrl);
+      const locs = xml.match(/<loc>(https:\/\/thewoksoflife\.com\/[^<]+)<\/loc>/g) || [];
+      for (const loc of locs) {
+        const url = loc.replace(/<loc>|<\/loc>/g, '').trim();
+        if (!url.includes('/category/') && !url.includes('/about/') && !url.includes('/visual-recipe-index/')) {
+          recipeUrls.add(url);
+          if (recipeUrls.size >= limit) break;
+        }
+      }
+    } catch (e) {
+      console.warn(`Warning: Sitemap ${smUrl}:`, e.message);
+    }
+  }
+  return Array.from(recipeUrls);
+}
+
+async function getTasteUrls(limit = 100) {
+  console.log('📡 Fetching Taste.com.au recipe collection & sitemaps...');
+  const recipeUrls = new Set();
+  const collections = [
+    'https://www.taste.com.au/recipes/collections/quick-easy-dinner-recipes',
+    'https://www.taste.com.au/recipes/collections/easy-dinner-recipes',
+    'https://www.taste.com.au/recipes/collections/healthy-dinners',
+    'https://www.taste.com.au/recipes/collections/asian-dinner-recipes'
+  ];
+
+  for (const colUrl of collections) {
+    if (recipeUrls.size >= limit) break;
+    try {
+      const html = await fetchHtml(colUrl);
+      const matches = html.match(/href="(\/recipes\/[a-z0-9\-]+\/[a-f0-9\-]+)"/gi) || [];
+      matches.forEach((m) => {
+        const pathOnly = m.replace(/^href="/i, '').replace(/"$/, '');
+        recipeUrls.add(`https://www.taste.com.au${pathOnly}`);
+      });
+      await sleep(200);
+    } catch (e) {
+      console.warn(`Warning: Taste collection ${colUrl}:`, e.message);
     }
   }
 
-  return Array.from(recipeUrls);
+  // Fallback to Taste.com.au sitemap if more requested
+  if (recipeUrls.size < limit) {
+    try {
+      const xml = await fetchHtml('https://www.taste.com.au/sitemap1.xml');
+      const locs = xml.match(/<loc>(https:\/\/www\.taste\.com\.au\/recipes\/[^<]+)<\/loc>/g) || [];
+      locs.forEach((loc) => {
+        const u = loc.replace(/<loc>|<\/loc>/g, '').trim();
+        recipeUrls.add(u);
+      });
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  return Array.from(recipeUrls).slice(0, limit);
+}
+
+async function getFoodComUrls(limit = 100) {
+  console.log('📡 Fetching Food.com 30-minute dinners & top collections...');
+  const recipeUrls = new Set();
+  const collections = [
+    'https://www.food.com/ideas/30-minute-dinners-6720',
+    'https://www.food.com/ideas/easy-dinner-ideas-6028',
+    'https://www.food.com/ideas/asian-dinner-recipes-6831'
+  ];
+
+  for (const colUrl of collections) {
+    if (recipeUrls.size >= limit) break;
+    try {
+      const html = await fetchHtml(colUrl);
+      // Food.com recipe links look like /recipe/recipe-name-12345
+      const matches = html.match(/href="(\/recipe\/[a-z0-9\-]+-\d+)"/gi) || [];
+      matches.forEach((m) => {
+        const pathOnly = m.replace(/^href="/i, '').replace(/"$/, '');
+        recipeUrls.add(`https://www.food.com${pathOnly}`);
+      });
+      await sleep(200);
+    } catch (e) {
+      console.warn(`Warning: Food.com collection ${colUrl}:`, e.message);
+    }
+  }
+
+  return Array.from(recipeUrls).slice(0, limit);
 }
 
 async function getICookUrls(pageCount = 5) {
@@ -228,13 +333,42 @@ async function getICookUrls(pageCount = 5) {
       const html = await fetchHtml(url);
       const matches = html.match(/\/recipes\/\d+/g) || [];
       matches.forEach((m) => recipeUrls.add(`https://icook.tw${m}`));
-      await sleep(300);
+      await sleep(250);
     } catch (e) {
       console.warn(`Error fetching iCook page ${p}:`, e.message);
     }
   }
 
   return Array.from(recipeUrls);
+}
+
+async function getJustOneCookbookUrls(limit = 50) {
+  console.log('📡 Fetching Just One Cookbook recipe catalog...');
+  const recipeUrls = new Set();
+  // JOC popular recipe collection URLs
+  const popularUrls = [
+    'https://www.justonecookbook.com/easy-japanese-recipes/',
+    'https://www.justonecookbook.com/quick-easy/',
+    'https://www.justonecookbook.com/teriyaki-chicken/',
+    'https://www.justonecookbook.com/gyudon/',
+    'https://www.justonecookbook.com/japanese-curry/',
+    'https://www.justonecookbook.com/chicken-katsu/',
+    'https://www.justonecookbook.com/tonkatsu/',
+    'https://www.justonecookbook.com/oyakodon/',
+    'https://www.justonecookbook.com/yakisoba/',
+    'https://www.justonecookbook.com/miso-soup/',
+    'https://www.justonecookbook.com/karaage/',
+    'https://www.justonecookbook.com/tamagoyaki/',
+    'https://www.justonecookbook.com/onigiri-rice-balls/',
+    'https://www.justonecookbook.com/sukiyaki/',
+    'https://www.justonecookbook.com/nikujaga/',
+    'https://www.justonecookbook.com/agedashi-tofu/',
+    'https://www.justonecookbook.com/salmon-teriyaki/',
+    'https://www.justonecookbook.com/ramen/'
+  ];
+
+  popularUrls.forEach((u) => recipeUrls.add(u));
+  return Array.from(recipeUrls).slice(0, limit);
 }
 
 // -------------------------------------------------------------
@@ -267,7 +401,7 @@ async function scrapeUrlList(urls, concurrency = 4) {
     });
 
     await Promise.all(promises);
-    await sleep(250); // Friendly polite pause between concurrent batches
+    await sleep(250);
   }
 
   return dishes;
@@ -278,21 +412,41 @@ async function scrapeUrlList(urls, concurrency = 4) {
 // -------------------------------------------------------------
 async function main() {
   const args = process.argv.slice(2);
-  const command = args[0] || 'help';
+  const command = (args[0] || 'help').toLowerCase();
 
   let targetUrls = [];
-  let filenameLabel = 'batch';
+  let filenameLabel = command;
 
   if (command === 'recipetineats') {
     const limit = parseInt(args[1], 10) || 50;
-    console.log(`Target: RecipeTin Eats (Up to ${limit} recipes)`);
+    console.log(`🎯 Target: RecipeTin Eats (Up to ${limit} recipes)`);
     targetUrls = await getRecipeTinEatsUrls(limit);
     filenameLabel = `recipetineats_${targetUrls.length}`;
+  } else if (command === 'thewoksoflife' || command === 'woks') {
+    const limit = parseInt(args[1], 10) || 50;
+    console.log(`🎯 Target: The Woks of Life (Up to ${limit} recipes)`);
+    targetUrls = await getTheWoksOfLifeUrls(limit);
+    filenameLabel = `thewoksoflife_${targetUrls.length}`;
+  } else if (command === 'taste') {
+    const limit = parseInt(args[1], 10) || 50;
+    console.log(`🎯 Target: Taste.com.au (Up to ${limit} recipes)`);
+    targetUrls = await getTasteUrls(limit);
+    filenameLabel = `taste_${targetUrls.length}`;
+  } else if (command === 'food') {
+    const limit = parseInt(args[1], 10) || 50;
+    console.log(`🎯 Target: Food.com 30-Minute Dinners (Up to ${limit} recipes)`);
+    targetUrls = await getFoodComUrls(limit);
+    filenameLabel = `foodcom_${targetUrls.length}`;
   } else if (command === 'icook') {
     const pages = parseInt(args[1], 10) || 5;
-    console.log(`Target: iCook Taiwan (${pages} search pages)`);
+    console.log(`🎯 Target: iCook Taiwan (${pages} search pages)`);
     targetUrls = await getICookUrls(pages);
     filenameLabel = `icook_${targetUrls.length}`;
+  } else if (command === 'justonecookbook' || command === 'joc') {
+    const limit = parseInt(args[1], 10) || 20;
+    console.log(`🎯 Target: Just One Cookbook (Up to ${limit} recipes)`);
+    targetUrls = await getJustOneCookbookUrls(limit);
+    filenameLabel = `justonecookbook_${targetUrls.length}`;
   } else if (command === 'url') {
     const singleUrl = args[1];
     if (!singleUrl) {
@@ -314,19 +468,17 @@ async function main() {
     console.log(`
 🥘 Gyummy Planner Batch Recipe Scraper 🥘
 
-Usage:
-  node scripts/batch-scraper.js recipetineats [count]
-    e.g. node scripts/batch-scraper.js recipetineats 50
-    e.g. node scripts/batch-scraper.js recipetineats 500
+1-Command Bulk Scraper:
+  node scripts/batch-scraper.js recipetineats [count]   (e.g. 50, 500, 1500)
+  node scripts/batch-scraper.js thewoksoflife [count]   (e.g. 50, 200, 1000)
+  node scripts/batch-scraper.js taste [count]           (e.g. 50, 100, 300)
+  node scripts/batch-scraper.js food [count]            (e.g. 30-min dinners collection)
+  node scripts/batch-scraper.js icook [pages]           (e.g. 5, 10, 20 pages)
+  node scripts/batch-scraper.js justonecookbook [count] (e.g. 20 popular recipes)
 
-  node scripts/batch-scraper.js icook [pages]
-    e.g. node scripts/batch-scraper.js icook 10
-
+Custom URL / List:
   node scripts/batch-scraper.js url "<Recipe_URL>"
-    e.g. node scripts/batch-scraper.js url "https://www.taste.com.au/recipes/..."
-
   node scripts/batch-scraper.js list urls.txt
-    (Scrapes all URLs listed in urls.txt)
     `);
     process.exit(0);
   }
