@@ -1,0 +1,247 @@
+{
+  "app": "Gyummy Planner",
+  "version": 2,
+  "exportedAt": "2026-08-30T10:00:00.000Z",
+  "dishes": [
+    {
+      "id": "dish_recipetin_pad_see_ew",
+      "name": "Pad See Ew (Thai Stir Fried Noodles)",
+      "category": "Dinner",
+      "cuisine": "Thai",
+      "servings": 2,
+      "prepTimeMinutes": 15,
+      "imageEmoji": "🍜",
+      "imageUrl": "https://www.recipetineats.com/wp-content/uploads/2020/01/Pad-See-Ew-Thai-Stir-Fried-Noodles_8.jpg",
+      "tags": ["Thai", "Noodles", "Quick & Easy"],
+      "instructions": "1. Whisk together oyster sauce, light soy sauce, dark soy sauce, white vinegar, and sugar in a small bowl.\n2. Heat oil in a wok or large skillet over very high heat.\n3. Add garlic and chicken; stir fry until chicken is mostly cooked.\n4. Add Chinese broccoli stems and cook for 1 minute.\n5. Push ingredients to the side, crack the egg into the pan, and scramble.\n6. Add fresh wide rice noodles, leafy greens, and the sauce. Toss vigorously until noodles are caramelized and cooked through.",
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T10:00:00.000Z",
+      "updatedAt": "2026-08-30T10:00:00.000Z",
+      "ingredients": [
+        {
+          "id": "ing_pse_1",
+          "name": "Fresh Wide Rice Noodles",
+          "amount": 400,
+          "unit": "g",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_pse_2",
+          "name": "Chicken Breast (sliced)",
+          "amount": 200,
+          "unit": "g",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_pse_3",
+          "name": "Chinese Broccoli (Gai Lan)",
+          "amount": 4,
+          "unit": "stalks",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_pse_4",
+          "name": "Egg",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_pse_5",
+          "name": "Oyster Sauce",
+          "amount": 2,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_pse_6",
+          "name": "Dark Soy Sauce",
+          "amount": 2,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_recipetin_spicy_cucumber_salad",
+      "name": "Spicy Asian Cucumber Salad",
+      "category": "Snack",
+      "cuisine": "Asian",
+      "servings": 4,
+      "prepTimeMinutes": 10,
+      "imageEmoji": "🥒",
+      "imageUrl": "https://www.recipetineats.com/wp-content/uploads/2023/06/Spicy-Asian-Cucumber-Salad_8.jpg",
+      "tags": ["Salad", "Spicy", "Quick & Easy"],
+      "instructions": "1. Slice cucumbers into thin rounds and toss with a pinch of salt. Let sit for 5 minutes, then drain any excess liquid.\n2. In a bowl, whisk together rice vinegar, soy sauce, sesame oil, chili oil, grated garlic, and sugar.\n3. Pour the dressing over the drained cucumbers.\n4. Toss well to combine and garnish heavily with toasted sesame seeds before serving.",
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T10:00:00.000Z",
+      "updatedAt": "2026-08-30T10:00:00.000Z",
+      "ingredients": [
+        {
+          "id": "ing_scs_1",
+          "name": "Lebanese or English Cucumbers",
+          "amount": 3,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scs_2",
+          "name": "Rice Vinegar",
+          "amount": 2,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scs_3",
+          "name": "Soy Sauce",
+          "amount": 1,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scs_4",
+          "name": "Chili Oil",
+          "amount": 1,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scs_5",
+          "name": "Sesame Oil",
+          "amount": 1,
+          "unit": "tsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scs_6",
+          "name": "Sesame Seeds",
+          "amount": 1,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_recipetin_satay_chicken",
+      "name": "Satay Chicken with Peanut Sauce",
+      "category": "Dinner",
+      "cuisine": "Asian",
+      "servings": 4,
+      "prepTimeMinutes": 25,
+      "imageEmoji": "🍗",
+      "imageUrl": "https://www.recipetineats.com/wp-content/uploads/2019/02/Thai-Chicken-Satay_8.jpg",
+      "tags": ["Chicken", "Quick & Easy", "Family Favorite"],
+      "instructions": "1. Mix curry powder, coconut milk, sugar, and salt. Toss chicken thigh pieces in the marinade and thread onto skewers.\n2. For the sauce, whisk peanut butter, soy sauce, lime juice, brown sugar, and a splash of boiling water until smooth.\n3. Heat a grill or large pan over medium-high heat with a little oil.\n4. Cook the chicken skewers for 3-4 minutes per side until charred and cooked through.\n5. Serve skewers hot with the creamy peanut sauce for dipping.",
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T10:00:00.000Z",
+      "updatedAt": "2026-08-30T10:00:00.000Z",
+      "ingredients": [
+        {
+          "id": "ing_sat_1",
+          "name": "Chicken Thighs (boneless)",
+          "amount": 600,
+          "unit": "g",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_sat_2",
+          "name": "Curry Powder",
+          "amount": 1,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_sat_3",
+          "name": "Coconut Milk",
+          "amount": 60,
+          "unit": "ml",
+          "category": "Canned Goods"
+        },
+        {
+          "id": "ing_sat_4",
+          "name": "Peanut Butter (Smooth)",
+          "amount": 0.5,
+          "unit": "cup",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_sat_5",
+          "name": "Soy Sauce",
+          "amount": 1,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_sat_6",
+          "name": "Lime Juice",
+          "amount": 2,
+          "unit": "tbsp",
+          "category": "Produce"
+        }
+      ]
+    },
+    {
+      "id": "dish_recipetin_korean_noodle_soup",
+      "name": "15 Minute Spicy Korean Noodle Soup",
+      "category": "Dinner",
+      "cuisine": "Korean",
+      "servings": 2,
+      "prepTimeMinutes": 15,
+      "imageEmoji": "🍲",
+      "imageUrl": "https://www.recipetineats.com/wp-content/uploads/2023/05/Spicy-Korean-Noodles_8.jpg",
+      "tags": ["Korean", "Soup", "Spicy", "Quick & Easy"],
+      "instructions": "1. In a pot, bring chicken broth, minced garlic, soy sauce, and Gochujang (Korean chili paste) to a boil.\n2. Add dried ramen noodles (discard the seasoning packets) and cook for 2 minutes.\n3. Drop in a cracked egg and let it poach in the boiling broth for 1 minute.\n4. Remove from heat, stir in a drizzle of sesame oil and chopped green onions.\n5. Serve immediately while piping hot.",
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T10:00:00.000Z",
+      "updatedAt": "2026-08-30T10:00:00.000Z",
+      "ingredients": [
+        {
+          "id": "ing_kns_1",
+          "name": "Dried Ramen Noodles",
+          "amount": 2,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_kns_2",
+          "name": "Chicken Broth",
+          "amount": 750,
+          "unit": "ml",
+          "category": "Canned Goods"
+        },
+        {
+          "id": "ing_kns_3",
+          "name": "Gochujang (Korean Chili Paste)",
+          "amount": 2,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_kns_4",
+          "name": "Soy Sauce",
+          "amount": 1,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_kns_5",
+          "name": "Egg",
+          "amount": 2,
+          "unit": "pcs",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_kns_6",
+          "name": "Green Onion / Scallion",
+          "amount": 2,
+          "unit": "stalks",
+          "category": "Produce"
+        }
+      ]
+    }
+  ]
+}

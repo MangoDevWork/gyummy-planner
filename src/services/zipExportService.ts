@@ -78,16 +78,27 @@ export async function parseUploadedDataFile(file: File): Promise<{
 
     if (file.name.endsWith('.zip') || file.type.includes('zip')) {
       const zip = await JSZip.loadAsync(file);
-      // Find the first .json file in the zip
       const jsonFileKey = Object.keys(zip.files).find((k) => k.endsWith('.json') && !k.startsWith('__MACOSX'));
       if (!jsonFileKey) {
         return { success: false, message: 'Invalid Zip archive: No JSON data file found inside.' };
       }
       jsonString = await zip.file(jsonFileKey)!.async('string');
+    } else if (file.name.endsWith('.csv') || file.name.endsWith('.txt')) {
+      const text = await file.text();
+      const parsedDishes = parseCsvOrMarkdownRecipes(text);
+      if (parsedDishes.length > 0) {
+        return {
+          success: true,
+          type: 'dishes',
+          data: parsedDishes,
+          message: `Parsed ${parsedDishes.length} recipe(s) from CSV/Text table!`
+        };
+      }
+      return { success: false, message: 'Could not detect recipe columns in CSV/Text file.' };
     } else if (file.name.endsWith('.json') || file.type.includes('json')) {
       jsonString = await file.text();
     } else {
-      return { success: false, message: 'Unsupported file format. Please upload a .zip or .json file.' };
+      return { success: false, message: 'Unsupported format. Upload .zip, .json, or .csv file.' };
     }
 
     const payload = JSON.parse(jsonString);
@@ -328,3 +339,67 @@ export async function copyGroceryListAsMessage(
     return { success: false, text: 'Could not access clipboard' };
   }
 }
+
+/**
+ * Compact CSV & Markdown Table Parser for fast multi-recipe ingestion
+ * Format: Name | Cuisine | Category | PrepTime | Ingredients (comma-separated) | Instructions
+ */
+export function parseCsvOrMarkdownRecipes(text: string): Dish[] {
+  const lines = text.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
+  const dishes: Dish[] = [];
+
+  for (const line of lines) {
+    // Ignore header rows or markdown separator rows like |---|---|
+    if (line.startsWith('#') || line.includes('---') || line.toLowerCase().includes('recipe name')) continue;
+
+    // Support comma or pipe separated
+    const delimiter = line.includes('|') ? '|' : ',';
+    const cols = line.split(delimiter).map((c) => c.trim().replace(/^["']|["']$/g, ''));
+
+    if (cols.length < 3) continue;
+
+    const name = cols[0];
+    if (!name || name.length < 2) continue;
+
+    const cuisine = cols[1] || 'Asian';
+    const category = cols[2] || 'Dinner';
+    const prepTime = parseInt(cols[3], 10) || 20;
+    const rawIngredients = cols[4] || '';
+    const instructions = cols[5] || 'Follow standard home cooking steps.';
+
+    // Parse ingredients separated by semicolon or comma (if pipe delimited)
+    const ingParts = rawIngredients.split(/[;,]/).map((i) => i.trim()).filter(Boolean);
+    const parsedIngs = ingParts.map((raw, idx) => {
+      const match = raw.match(/^([\d\.\/]+)?\s*([a-zA-Z]+)?\s*(.*)$/);
+      return {
+        id: `ing_csv_${Date.now()}_${idx}`,
+        name: match && match[3] ? match[3].trim() : raw,
+        amount: match && match[1] ? parseFloat(match[1]) || 1 : 1,
+        unit: match && match[2] ? match[2].toLowerCase() : 'pcs',
+        category: 'Produce' as any
+      };
+    });
+
+    dishes.push({
+      id: `dish_csv_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      name,
+      cuisine,
+      category,
+      servings: 4,
+      prepTimeMinutes: prepTime,
+      instructions,
+      imageEmoji: '🍲',
+      tags: [cuisine, category].filter(Boolean),
+      favoritedByMembers: [],
+      isFamilyRecipe: false, // Goes into System Library so user can select
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ingredients: parsedIngs.length > 0 ? parsedIngs : [
+        { id: `ing_${Date.now()}_1`, name: 'Main Ingredient', amount: 400, unit: 'g', category: 'Meat & Seafood' }
+      ]
+    });
+  }
+
+  return dishes;
+}
+
