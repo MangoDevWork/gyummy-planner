@@ -222,9 +222,13 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
             <span className="text-2xl">{imageEmoji}</span>
             <div>
               <h2 className="text-sm font-bold text-slate-900">
-                {initialDish ? 'Edit Recipe' : 'New Recipe'}
+                {initialDish
+                  ? (language === 'zh-CN' ? '编辑菜谱' : 'Edit Recipe')
+                  : (language === 'zh-CN' ? '新建菜谱' : 'New Recipe')}
               </h2>
-              <p className="text-xs text-slate-500">Photo, ingredients & cooking notes</p>
+              <p className="text-xs text-slate-500">
+                {language === 'zh-CN' ? '配图、食材清单与烹饪步骤' : 'Photo, ingredients & cooking notes'}
+              </p>
             </div>
           </div>
           <button
@@ -246,11 +250,13 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
           {/* Family Cookbook Inclusion Toggle */}
           <div className="bg-white p-3.5 rounded-xl border border-[#EAE6DF] flex items-center justify-between shadow-2xs">
             <div>
-              <span className="text-xs font-bold text-slate-900 block">Include in Family Cookbook</span>
+              <span className="text-xs font-bold text-slate-900 block">
+                {language === 'zh-CN' ? '收录至家庭常备菜谱' : 'Include in Family Cookbook'}
+              </span>
               <span className="text-[11px] text-slate-500 block">
                 {isFamilyRecipe
-                  ? 'Visible in Family Homemade Cookbook'
-                  : 'Saved to System Library only'}
+                  ? (language === 'zh-CN' ? '在家庭自制菜谱中可见' : 'Visible in Family Homemade Cookbook')
+                  : (language === 'zh-CN' ? '仅保存于菜谱库' : 'Saved to System Library only')}
               </span>
             </div>
             <button
@@ -271,7 +277,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
           {/* Recipe Photo Attachment Section */}
           <div className="bg-white p-3.5 rounded-xl border border-[#EAE6DF] space-y-2 shadow-2xs">
             <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-              Recipe Photo (Optional)
+              {language === 'zh-CN' ? '菜谱封面照片 (可选)' : 'Recipe Photo (Optional)'}
             </label>
 
             <input
@@ -296,7 +302,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                     className="px-3 py-1.5 bg-white text-slate-900 text-xs font-bold rounded-xl shadow-xs flex items-center gap-1 hover:bg-slate-50 cursor-pointer"
                   >
                     <Camera className="w-3.5 h-3.5 text-slate-700" />
-                    <span>Change</span>
+                    <span>{language === 'zh-CN' ? '更换' : 'Change'}</span>
                   </button>
                   <button
                     type="button"
@@ -304,7 +310,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                     className="px-3 py-1.5 bg-rose-600 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1 hover:bg-rose-700 cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>Remove</span>
+                    <span>{language === 'zh-CN' ? '删除' : 'Remove'}</span>
                   </button>
                 </div>
               </div>
@@ -315,8 +321,12 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                 className="w-full py-4 border-2 border-dashed border-slate-300 hover:border-slate-500 rounded-xl bg-white text-slate-500 hover:text-slate-800 flex flex-col items-center justify-center gap-1 transition active:scale-[0.99] cursor-pointer shadow-2xs"
               >
                 <ImageIcon className="w-6 h-6 text-slate-400" />
-                <span className="text-xs font-semibold">+ Upload Recipe Photo</span>
-                <span className="text-[10px] text-slate-400">Camera or photo library</span>
+                <span className="text-xs font-semibold">
+                  {language === 'zh-CN' ? '+ 上传菜谱照片' : '+ Upload Recipe Photo'}
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  {language === 'zh-CN' ? '拍照或从相册中选取' : 'Camera or photo library'}
+                </span>
               </button>
             )}
           </div>
@@ -435,9 +445,11 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
             <div className="flex items-center justify-between mb-2">
               <div>
                 <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Ingredients List ({ingredients.length})
+                  {language === 'zh-CN' ? `食材清单 (${ingredients.length})` : `Ingredients List (${ingredients.length})`}
                 </label>
-                <p className="text-[10px] text-slate-500">Search Master Library or type custom</p>
+                <p className="text-[10px] text-slate-500">
+                  {language === 'zh-CN' ? '从食材库中匹配或自定义输入' : 'Search Master Library or type custom'}
+                </p>
               </div>
               <button
                 type="button"
@@ -445,7 +457,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                 className="flex items-center gap-1 text-xs font-semibold text-slate-800 bg-[#EDF2F4] hover:bg-[#E2E8F0] px-3 py-1.5 rounded-xl border border-[#E2E8F0] transition active:scale-95 cursor-pointer shadow-2xs"
               >
                 <Plus className="w-3.5 h-3.5 text-slate-600" />
-                <span>+ Add Item</span>
+                <span>{language === 'zh-CN' ? '+ 添加食材' : '+ Add Item'}</span>
               </button>
             </div>
 
@@ -471,7 +483,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                         <input
                           type="text"
                           ref={idx === ingredients.length - 1 ? newlyAddedInputRef : null}
-                          placeholder="Search ingredient..."
+                          placeholder={language === 'zh-CN' ? '输入食材名称...' : 'Search ingredient...'}
                           value={ing.name}
                           onFocus={() => setActiveSuggestionRow(idx)}
                           onChange={(e) => {
@@ -494,7 +506,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                       {activeSuggestionRow === idx && matchingSuggestions.length > 0 && (
                         <div className="absolute top-full left-0 right-8 mt-1 z-30 bg-white rounded-xl shadow-xl border border-[#EAE6DF] py-1.5 overflow-hidden">
                           <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            Master Library Matches:
+                            {language === 'zh-CN' ? '食材库匹配项:' : 'Master Library Matches:'}
                           </div>
                           {matchingSuggestions.map((suggestion) => (
                             <button
@@ -517,7 +529,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                     {/* Quick Add to Master Library */}
                     {ing.name.trim() && !exactMatch && onAddMasterIngredient && (
                       <div className="flex items-center justify-between bg-[#F4F1EA] px-2.5 py-1.5 rounded-lg text-[11px] text-slate-700">
-                        <span>Not in Library yet:</span>
+                        <span>{language === 'zh-CN' ? '食材库暂未收录:' : 'Not in Library yet:'}</span>
                         <button
                           type="button"
                           disabled={isAddedToLib}
@@ -531,12 +543,12 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                           {isAddedToLib ? (
                             <>
                               <Check className="w-3 h-3" />
-                              <span>Added</span>
+                              <span>{language === 'zh-CN' ? '已收录' : 'Added'}</span>
                             </>
                           ) : (
                             <>
                               <BookmarkPlus className="w-3 h-3" />
-                              <span>+ Add to Library</span>
+                              <span>{language === 'zh-CN' ? '+ 收录入库' : '+ Add to Library'}</span>
                             </>
                           )}
                         </button>
@@ -549,7 +561,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                         type="number"
                         step="any"
                         min="0"
-                        placeholder="Qty"
+                        placeholder={language === 'zh-CN' ? '用量' : 'Qty'}
                         value={ing.amount !== null && ing.amount !== undefined ? ing.amount : ''}
                         onChange={(e) =>
                           handleIngredientChange(
@@ -600,7 +612,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
               className="w-full py-2.5 mt-2 rounded-xl border border-dashed border-slate-300 hover:border-slate-500 bg-white text-slate-600 hover:text-slate-900 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>+ Add Another Ingredient Line</span>
+              <span>{language === 'zh-CN' ? '+ 添加另一行食材' : '+ Add Another Ingredient Line'}</span>
             </button>
           </div>
 

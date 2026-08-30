@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Dish, UserProfile } from '../../types';
-import { ArrowLeft, Clock, Users, Edit3, Trash2, CalendarPlus, Tag, Heart, Download, Star, Plus, Minus, FileText, BookmarkCheck, BookmarkPlus } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Edit3, Trash2, CalendarPlus, Tag, Heart, Download, Star, Plus, Minus, FileText, BookmarkCheck, BookmarkPlus, Check } from 'lucide-react';
 import { exportToZip } from '../../services/zipExportService';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedDish } from '../../services/dataLocalizationService';
@@ -38,6 +38,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
   const [servingMultiplier, setServingMultiplier] = useState(1);
   const [quickNote, setQuickNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
 
   const currentMember = currentProfile?.memberName || '';
   const favoritedBy = dish.favoritedByMembers || [];
@@ -302,27 +303,48 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
               </p>
             ) : (
               <div className="bg-white rounded-xl p-3 border border-[#EAE6DF] space-y-2 shadow-2xs">
-                {localized.ingredients.map((ing, idx) => (
-                  <div
-                    key={ing.id || idx}
-                    className="flex items-center justify-between text-xs py-1 border-b border-[#F4F1EA] last:border-0"
-                  >
-                    <div className="flex items-center gap-2 min-w-0 pr-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-700 shrink-0" />
-                      <span className="font-semibold text-slate-800 truncate">{ing.name}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {ing.amount !== null && (
-                        <span className="font-bold text-slate-800 bg-[#F4F1EA] border border-[#EAE6DF] px-2 py-0.5 rounded-md text-[11px]">
-                          {Math.round(ing.amount * servingMultiplier * 100) / 100} {ing.unit}
+                {localized.ingredients.map((ing, idx) => {
+                  const isChecked = checkedIngredients.has(idx);
+                  return (
+                    <div
+                      key={ing.id || idx}
+                      onClick={() => {
+                        setCheckedIngredients((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(idx)) next.delete(idx);
+                          else next.add(idx);
+                          return next;
+                        });
+                      }}
+                      className={`flex items-center justify-between text-xs py-1.5 px-2 rounded-lg border-b border-[#F4F1EA] last:border-0 cursor-pointer transition-colors ${
+                        isChecked ? 'bg-emerald-50/40 dark:bg-emerald-950/20 opacity-60' : 'hover:bg-[#FAF8F5]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0 pr-2">
+                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
+                          isChecked
+                            ? 'bg-emerald-600 border-emerald-600 text-white'
+                            : 'border-slate-300 bg-white'
+                        }`}>
+                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
+                        <span className={`font-semibold text-slate-800 truncate ${isChecked ? 'line-through text-slate-400' : ''}`}>
+                          {ing.name}
                         </span>
-                      )}
-                      <span className="text-[10px] text-slate-500 bg-[#FDFBF7] px-1.5 py-0.5 rounded-md font-medium border border-[#EAE6DF]">
-                        {formatCategory(ing.category)}
-                      </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {ing.amount !== null && (
+                          <span className="font-bold text-slate-800 bg-[#F4F1EA] border border-[#EAE6DF] px-2 py-0.5 rounded-md text-[11px]">
+                            {Math.round(ing.amount * servingMultiplier * 100) / 100} {ing.unit}
+                          </span>
+                        )}
+                        <span className="text-[10px] text-slate-500 bg-[#FDFBF7] px-1.5 py-0.5 rounded-md font-medium border border-[#EAE6DF]">
+                          {formatCategory(ing.category)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -333,7 +355,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
               {t('dishes.instructionsSection')}
             </h3>
             {localized.instructions ? (
-              <div className="bg-white p-3.5 rounded-xl border border-[#EAE6DF] text-xs text-slate-700 font-normal leading-relaxed whitespace-pre-line shadow-2xs">
+              <div className="bg-white p-4 rounded-xl border border-[#EAE6DF] text-xs font-normal leading-relaxed whitespace-pre-line text-slate-800 shadow-2xs">
                 {localized.instructions}
               </div>
             ) : (
@@ -348,13 +370,13 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
         <div className="p-3.5 border-t border-[#F4F1EA] bg-white flex items-center justify-between gap-2 pb-safe">
           <button
             onClick={() => {
-              if (window.confirm(`Delete "${dish.name}" from recipe library?`)) {
+              if (window.confirm(language === 'zh-CN' ? `确定要从菜谱库中删除 "${localized.name}" 吗？` : `Delete "${dish.name}" from recipe library?`)) {
                 onDelete(dish.id);
                 onClose();
               }
             }}
             className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer"
-            title="Delete Recipe"
+            title={language === 'zh-CN' ? '删除菜谱' : 'Delete Recipe'}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -365,7 +387,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#EAE6DF] bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 active:scale-95 transition cursor-pointer"
             >
               <Edit3 className="w-3.5 h-3.5 text-slate-500" />
-              <span>Edit</span>
+              <span>{language === 'zh-CN' ? '编辑' : 'Edit'}</span>
             </button>
 
             {onQuickPlan && (
@@ -377,7 +399,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
               >
                 <CalendarPlus className="w-3.5 h-3.5" />
-                <span>Add to Schedule</span>
+                <span>{language === 'zh-CN' ? '加入排餐' : 'Add to Schedule'}</span>
               </button>
             )}
           </div>

@@ -280,9 +280,9 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
 
   // Copy as Text Message
   const handleCopyAsMessage = async () => {
-    const res = await copyGroceryListAsMessage(items, startDate, endDate);
+    const res = await copyGroceryListAsMessage(items, startDate, endDate, language);
     if (res.success) {
-      showToast('📋 Copied formatted grocery list to clipboard!');
+      showToast(language === 'zh-CN' ? '📋 已复制格式化采购清单到剪贴板！' : '📋 Copied formatted grocery list to clipboard!');
     } else {
       showToast(`❌ ${res.text}`);
     }

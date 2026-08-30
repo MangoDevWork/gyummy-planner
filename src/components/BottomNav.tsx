@@ -71,14 +71,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                   }`}
                 />
                 {tab.badge !== null && (
-                  <span className="absolute -top-1.5 -right-2.5 bg-[#2B2D42] text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full min-w-[18px] text-center shadow-xs">
+                  <span className="absolute -top-1.5 -right-2.5 bg-[#2B2D42] dark:bg-[#00F5A0] text-white dark:text-[#0B0D11] text-[10px] font-bold px-1.5 py-0.2 rounded-full min-w-[18px] text-center shadow-xs">
                     {tab.badge > 99 ? '99+' : tab.badge}
                   </span>
                 )}
               </div>
               <span className="text-[10px] mt-1 tracking-tight truncate px-1">{tab.label}</span>
               {isActive && (
-                <span className="absolute top-0 w-8 h-0.5 bg-[#2B2D42] rounded-full" />
+                <span className="absolute top-0 w-8 h-0.5 bg-[#2B2D42] dark:bg-[#00F5A0] rounded-full transition-all" />
               )}
             </button>
           );

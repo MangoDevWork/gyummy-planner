@@ -317,6 +317,47 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
           )}
         </div>
 
+        {/* Quick Stock Top Staples */}
+        <div className="space-y-1.5 pt-1">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+            {language === 'zh-CN' ? '⚡ 常用主食与调味品 (点击一键收录)' : '⚡ Quick Stock Top Staples (Tap to toggle)'}
+          </span>
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+            {[
+              { en: 'Cooking Oil', label: language === 'zh-CN' ? '食用油' : 'Cooking Oil', icon: '🛢️' },
+              { en: 'Salt', label: language === 'zh-CN' ? '食盐' : 'Salt', icon: '🧂' },
+              { en: 'Soy Sauce', label: language === 'zh-CN' ? '生抽' : 'Soy Sauce', icon: '🍶' },
+              { en: 'Eggs', label: language === 'zh-CN' ? '鸡蛋' : 'Eggs', icon: '🥚' },
+              { en: 'Rice', label: language === 'zh-CN' ? '大米' : 'Rice', icon: '🍚' },
+              { en: 'Garlic', label: language === 'zh-CN' ? '大蒜' : 'Garlic', icon: '🧄' },
+              { en: 'Black Pepper', label: language === 'zh-CN' ? '黑胡椒' : 'Black Pepper', icon: '🧂' },
+              { en: 'Sugar', label: language === 'zh-CN' ? '白糖' : 'Sugar', icon: '🍬' },
+              { en: 'Butter', label: language === 'zh-CN' ? '黄油' : 'Butter', icon: '🧈' },
+              { en: 'Cornstarch', label: language === 'zh-CN' ? '玉米淀粉' : 'Cornstarch', icon: '🌽' }
+            ].map((item) => {
+              const isStocked = pantryIngredients.some((p) => 
+                p.toLowerCase() === item.en.toLowerCase() || p.toLowerCase() === item.label.toLowerCase()
+              );
+              return (
+                <button
+                  key={item.en}
+                  type="button"
+                  onClick={() => handleTogglePantryItem(language === 'zh-CN' ? item.label : item.en)}
+                  className={`shrink-0 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-xl transition cursor-pointer border ${
+                    isStocked
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                      : 'bg-[#FDFBF7] text-slate-700 border-[#EAE6DF] hover:bg-slate-100'
+                  }`}
+                >
+                  <span>{item.icon}</span>
+                  <span>{item.label}</span>
+                  {isStocked && <Check className="w-3 h-3 stroke-[3]" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Smart Substitution Engine Live Notice */}
         <div className="bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EAE6DF] text-[11px] text-slate-600 flex items-start gap-2">
           <span className="text-sm">✨</span>

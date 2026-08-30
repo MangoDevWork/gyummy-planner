@@ -240,8 +240,8 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                   type="text"
                   placeholder={
                     activeTab === 'family'
-                      ? 'Search your family recipes...'
-                      : 'Search recipe library...'
+                      ? (language === 'zh-CN' ? '搜索家庭常备菜谱...' : 'Search your family recipes...')
+                      : (language === 'zh-CN' ? '搜索菜谱库...' : 'Search recipe library...')
                   }
                   value={searchQuery}
                   onChange={(e) => {
@@ -263,7 +263,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                 title="Filter favorites"
               >
                 <Heart className={`w-3.5 h-3.5 ${showOnlyFavorites ? 'fill-white' : 'text-rose-500'}`} />
-                <span className="hidden sm:inline">Favorites</span>
+                <span className="hidden sm:inline">{language === 'zh-CN' ? '收藏' : 'Favorites'}</span>
               </button>
               
               {activeTab === 'family' && (
@@ -276,7 +276,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                   title="Create a new recipe"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>New</span>
+                  <span>{language === 'zh-CN' ? '新建' : 'New'}</span>
                 </button>
               )}
             </div>
@@ -289,10 +289,12 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                 </div>
                 <div className="min-w-0">
                   <h4 className="text-xs font-bold text-slate-900 truncate">
-                    {activeTab === 'family' ? 'Discover more recipes' : 'Explore Recipe Library'}
+                    {activeTab === 'family'
+                      ? (language === 'zh-CN' ? '发现更多灵感' : 'Discover more recipes')
+                      : (language === 'zh-CN' ? '浏览系统菜谱库' : 'Explore Recipe Library')}
                   </h4>
                   <p className="text-[10px] text-slate-500 truncate">
-                    Browse 3,000+ curated recipes
+                    {language === 'zh-CN' ? '浏览3,000+精选菜谱' : 'Browse 3,000+ curated recipes'}
                   </p>
                 </div>
               </div>
@@ -305,7 +307,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                   }}
                   className="shrink-0 flex items-center gap-1 text-[11px] font-bold text-slate-800 bg-[#F4F1EA] hover:bg-[#EAE6DF] px-3 py-1.5 rounded-xl transition active:scale-95 cursor-pointer"
                 >
-                  <span>Explore</span>
+                  <span>{language === 'zh-CN' ? '去探索' : 'Explore'}</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               ) : (
@@ -313,7 +315,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                   onClick={handleGoToFullLibrary}
                   className="shrink-0 flex items-center gap-1 text-[11px] font-bold text-white bg-[#2B2D42] hover:bg-[#1E1F2E] px-3 py-1.5 rounded-xl transition active:scale-95 cursor-pointer shadow-xs"
                 >
-                  <span>Library</span>
+                  <span>{language === 'zh-CN' ? '菜谱库' : 'Library'}</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               )}
@@ -327,13 +329,13 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-slate-700">
                       {activeTab === 'family'
-                        ? 'No recipes in Family Cookbook yet.'
-                        : 'No matching recipes found.'}
+                        ? (language === 'zh-CN' ? '家庭常备中暂无菜谱' : 'No recipes in Family Cookbook yet.')
+                        : (language === 'zh-CN' ? '未找到相关菜谱' : 'No matching recipes found.')}
                     </p>
                     <p className="text-[11px] text-slate-500">
                       {activeTab === 'family'
-                        ? 'Add dishes from the Recipe Library to start planning!'
-                        : 'Try searching with other keywords.'}
+                        ? (language === 'zh-CN' ? '从菜谱库中添加喜欢的菜肴开始排餐吧！' : 'Add dishes from the Recipe Library to start planning!')
+                        : (language === 'zh-CN' ? '尝试搜索其他关键词' : 'Try searching with other keywords.')}
                     </p>
                   </div>
                   {activeTab === 'family' && (
@@ -345,7 +347,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#2B2D42] hover:bg-[#1E1F2E] px-4 py-2 rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
                     >
                       <Search className="w-3.5 h-3.5" />
-                      <span>Browse Recipe Library</span>
+                      <span>{language === 'zh-CN' ? '浏览菜谱库' : 'Browse Recipe Library'}</span>
                     </button>
                   )}
                 </div>

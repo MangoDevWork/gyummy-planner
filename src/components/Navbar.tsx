@@ -17,7 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenProfileModal,
   onOpenDishCreator
 }) => {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
 
   const getHeaderTitle = () => {
     switch (activeTab) {
@@ -87,7 +87,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onOpenDishCreator}
               className="flex items-center gap-1 bg-[#2B2D42] hover:bg-[#1E1F2E] active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-xl shadow-xs transition-all cursor-pointer"
             >
-              <span>+ New Recipe</span>
+              <span>{language === 'zh-CN' ? '+ 新建菜谱' : '+ New Recipe'}</span>
             </button>
           )}
 
@@ -96,7 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onOpenProfileModal}
               className="flex items-center gap-1 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-xs transition cursor-pointer"
             >
-              <span>Login</span>
+              <span>{language === 'zh-CN' ? '登录 / 注册' : 'Login'}</span>
             </button>
           )}
         </div>

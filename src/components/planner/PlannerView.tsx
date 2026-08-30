@@ -13,7 +13,7 @@ import {
   Move,
   Sparkles,
   Calendar,
-  MessageSquareShare
+  Share2
 } from 'lucide-react';
 import { MealScheduleModal } from './MealScheduleModal';
 import { WeekCopyModal } from './WeekCopyModal';
@@ -339,9 +339,9 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
       dayName: d.dayName,
       isToday: d.isToday
     }));
-    const res = await copyMealPlanAsMessage(mealPlan, dishes, days, weekRangeLabel);
+    const res = await copyMealPlanAsMessage(mealPlan, dishes, days, weekRangeLabel, language);
     if (res.success) {
-      showToast('📋 Copied weekly meal plan to clipboard!');
+      showToast(language === 'zh-CN' ? '📋 已复制本周餐饮计划到剪贴板！' : '📋 Copied weekly meal plan to clipboard!');
     } else {
       showToast(`⚠️ ${res.text}`);
     }
@@ -436,7 +436,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                 viewMode === 'week' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              Weekly Plan
+              {language === 'zh-CN' ? '周排餐计划' : 'Weekly Plan'}
             </button>
             <button
               onClick={() => setViewMode('month')}
@@ -444,7 +444,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                 viewMode === 'month' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              Monthly
+              {language === 'zh-CN' ? '月度概览' : 'Monthly'}
             </button>
           </div>
 
@@ -453,35 +453,35 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
             <button
               onClick={handleShareMealPlan}
               className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
-              title="Share Week's Meal Plan (Copy as Message)"
+              title={language === 'zh-CN' ? '复制并分享周餐单' : 'Share Weekly Plan as text'}
             >
-              <MessageSquareShare className="w-4 h-4" />
+              <Share2 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsWeekCopyOpen(true)}
               className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
-              title="Copy Schedule across weeks"
+              title={language === 'zh-CN' ? '复制排餐至其他周' : 'Copy Schedule across weeks'}
             >
               <Copy className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsScheduleSettingsOpen(true)}
               className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
-              title="Configure Meal Schedules"
+              title={language === 'zh-CN' ? '自定义餐段配置' : 'Configure Meal Schedules'}
             >
               <Sliders className="w-4 h-4" />
             </button>
             <button
               onClick={handleExportZip}
               className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
-              title="Export Calendar Zip"
+              title={language === 'zh-CN' ? '导出日历数据 Zip' : 'Export Calendar Zip'}
             >
               <Download className="w-4 h-4" />
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
-              title="Import Calendar Zip/JSON"
+              title={language === 'zh-CN' ? '导入日历数据 Zip/JSON' : 'Import Calendar Zip/JSON'}
             >
               <Upload className="w-4 h-4" />
             </button>
@@ -498,13 +498,14 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <div className="text-center">
+          <div className="flex items-center gap-2">
             <h3 className="text-xs font-bold text-slate-900">
               {viewMode === 'week' ? weekRangeLabel : monthCalendarData.monthTitle}
             </h3>
             <button
               onClick={handleJumpToday}
-              className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 hover:underline cursor-pointer"
+              className="bg-[#FAF8F5] border border-[#EAE6DF] px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-700 hover:bg-[#F4F1EA] transition active:scale-95 shadow-2xs cursor-pointer"
+              title="Jump to Today"
             >
               {t('common.today')}
             </button>

@@ -4,7 +4,7 @@ import './index.css'
 import App from './App.tsx'
 
 // Cache-busting & PWA auto-updater: Check app build version and clear old service workers/caches
-const CURRENT_BUILD_VERSION = '2026.08.30.v8-ui-fixes';
+const CURRENT_BUILD_VERSION = '2026.08.30.v9-appwide-ux-polish';
 
 try {
   const lastVersion = localStorage.getItem('gyummy_app_build_version');

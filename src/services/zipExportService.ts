@@ -271,14 +271,21 @@ export function mergeImportedData(
 /**
  * Format the grocery list as a clean, emoji-formatted message and copy to clipboard
  */
+/**
+ * Format the grocery list as a clean, emoji-formatted message and copy to clipboard
+ */
 export async function copyGroceryListAsMessage(
   groceryItems: GroceryItem[],
   startDate?: string,
-  endDate?: string
+  endDate?: string,
+  lang: 'en' | 'zh-CN' = 'en'
 ): Promise<{ success: boolean; text: string }> {
   const pendingItems = groceryItems.filter((i) => !i.checked);
   if (pendingItems.length === 0) {
-    return { success: false, text: 'No pending items on the grocery list to share.' };
+    return {
+      success: false,
+      text: lang === 'zh-CN' ? '购物清单中暂无待买食材。' : 'No pending items on the grocery list to share.'
+    };
   }
 
   // Group by category
@@ -302,23 +309,39 @@ export async function copyGroceryListAsMessage(
     'Other': '🛒'
   };
 
+  const categoryNamesZh: Record<string, string> = {
+    'Produce': '蔬菜生鲜',
+    'Meat & Seafood': '肉类水产',
+    'Dairy & Eggs': '蛋奶乳品',
+    'Pantry & Spices': '粮油调味',
+    'Bakery': '烘焙面点',
+    'Frozen': '冷冻食品',
+    'Canned Goods': '罐头干货',
+    'Other': '其他食材'
+  };
+
   let dateHeader = '';
   if (startDate && endDate) {
-    dateHeader = `\n🗓️ Planned for ${startDate} to ${endDate}`;
+    dateHeader = lang === 'zh-CN'
+      ? `\n🗓️ 排餐周期：${startDate} 至 ${endDate}`
+      : `\n🗓️ Planned for ${startDate} to ${endDate}`;
   }
 
-  let message = `🛒 *Gyummy Grocery Checklist*${dateHeader}\n`;
+  let message = lang === 'zh-CN'
+    ? `🛒 *Gyummy 家庭采购清单*${dateHeader}\n`
+    : `🛒 *Gyummy Grocery Checklist*${dateHeader}\n`;
 
   Array.from(categorized.entries()).forEach(([cat, items]) => {
     const emoji = categoryEmojis[cat] || '🛒';
-    message += `\n${emoji} *${cat}*\n`;
+    const catLabel = lang === 'zh-CN' ? (categoryNamesZh[cat] || cat) : cat;
+    message += `\n${emoji} *${catLabel}*\n`;
     items.forEach((item) => {
       const amountStr = item.amount !== null && item.amount !== undefined ? ` (${item.amount} ${item.unit || ''})`.trim() : (item.unit ? ` (${item.unit})` : '');
       message += `  [ ] ${item.name}${amountStr}\n`;
     });
   });
 
-  message += `\n✨ Sent via Gyummy Planner`;
+  message += lang === 'zh-CN' ? `\n✨ 由 Gyummy 智能家庭食谱计划 生成` : `\n✨ Sent via Gyummy Planner`;
 
   try {
     if (navigator.clipboard && window.isSecureContext) {
@@ -336,7 +359,7 @@ export async function copyGroceryListAsMessage(
     return { success: true, text: message };
   } catch (err) {
     console.error('Failed to copy to clipboard:', err);
-    return { success: false, text: 'Could not access clipboard' };
+    return { success: false, text: lang === 'zh-CN' ? '无法访问系统剪贴板' : 'Could not access clipboard' };
   }
 }
 
@@ -347,13 +370,16 @@ export async function copyMealPlanAsMessage(
   mealPlan: MealPlan,
   dishes: Dish[],
   days: Array<{ dateStr: string; dayName: string; isToday: boolean }>,
-  weekRangeLabel: string
+  weekRangeLabel: string,
+  lang: 'en' | 'zh-CN' = 'en'
 ): Promise<{ success: boolean; text: string }> {
   const dishMap = new Map<string, Dish>();
   dishes.forEach((d) => dishMap.set(d.id, d));
 
   let hasAnyMeals = false;
-  let message = `📅 *Gyummy Meal Plan* (${weekRangeLabel})\n`;
+  let message = lang === 'zh-CN'
+    ? `📅 *Gyummy 本周餐饮计划* (${weekRangeLabel})\n`
+    : `📅 *Gyummy Meal Plan* (${weekRangeLabel})\n`;
 
   days.forEach((day) => {
     const dayPlan = mealPlan[day.dateStr] || {};
@@ -363,7 +389,7 @@ export async function copyMealPlanAsMessage(
     
     if (slots.length > 0) {
       hasAnyMeals = true;
-      const todayBadge = day.isToday ? ' (Today)' : '';
+      const todayBadge = day.isToday ? (lang === 'zh-CN' ? ' (今天)' : ' (Today)') : '';
       message += `\n🗓️ *${day.dayName}, ${day.dateStr}*${todayBadge}\n`;
       slots.forEach(([slotId, entry]) => {
         if (!entry) return;
@@ -376,7 +402,7 @@ export async function copyMealPlanAsMessage(
         if (entry.customText) {
           dishTitles = dishTitles ? `${dishTitles} (📝 ${entry.customText})` : `📝 ${entry.customText}`;
         }
-        if (!dishTitles) dishTitles = 'Planned Meal';
+        if (!dishTitles) dishTitles = lang === 'zh-CN' ? '已排餐' : 'Planned Meal';
 
         const slotLabel = slotId.charAt(0).toUpperCase() + slotId.slice(1);
         message += `  • ${slotLabel}: ${dishTitles}\n`;
@@ -385,10 +411,13 @@ export async function copyMealPlanAsMessage(
   });
 
   if (!hasAnyMeals) {
-    return { success: false, text: 'No meals scheduled for this week to share.' };
+    return {
+      success: false,
+      text: lang === 'zh-CN' ? '本周暂无已安排的餐食。' : 'No meals scheduled for this week to share.'
+    };
   }
 
-  message += `\n✨ Sent via Gyummy Planner`;
+  message += lang === 'zh-CN' ? `\n✨ 由 Gyummy 智能家庭食谱计划 生成` : `\n✨ Sent via Gyummy Planner`;
 
   try {
     if (navigator.clipboard && window.isSecureContext) {
@@ -406,7 +435,7 @@ export async function copyMealPlanAsMessage(
     return { success: true, text: message };
   } catch (err) {
     console.error('Failed to copy to clipboard:', err);
-    return { success: false, text: 'Could not access clipboard' };
+    return { success: false, text: lang === 'zh-CN' ? '无法访问系统剪贴板' : 'Could not access clipboard' };
   }
 }
 
