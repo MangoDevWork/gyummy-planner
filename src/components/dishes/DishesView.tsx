@@ -22,6 +22,7 @@ import {
 import { DishDetailModal } from './DishDetailModal';
 import { DishFormModal } from './DishFormModal';
 import { exportToZip, parseUploadedDataFile } from '../../services/zipExportService';
+import { loadMasterSystemRecipes } from '../../services/systemRecipesService';
 
 interface DishesViewProps {
   familyName: string;
@@ -107,6 +108,17 @@ export const DishesView: React.FC<DishesViewProps> = ({
   };
 
   const currentMember = currentProfile?.memberName || '';
+
+  // Auto-heal: Ensure all 3,000+ system recipes are loaded if catalog is incomplete
+  useEffect(() => {
+    if (dishes.length < 100 && onImportDishes) {
+      loadMasterSystemRecipes().then((sys) => {
+        if (sys && sys.length > 50) {
+          onImportDishes(sys);
+        }
+      });
+    }
+  }, [dishes.length, onImportDishes]);
 
   // Reset pagination limit on filter change
   useEffect(() => {

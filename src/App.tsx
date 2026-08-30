@@ -13,7 +13,7 @@ import { AuthModal } from './components/auth/AuthModal';
 import { LandingLoginPage } from './components/auth/LandingLoginPage';
 import { FirstTimeOnboardingGuide } from './components/auth/FirstTimeOnboardingGuide';
 
-import { loadMasterSystemRecipes } from './services/systemRecipesService';
+import { loadMasterSystemRecipes, mergeSystemWithUserDishes, getCachedSystemRecipes } from './services/systemRecipesService';
 
 export function App() {
   const [appData, setAppData] = useState<AppData>(() => loadAppData());
@@ -25,24 +25,11 @@ export function App() {
   // Load master system recipes (3,000+ recipes) from static asset / IndexedDB on launch
   useEffect(() => {
     loadMasterSystemRecipes().then((systemRecipes) => {
-      if (systemRecipes && systemRecipes.length > 0) {
-        setAppData((prev) => {
-          const userDishMap = new Map<string, Dish>();
-          prev.dishes.forEach((d) => userDishMap.set(d.id, d));
-
-          // Merge: user customized dishes take priority, append remaining system recipes
-          const merged: Dish[] = [...prev.dishes];
-          systemRecipes.forEach((sysDish) => {
-            if (!userDishMap.has(sysDish.id)) {
-              merged.push(sysDish);
-            }
-          });
-
-          return {
-            ...prev,
-            dishes: merged
-          };
-        });
+      if (systemRecipes && systemRecipes.length > 50) {
+        setAppData((prev) => ({
+          ...prev,
+          dishes: mergeSystemWithUserDishes(prev.dishes, systemRecipes)
+        }));
       }
     });
   }, []);
@@ -62,10 +49,12 @@ export function App() {
   // Auth Profile handler
   const handleSelectProfile = (profile: UserProfile, updatedMembers: string[]) => {
     const isFirstTime = !appData.settings?.hasCompletedScheduleOnboarding;
+    const systemDishes = getCachedSystemRecipes();
     setAppData((prev) => ({
       ...prev,
       currentProfile: profile,
-      familyMembers: updatedMembers
+      familyMembers: updatedMembers,
+      dishes: mergeSystemWithUserDishes(prev.dishes, systemDishes)
     }));
     setIsProfileModalOpen(false);
     if (isFirstTime) {

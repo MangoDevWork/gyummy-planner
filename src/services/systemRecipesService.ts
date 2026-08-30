@@ -40,7 +40,7 @@ async function loadFromIndexedDB(): Promise<Dish[] | null> {
       const req = store.getAll();
       req.onsuccess = () => {
         const res = req.result as Dish[];
-        if (res && res.length > 0) {
+        if (res && res.length >= 100) {
           resolve(res);
         } else {
           resolve(null);
@@ -72,11 +72,11 @@ async function saveToIndexedDB(recipes: Dish[]): Promise<void> {
  * Fetch and load master system recipes
  * 1. Checks memory cache
  * 2. Checks IndexedDB cache
- * 3. Fetches from public/master_system_recipes.json
+ * 3. Fetches from public/master_system_recipes.json (trying multiple paths)
  * 4. Fallback to INITIAL_DISHES
  */
 export async function loadMasterSystemRecipes(): Promise<Dish[]> {
-  if (cachedSystemRecipes && cachedSystemRecipes.length > 0) {
+  if (cachedSystemRecipes && cachedSystemRecipes.length > 50) {
     return cachedSystemRecipes;
   }
 
@@ -92,24 +92,30 @@ export async function loadMasterSystemRecipes(): Promise<Dish[]> {
       return idbRecipes;
     }
 
-    // 2. Fetch static JSON from public folder
-    try {
-      // Determine correct base url (works with Vite and GitHub Pages subpath)
-      const baseUrl = import.meta.env.BASE_URL || '/';
-      const fetchUrl = `${baseUrl.replace(/\/$/, '')}/master_system_recipes.json`;
-      
-      const res = await fetch(fetchUrl);
-      if (res.ok) {
-        const data = await res.json();
-        const dishes = (data.dishes || data) as Dish[];
-        if (Array.isArray(dishes) && dishes.length > 0) {
-          cachedSystemRecipes = dishes;
-          saveToIndexedDB(dishes); // async save to IndexedDB
-          return dishes;
+    // 2. Fetch static JSON from public folder with path fallbacks
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const candidateUrls = [
+      `${baseUrl.replace(/\/$/, '')}/master_system_recipes.json`,
+      '/master_system_recipes.json',
+      './master_system_recipes.json',
+      'master_system_recipes.json'
+    ];
+
+    for (const fetchUrl of candidateUrls) {
+      try {
+        const res = await fetch(fetchUrl);
+        if (res.ok) {
+          const data = await res.json();
+          const dishes = (data.dishes || data) as Dish[];
+          if (Array.isArray(dishes) && dishes.length > 50) {
+            cachedSystemRecipes = dishes;
+            saveToIndexedDB(dishes); // async cache in IndexedDB
+            return dishes;
+          }
         }
+      } catch (err) {
+        // try next candidate url
       }
-    } catch (err) {
-      console.warn('Could not fetch master_system_recipes.json, falling back to starter recipes:', err);
     }
 
     // 3. Fallback
@@ -118,6 +124,23 @@ export async function loadMasterSystemRecipes(): Promise<Dish[]> {
   })();
 
   return isLoadingPromise;
+}
+
+/**
+ * Merge master system recipes with user customized dishes
+ */
+export function mergeSystemWithUserDishes(userDishes: Dish[], systemDishes: Dish[]): Dish[] {
+  const userMap = new Map<string, Dish>();
+  userDishes.forEach((d) => userMap.set(d.id, d));
+
+  const result: Dish[] = [...userDishes];
+  systemDishes.forEach((sysDish) => {
+    if (!userMap.has(sysDish.id)) {
+      result.push(sysDish);
+    }
+  });
+
+  return result;
 }
 
 /**
