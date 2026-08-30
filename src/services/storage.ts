@@ -1,4 +1,4 @@
-import type { AppData, Dish, GroceryCategory, GroceryItem, MealPlan, UserProfile } from '../types';
+import type { AppData, Dish, GroceryCategory, GroceryItem, MasterIngredient, MealPlan, UserProfile } from '../types';
 import { getInitialAppData, DEFAULT_MEAL_SCHEDULES, DEFAULT_PANTRY_INGREDIENTS } from './seedData';
 import { DEFAULT_MASTER_INGREDIENTS } from './masterIngredients';
 import { matchPantryIngredient } from './pantryMatching';
@@ -81,12 +81,23 @@ export function loadAppData(): AppData {
       return initial;
     }
 
-    // Ensure all new schema properties exist
-    if (!parsed.masterIngredients || parsed.masterIngredients.length === 0) {
-      parsed.masterIngredients = DEFAULT_MASTER_INGREDIENTS;
+    // Merge master ingredients so all 6,000+ system ingredients are always available
+    if (!parsed.masterIngredients || parsed.masterIngredients.length < DEFAULT_MASTER_INGREDIENTS.length) {
+      const existingIngMap = new Map<string, MasterIngredient>();
+      (parsed.masterIngredients || []).forEach((ing) => existingIngMap.set(ing.name.toLowerCase().trim(), ing));
+
+      const mergedMaster = [...(parsed.masterIngredients || [])];
+      DEFAULT_MASTER_INGREDIENTS.forEach((defaultIng) => {
+        const key = defaultIng.name.toLowerCase().trim();
+        if (!existingIngMap.has(key)) {
+          mergedMaster.push(defaultIng);
+          existingIngMap.set(key, defaultIng);
+        }
+      });
+      parsed.masterIngredients = mergedMaster;
     }
 
-    if (!parsed.pantryIngredients) {
+    if (!parsed.pantryIngredients || parsed.pantryIngredients.length === 0) {
       parsed.pantryIngredients = DEFAULT_PANTRY_INGREDIENTS;
     }
 

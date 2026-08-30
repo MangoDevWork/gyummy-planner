@@ -63,6 +63,32 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
     return matchesSearch && matchesCat && matchesPantry;
   });
 
+  const [visibleLimit, setVisibleLimit] = useState(40);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Reset pagination on search or category filter change
+  React.useEffect(() => {
+    setVisibleLimit(40);
+  }, [searchQuery, selectedCategory, showOnlyPantry]);
+
+  // Infinite scroll observer
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleLimit((prev) => prev + 40);
+        }
+      },
+      { threshold: 0.1, rootMargin: '200px' }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [filtered.length]);
+
   const handleEnterEditMode = () => {
     setEditableList(JSON.parse(JSON.stringify(ingredients)));
     setIsEditMode(true);
@@ -353,7 +379,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
               : 'No ingredients found matching your search.'}
           </div>
         ) : (
-          filtered.map((item) => {
+          filtered.slice(0, visibleLimit).map((item) => {
             const originalIndex = activeList.findIndex((i) => i.id === item.id);
             const isNameEmpty = !item.name || !item.name.trim();
             const isInPantry = pantryIngredients.some(
@@ -494,6 +520,18 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
               </div>
             );
           })
+        )}
+
+        {/* Progressive Loading Sentinel / Show More Trigger */}
+        {filtered.length > visibleLimit && (
+          <div ref={loadMoreRef} className="py-4 text-center">
+            <button
+              onClick={() => setVisibleLimit((prev) => prev + 40)}
+              className="px-5 py-2 rounded-xl bg-white border border-[#EAE6DF] text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer"
+            >
+              Showing {Math.min(visibleLimit, filtered.length)} of {filtered.length.toLocaleString()} ingredients • Load More
+            </button>
+          </div>
         )}
       </div>
     </div>
