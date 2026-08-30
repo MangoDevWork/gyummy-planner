@@ -23,6 +23,7 @@ import { exportToZip, parseUploadedDataFile, mergeImportedData } from '../../ser
 import { MealScheduleSettingsModal } from './MealScheduleSettingsModal';
 import { compressImage } from '../../services/imageUtils';
 import { EasterEggModal } from '../common/EasterEggModal';
+import { getCachedSystemRecipes, mergeSystemWithUserDishes } from '../../services/systemRecipesService';
 
 interface SettingsViewProps {
   appData: AppData;
@@ -223,17 +224,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     showToast('✅ Saved Meal Schedules configuration');
   };
 
-  // Reset to Starter Data
+  // Reset to Starter Data (preserves full 3,000+ system recipe library)
   const handleResetSampleData = () => {
     if (
       window.confirm(
-        'Reset app to starter recipes? Custom plans will be cleared.'
+        'Reset Family Cookbook to starter recipes? Custom plans will be cleared. The 3,000+ System Recipe Library will remain completely intact.'
       )
     ) {
       clearAllAppData();
       const fresh = getInitialAppData(appData.currentProfile);
-      onUpdateAppData(fresh);
-      setImportStatus({ type: 'success', message: 'Restored initial recipes & meal plans.' });
+      const systemDishes = getCachedSystemRecipes();
+      const mergedDishes = mergeSystemWithUserDishes(fresh.dishes, systemDishes);
+
+      onUpdateAppData({
+        ...fresh,
+        dishes: mergedDishes
+      });
+      setImportStatus({ type: 'success', message: 'Restored starter family recipes. System Library (3,000+ recipes) preserved.' });
     }
   };
 
@@ -567,20 +574,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         )}
       </div>
 
-      {/* Reset Starter Data */}
+      {/* Reset Family Cookbook Data */}
       <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-2">
         <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-          Starter Data Reset
+          Reset Family Cookbook
         </h3>
         <p className="text-xs text-slate-500">
-          Restore initial curated Asian home-cooked recipes.
+          Restore starter curated home recipes to your Family Cookbook and reset custom meal plans. All 3,000+ System Library recipes will remain completely preserved and accessible.
         </p>
         <button
           onClick={handleResetSampleData}
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F4F1EA] hover:bg-rose-50 hover:text-rose-700 text-slate-600 text-xs font-semibold transition-colors active:scale-95 cursor-pointer border border-[#EAE6DF]"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          <span>Restore Starter Recipes</span>
+          <span>Restore Starter Family Recipes</span>
         </button>
       </div>
 
