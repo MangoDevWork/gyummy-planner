@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 
 /**
  * Gyummy Planner - High-Volume Multi-Site Batch Scraper Engine
@@ -9,7 +10,7 @@ import path from 'path';
  * 3. taste           (Taste.com.au - Quick Dinners & Family Meals)
  * 4. food            (Food.com - 30-Minute Dinners & Top Rated)
  * 5. icook           (iCook Taiwan - 家常菜 Home Cooking)
- * 6. justonecookbook (Just One Cookbook - Japanese Recipes)
+ * 6. justonecookbook (Just One Cookbook - All 22 pages / 1,000+ Japanese recipes)
  */
 
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
@@ -29,7 +30,7 @@ function detectCategory(name, keywords = []) {
 
 function detectCuisine(name, textContent = '') {
   const combined = (name + ' ' + textContent).toLowerCase();
-  if (combined.includes('japanese') || combined.includes('teriyaki') || combined.includes('miso') || combined.includes('sushi') || combined.includes('ramen') || combined.includes('udon') || combined.includes('日式') || combined.includes('照燒') || combined.includes('katsu')) return 'Japanese';
+  if (combined.includes('japanese') || combined.includes('teriyaki') || combined.includes('miso') || combined.includes('sushi') || combined.includes('ramen') || combined.includes('udon') || combined.includes('日式') || combined.includes('照燒') || combined.includes('katsu') || combined.includes('tempura') || combined.includes('yakisoba') || combined.includes('donburi')) return 'Japanese';
   if (combined.includes('korean') || combined.includes('kimchi') || combined.includes('bulgogi') || combined.includes('bibimbap') || combined.includes('韓式') || combined.includes('泡菜')) return 'Korean';
   if (combined.includes('chinese') || combined.includes('cantonese') || combined.includes('szechuan') || combined.includes('sichuan') || combined.includes('dim sum') || combined.includes('dumpling') || combined.includes('fried rice') || combined.includes('wok') || combined.includes('中式') || combined.includes('台式') || combined.includes('港式') || combined.includes('家常菜') || combined.includes('chow mein')) return 'Cantonese';
   if (combined.includes('thai') || combined.includes('pad thai') || combined.includes('tom yum') || combined.includes('泰式') || combined.includes('綠咖哩') || combined.includes('curry')) return 'Thai';
@@ -43,11 +44,11 @@ function detectCuisine(name, textContent = '') {
 
 function detectIngredientCategory(name) {
   const n = name.toLowerCase();
-  if (n.includes('chicken') || n.includes('beef') || n.includes('pork') || n.includes('fish') || n.includes('salmon') || n.includes('shrimp') || n.includes('prawn') || n.includes('meat') || n.includes('fillet') || n.includes('steak') || n.includes('bacon') || n.includes('sausage') || n.includes('lamb') || n.includes('mince') || n.includes('雞') || n.includes('牛') || n.includes('豬') || n.includes('魚') || n.includes('蝦') || n.includes('肉') || n.includes('海鮮')) return 'Meat & Seafood';
+  if (n.includes('chicken') || n.includes('beef') || n.includes('pork') || n.includes('fish') || n.includes('salmon') || n.includes('shrimp') || n.includes('prawn') || n.includes('meat') || n.includes('fillet') || n.includes('steak') || n.includes('bacon') || n.includes('sausage') || n.includes('lamb') || n.includes('mince') || n.includes('dashi') || n.includes('bonito') || n.includes('雞') || n.includes('牛') || n.includes('豬') || n.includes('魚') || n.includes('蝦') || n.includes('肉') || n.includes('海鮮')) return 'Meat & Seafood';
   if (n.includes('egg') || n.includes('milk') || n.includes('cheese') || n.includes('butter') || n.includes('cream') || n.includes('yogurt') || n.includes('parmesan') || n.includes('mozzarella') || n.includes('蛋') || n.includes('奶') || n.includes('起司') || n.includes('乳酪') || n.includes('奶油')) return 'Dairy & Eggs';
-  if (n.includes('onion') || n.includes('garlic') || n.includes('tomato') || n.includes('ginger') || n.includes('scallion') || n.includes('pepper') || n.includes('capsicum') || n.includes('spinach') || n.includes('carrot') || n.includes('potato') || n.includes('mushroom') || n.includes('herb') || n.includes('lemon') || n.includes('lime') || n.includes('basil') || n.includes('coriander') || n.includes('cilantro') || n.includes('zucchini') || n.includes('broccoli') || n.includes('cabbage') || n.includes('葱') || n.includes('蒜') || n.includes('薑') || n.includes('菜') || n.includes('菇') || n.includes('番茄') || n.includes('洋蔥') || n.includes('蘿蔔')) return 'Produce';
-  if (n.includes('bread') || n.includes('toast') || n.includes('bun') || n.includes('bagel') || n.includes('pita') || n.includes('tortilla') || n.includes('wrap') || n.includes('麵包') || n.includes('吐司')) return 'Bakery';
-  if (n.includes('frozen') || n.includes('peas') || n.includes('ice cream') || n.includes('冷凍')) return 'Frozen';
+  if (n.includes('onion') || n.includes('garlic') || n.includes('tomato') || n.includes('ginger') || n.includes('scallion') || n.includes('pepper') || n.includes('capsicum') || n.includes('spinach') || n.includes('carrot') || n.includes('potato') || n.includes('mushroom') || n.includes('herb') || n.includes('lemon') || n.includes('lime') || n.includes('basil') || n.includes('coriander') || n.includes('cilantro') || n.includes('zucchini') || n.includes('broccoli') || n.includes('cabbage') || n.includes('daikon') || n.includes('nori') || n.includes('seaweed') || n.includes('negi') || n.includes('葱') || n.includes('蒜') || n.includes('薑') || n.includes('菜') || n.includes('菇') || n.includes('番茄') || n.includes('洋蔥') || n.includes('蘿蔔')) return 'Produce';
+  if (n.includes('bread') || n.includes('toast') || n.includes('bun') || n.includes('bagel') || n.includes('pita') || n.includes('tortilla') || n.includes('wrap') || n.includes('panko') || n.includes('麵包') || n.includes('吐司')) return 'Bakery';
+  if (n.includes('frozen') || n.includes('peas') || n.includes('ice cream') || n.includes('edamame') || n.includes('冷凍')) return 'Frozen';
   if (n.includes('canned') || n.includes('can of') || n.includes('tinned') || n.includes('beans') || n.includes('chickpeas') || n.includes('lentils') || n.includes('罐頭')) return 'Canned Goods';
   return 'Pantry & Spices';
 }
@@ -113,15 +114,28 @@ function parseIngredientString(rawStr, idx) {
 }
 
 async function fetchHtml(url) {
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': USER_AGENT,
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9'
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': USER_AGENT,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
+    });
+    if (res.ok) {
+      return await res.text();
     }
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  return await res.text();
+  } catch (err) {
+    // fallback to curl
+  }
+
+  // Fallback to curl.exe for Cloudflare-protected sites like Just One Cookbook
+  try {
+    const cmd = `curl.exe -s -L "${url}" -A "${USER_AGENT}"`;
+    return execSync(cmd, { encoding: 'utf-8', maxBuffer: 15 * 1024 * 1024 });
+  } catch (err) {
+    throw new Error(`Failed to fetch ${url} via fetch and curl: ${err.message}`);
+  }
 }
 
 function extractRecipeFromJsonLd(html, sourceUrl) {
@@ -138,19 +152,19 @@ function extractRecipeFromJsonLd(html, sourceUrl) {
       }
 
       if (parsed && (parsed['@type'] === 'Recipe' || parsed['@type']?.includes?.('Recipe'))) {
-        const name = parsed.name || 'Untitled Dish';
+        const name = (parsed.name || 'Untitled Dish').replace(/&amp;/g, '&').replace(/&#8217;/g, "'");
         
         let instructions = '';
         if (Array.isArray(parsed.recipeInstructions)) {
           instructions = parsed.recipeInstructions
             .map((step, i) => {
               const text = typeof step === 'string' ? step : (step.text || step.name || '');
-              return text ? `${i + 1}. ${text}` : '';
+              return text ? `${i + 1}. ${text.replace(/&amp;/g, '&')}` : '';
             })
             .filter(Boolean)
             .join('\n');
         } else if (typeof parsed.recipeInstructions === 'string') {
-          instructions = parsed.recipeInstructions;
+          instructions = parsed.recipeInstructions.replace(/&amp;/g, '&');
         }
 
         const rawIngredients = Array.isArray(parsed.recipeIngredient) ? parsed.recipeIngredient : [];
@@ -177,9 +191,9 @@ function extractRecipeFromJsonLd(html, sourceUrl) {
           instructions: instructions || 'Follow recipe instructions on original website.',
           imageUrl,
           imageEmoji: '🍲',
-          tags: [parsed.recipeCuisine, 'Web Import'].filter(Boolean),
+          tags: [parsed.recipeCuisine || 'Japanese', 'Web Import'].filter(Boolean),
           favoritedByMembers: [],
-          isFamilyRecipe: false, // Goes into System Library so user can select
+          isFamilyRecipe: false, // In System Library so user can select
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           ingredients
@@ -196,7 +210,35 @@ function extractRecipeFromJsonLd(html, sourceUrl) {
 // Site URL Crawlers
 // -------------------------------------------------------------
 
-async function getRecipeTinEatsUrls(limit = 100) {
+async function getJustOneCookbookUrls(limit = 1100) {
+  console.log('📡 Fetching Just One Cookbook sitemaps (all 22 pages / 1,000+ recipes)...');
+  const sitemaps = [
+    'https://www.justonecookbook.com/post-sitemap.xml',
+    'https://www.justonecookbook.com/post-sitemap2.xml'
+  ];
+
+  const recipeUrls = new Set();
+  for (const smUrl of sitemaps) {
+    if (recipeUrls.size >= limit) break;
+    try {
+      const xml = await fetchHtml(smUrl);
+      const locs = xml.match(/<loc>(https:\/\/www\.justonecookbook\.com\/[^<]+)<\/loc>/g) || [];
+      for (const loc of locs) {
+        const url = loc.replace(/<loc>|<\/loc>/g, '').trim();
+        // Filter out travel, roundups, and info guides
+        if (!url.includes('/travel/') && !url.includes('/pantry/') && !url.includes('/how-to/') && !url.includes('/japan-travel-') && !url.includes('/restaurants/')) {
+          recipeUrls.add(url);
+          if (recipeUrls.size >= limit) break;
+        }
+      }
+    } catch (e) {
+      console.warn(`Warning: Sitemap ${smUrl}:`, e.message);
+    }
+  }
+  return Array.from(recipeUrls).slice(0, limit);
+}
+
+async function getRecipeTinEatsUrls(limit = 1500) {
   console.log('📡 Fetching RecipeTin Eats sitemaps...');
   const sitemaps = [
     'https://www.recipetineats.com/post-sitemap.xml',
@@ -222,10 +264,10 @@ async function getRecipeTinEatsUrls(limit = 100) {
       console.warn(`Warning: Sitemap ${smUrl}:`, e.message);
     }
   }
-  return Array.from(recipeUrls);
+  return Array.from(recipeUrls).slice(0, limit);
 }
 
-async function getTheWoksOfLifeUrls(limit = 100) {
+async function getTheWoksOfLifeUrls(limit = 1200) {
   console.log('📡 Fetching The Woks of Life sitemaps...');
   const sitemaps = [
     'https://thewoksoflife.com/post-sitemap.xml',
@@ -250,11 +292,11 @@ async function getTheWoksOfLifeUrls(limit = 100) {
       console.warn(`Warning: Sitemap ${smUrl}:`, e.message);
     }
   }
-  return Array.from(recipeUrls);
+  return Array.from(recipeUrls).slice(0, limit);
 }
 
 async function getTasteUrls(limit = 100) {
-  console.log('📡 Fetching Taste.com.au recipe collection & sitemaps...');
+  console.log('📡 Fetching Taste.com.au recipe collections & sitemaps...');
   const recipeUrls = new Set();
   const collections = [
     'https://www.taste.com.au/recipes/collections/quick-easy-dinner-recipes',
@@ -278,7 +320,6 @@ async function getTasteUrls(limit = 100) {
     }
   }
 
-  // Fallback to Taste.com.au sitemap if more requested
   if (recipeUrls.size < limit) {
     try {
       const xml = await fetchHtml('https://www.taste.com.au/sitemap1.xml');
@@ -308,7 +349,6 @@ async function getFoodComUrls(limit = 100) {
     if (recipeUrls.size >= limit) break;
     try {
       const html = await fetchHtml(colUrl);
-      // Food.com recipe links look like /recipe/recipe-name-12345
       const matches = html.match(/href="(\/recipe\/[a-z0-9\-]+-\d+)"/gi) || [];
       matches.forEach((m) => {
         const pathOnly = m.replace(/^href="/i, '').replace(/"$/, '');
@@ -323,7 +363,7 @@ async function getFoodComUrls(limit = 100) {
   return Array.from(recipeUrls).slice(0, limit);
 }
 
-async function getICookUrls(pageCount = 5) {
+async function getICookUrls(pageCount = 10) {
   console.log(`📡 Fetching iCook Taiwan search pages (1 to ${pageCount})...`);
   const recipeUrls = new Set();
 
@@ -340,35 +380,6 @@ async function getICookUrls(pageCount = 5) {
   }
 
   return Array.from(recipeUrls);
-}
-
-async function getJustOneCookbookUrls(limit = 50) {
-  console.log('📡 Fetching Just One Cookbook recipe catalog...');
-  const recipeUrls = new Set();
-  // JOC popular recipe collection URLs
-  const popularUrls = [
-    'https://www.justonecookbook.com/easy-japanese-recipes/',
-    'https://www.justonecookbook.com/quick-easy/',
-    'https://www.justonecookbook.com/teriyaki-chicken/',
-    'https://www.justonecookbook.com/gyudon/',
-    'https://www.justonecookbook.com/japanese-curry/',
-    'https://www.justonecookbook.com/chicken-katsu/',
-    'https://www.justonecookbook.com/tonkatsu/',
-    'https://www.justonecookbook.com/oyakodon/',
-    'https://www.justonecookbook.com/yakisoba/',
-    'https://www.justonecookbook.com/miso-soup/',
-    'https://www.justonecookbook.com/karaage/',
-    'https://www.justonecookbook.com/tamagoyaki/',
-    'https://www.justonecookbook.com/onigiri-rice-balls/',
-    'https://www.justonecookbook.com/sukiyaki/',
-    'https://www.justonecookbook.com/nikujaga/',
-    'https://www.justonecookbook.com/agedashi-tofu/',
-    'https://www.justonecookbook.com/salmon-teriyaki/',
-    'https://www.justonecookbook.com/ramen/'
-  ];
-
-  popularUrls.forEach((u) => recipeUrls.add(u));
-  return Array.from(recipeUrls).slice(0, limit);
 }
 
 // -------------------------------------------------------------
@@ -417,36 +428,36 @@ async function main() {
   let targetUrls = [];
   let filenameLabel = command;
 
-  if (command === 'recipetineats') {
-    const limit = parseInt(args[1], 10) || 50;
+  if (command === 'justonecookbook' || command === 'joc') {
+    const limit = parseInt(args[1], 10) || 1100;
+    console.log(`🎯 Target: Just One Cookbook (Full catalog up to ${limit} recipes)`);
+    targetUrls = await getJustOneCookbookUrls(limit);
+    filenameLabel = `justonecookbook_${targetUrls.length}`;
+  } else if (command === 'recipetineats') {
+    const limit = parseInt(args[1], 10) || 1500;
     console.log(`🎯 Target: RecipeTin Eats (Up to ${limit} recipes)`);
     targetUrls = await getRecipeTinEatsUrls(limit);
     filenameLabel = `recipetineats_${targetUrls.length}`;
   } else if (command === 'thewoksoflife' || command === 'woks') {
-    const limit = parseInt(args[1], 10) || 50;
+    const limit = parseInt(args[1], 10) || 1200;
     console.log(`🎯 Target: The Woks of Life (Up to ${limit} recipes)`);
     targetUrls = await getTheWoksOfLifeUrls(limit);
     filenameLabel = `thewoksoflife_${targetUrls.length}`;
   } else if (command === 'taste') {
-    const limit = parseInt(args[1], 10) || 50;
+    const limit = parseInt(args[1], 10) || 100;
     console.log(`🎯 Target: Taste.com.au (Up to ${limit} recipes)`);
     targetUrls = await getTasteUrls(limit);
     filenameLabel = `taste_${targetUrls.length}`;
   } else if (command === 'food') {
-    const limit = parseInt(args[1], 10) || 50;
+    const limit = parseInt(args[1], 10) || 100;
     console.log(`🎯 Target: Food.com 30-Minute Dinners (Up to ${limit} recipes)`);
     targetUrls = await getFoodComUrls(limit);
     filenameLabel = `foodcom_${targetUrls.length}`;
   } else if (command === 'icook') {
-    const pages = parseInt(args[1], 10) || 5;
+    const pages = parseInt(args[1], 10) || 10;
     console.log(`🎯 Target: iCook Taiwan (${pages} search pages)`);
     targetUrls = await getICookUrls(pages);
     filenameLabel = `icook_${targetUrls.length}`;
-  } else if (command === 'justonecookbook' || command === 'joc') {
-    const limit = parseInt(args[1], 10) || 20;
-    console.log(`🎯 Target: Just One Cookbook (Up to ${limit} recipes)`);
-    targetUrls = await getJustOneCookbookUrls(limit);
-    filenameLabel = `justonecookbook_${targetUrls.length}`;
   } else if (command === 'url') {
     const singleUrl = args[1];
     if (!singleUrl) {
@@ -468,13 +479,13 @@ async function main() {
     console.log(`
 🥘 Gyummy Planner Batch Recipe Scraper 🥘
 
-1-Command Bulk Scraper:
-  node scripts/batch-scraper.js recipetineats [count]   (e.g. 50, 500, 1500)
-  node scripts/batch-scraper.js thewoksoflife [count]   (e.g. 50, 200, 1000)
-  node scripts/batch-scraper.js taste [count]           (e.g. 50, 100, 300)
-  node scripts/batch-scraper.js food [count]            (e.g. 30-min dinners collection)
-  node scripts/batch-scraper.js icook [pages]           (e.g. 5, 10, 20 pages)
-  node scripts/batch-scraper.js justonecookbook [count] (e.g. 20 popular recipes)
+1-Command Bulk Scrapers:
+  node scripts/batch-scraper.js justonecookbook [count] (e.g. 1000 for ALL 22 pages)
+  node scripts/batch-scraper.js recipetineats [count]   (e.g. 1500 for all recipes)
+  node scripts/batch-scraper.js thewoksoflife [count]   (e.g. 1000 for all recipes)
+  node scripts/batch-scraper.js taste [count]           (e.g. 100, 300)
+  node scripts/batch-scraper.js food [count]            (e.g. 30-min dinners)
+  node scripts/batch-scraper.js icook [pages]           (e.g. 10, 20 pages)
 
 Custom URL / List:
   node scripts/batch-scraper.js url "<Recipe_URL>"
