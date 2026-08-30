@@ -1,6 +1,24 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Dish, MasterIngredient, UserProfile } from '../../types';
-import { Search, Plus, Clock, Heart, Download, Upload, CheckSquare, Square, CheckCircle2, Star, BookOpen, Globe, ArrowUpDown, Filter, BookmarkCheck, BookmarkPlus } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  Clock,
+  Heart,
+  Download,
+  Upload,
+  CheckSquare,
+  Square,
+  CheckCircle2,
+  Star,
+  BookOpen,
+  Globe,
+  ArrowUpDown,
+  Filter,
+  BookmarkPlus,
+  RotateCcw,
+  Check
+} from 'lucide-react';
 import { DishDetailModal } from './DishDetailModal';
 import { DishFormModal } from './DishFormModal';
 import { exportToZip, parseUploadedDataFile } from '../../services/zipExportService';
@@ -30,7 +48,20 @@ const CATEGORY_IMAGES: Record<string, string> = {
   Dessert: 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=200&q=80'
 };
 
-const CUISINES = ['All Cuisines', 'Asian', 'Japanese', 'Korean', 'Cantonese', 'Thai', 'Vietnamese', 'Western', 'Italian', 'Mediterranean', 'Other'];
+const CUISINES = ['All Cuisines', 'Asian', 'Japanese', 'Korean', 'Cantonese', 'Thai', 'Vietnamese', 'Western', 'Italian', 'Mexican', 'Mediterranean', 'Other'];
+
+// 1-Tap Quick Filter Chips
+const QUICK_FILTERS = [
+  { id: 'under_20m', label: '⚡ Under 20 Mins', type: 'time', maxTime: 20 },
+  { id: 'chicken', label: '🍗 Chicken', type: 'keyword', keyword: 'chicken' },
+  { id: 'beef_pork', label: '🥩 Beef & Pork', type: 'keyword', keyword: 'beef pork' },
+  { id: 'seafood', label: '🐟 Seafood', type: 'keyword', keyword: 'fish salmon shrimp prawn seafood' },
+  { id: 'noodles', label: '🍜 Noodles & Pasta', type: 'keyword', keyword: 'noodle pasta ramen spaghetti' },
+  { id: 'rice', label: '🍚 Rice Bowls', type: 'keyword', keyword: 'rice donburi fried rice' },
+  { id: 'vegetarian', label: '🥬 Vegetarian & Tofu', type: 'keyword', keyword: 'tofu vegetarian vegan vegetable' },
+];
+
+const INITIAL_BATCH_SIZE = 30;
 
 export const DishesView: React.FC<DishesViewProps> = ({
   familyName,
@@ -52,8 +83,14 @@ export const DishesView: React.FC<DishesViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedCuisine, setSelectedCuisine] = useState<string>('All Cuisines');
+  const [selectedQuickFilter, setSelectedQuickFilter] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'quickest' | 'least_ingredients' | 'name' | 'recent'>('quickest');
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  
+  // Progressive Infinite Scroll
+  const [visibleLimit, setVisibleLimit] = useState(INITIAL_BATCH_SIZE);
+  const loadMoreObserverRef = useRef<HTMLDivElement>(null);
+
   const [viewingDish, setViewingDish] = useState<Dish | null>(null);
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
   
@@ -70,6 +107,35 @@ export const DishesView: React.FC<DishesViewProps> = ({
   };
 
   const currentMember = currentProfile?.memberName || '';
+
+  // Reset pagination limit on filter change
+  useEffect(() => {
+    setVisibleLimit(INITIAL_BATCH_SIZE);
+  }, [libraryScope, searchQuery, selectedCategory, selectedCuisine, selectedQuickFilter, sortBy, showOnlyFavorites]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleLimit((prev) => prev + INITIAL_BATCH_SIZE);
+        }
+      },
+      { threshold: 0.1, rootMargin: '200px' }
+    );
+
+    if (loadMoreObserverRef.current) {
+      observer.observe(loadMoreObserverRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [filteredDishesCount(dishes, libraryScope)]);
+
+  function filteredDishesCount(allDishes: Dish[], scope: 'family' | 'system') {
+    return scope === 'family'
+      ? allDishes.filter((d) => d.isFamilyRecipe !== false).length
+      : allDishes.length;
+  }
 
   // Extract all categories
   const categories = useMemo(() => {
@@ -94,33 +160,65 @@ export const DishesView: React.FC<DishesViewProps> = ({
     return map;
   }, [dishes, libraryScope]);
 
-  // Filter & Sort dishes
+  // Smart Multi-Token Filter & Sort
   const filteredDishes = useMemo(() => {
+    // Split search query into individual lowercase tokens
+    const queryTokens = searchQuery
+      .toLowerCase()
+      .trim()
+      .split(/\s+/)
+      .filter((t) => t.length > 0);
+
+    const activeQuick = QUICK_FILTERS.find((f) => f.id === selectedQuickFilter);
+
     let result = dishes.filter((dish) => {
       // Scope Filter: Family Cookbook vs System Library
       if (libraryScope === 'family' && dish.isFamilyRecipe === false) {
         return false;
       }
 
-      const matchesSearch =
-        dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        dish.ingredients.some((ing) => ing.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        dish.tags?.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (dish.cuisine && dish.cuisine.toLowerCase().includes(searchQuery.toLowerCase()));
+      // Quick Filter Check
+      if (activeQuick) {
+        if (activeQuick.type === 'time' && activeQuick.maxTime) {
+          if ((dish.prepTimeMinutes || 999) > activeQuick.maxTime) return false;
+        } else if (activeQuick.type === 'keyword' && activeQuick.keyword) {
+          const keywords = activeQuick.keyword.split(' ');
+          const dishString = `${dish.name} ${dish.category} ${dish.cuisine || ''} ${dish.tags?.join(' ') || ''} ${dish.ingredients.map((i) => i.name).join(' ')}`.toLowerCase();
+          const matchesAnyKeyword = keywords.some((k) => dishString.includes(k));
+          if (!matchesAnyKeyword) return false;
+        }
+      }
 
-      const matchesCat = selectedCategory === 'All' || dish.category === selectedCategory;
+      // Category filter
+      if (selectedCategory !== 'All' && dish.category !== selectedCategory) {
+        return false;
+      }
 
-      const matchesCuisine =
-        selectedCuisine === 'All Cuisines' ||
-        (dish.cuisine && dish.cuisine.toLowerCase() === selectedCuisine.toLowerCase()) ||
-        dish.tags?.some((t) => t.toLowerCase() === selectedCuisine.toLowerCase());
+      // Cuisine filter
+      if (selectedCuisine !== 'All Cuisines') {
+        const matchesCuisine =
+          (dish.cuisine && dish.cuisine.toLowerCase() === selectedCuisine.toLowerCase()) ||
+          dish.tags?.some((t) => t.toLowerCase() === selectedCuisine.toLowerCase());
+        if (!matchesCuisine) return false;
+      }
 
-      const matchesFav = !showOnlyFavorites || (currentMember && dish.favoritedByMembers?.includes(currentMember));
+      // Favorites only
+      if (showOnlyFavorites) {
+        const isFav = currentMember && dish.favoritedByMembers?.includes(currentMember);
+        if (!isFav) return false;
+      }
 
-      return matchesSearch && matchesCat && matchesCuisine && matchesFav;
+      // Multi-Token Search: All tokens must match somewhere in the dish
+      if (queryTokens.length > 0) {
+        const dishSearchString = `${dish.name} ${dish.cuisine || ''} ${dish.category || ''} ${dish.tags?.join(' ') || ''} ${dish.ingredients.map((i) => i.name).join(' ')}`.toLowerCase();
+        const allTokensMatch = queryTokens.every((token) => dishSearchString.includes(token));
+        if (!allTokensMatch) return false;
+      }
+
+      return true;
     });
 
-    // Sort function
+    // Sort
     result.sort((a, b) => {
       if (sortBy === 'quickest') {
         return (a.prepTimeMinutes || 999) - (b.prepTimeMinutes || 999);
@@ -138,7 +236,22 @@ export const DishesView: React.FC<DishesViewProps> = ({
     });
 
     return result;
-  }, [dishes, libraryScope, searchQuery, selectedCategory, selectedCuisine, sortBy, showOnlyFavorites, currentMember]);
+  }, [
+    dishes,
+    libraryScope,
+    searchQuery,
+    selectedCategory,
+    selectedCuisine,
+    selectedQuickFilter,
+    sortBy,
+    showOnlyFavorites,
+    currentMember
+  ]);
+
+  // Sliced for Progressive Loading
+  const displayedDishes = useMemo(() => {
+    return filteredDishes.slice(0, visibleLimit);
+  }, [filteredDishes, visibleLimit]);
 
   const familyCookbookCount = dishes.filter((d) => d.isFamilyRecipe !== false).length;
   const systemLibraryCount = dishes.length;
@@ -175,7 +288,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
     if (isNowInFamily) {
       showToast(`📖 Added "${dish.name}" to Family Cookbook!`);
     } else {
-      showToast(`Removed "${dish.name}" from Family Cookbook (Still in System Library).`);
+      showToast(`Removed "${dish.name}" from Family Cookbook.`);
     }
   };
 
@@ -216,7 +329,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
     }
 
     if (res.type !== 'dishes' && res.type !== 'full') {
-      showToast('⚠️ Please choose a Dishes Zip/JSON file.');
+      showToast('⚠️ Please choose a Dishes Zip/JSON/CSV file.');
       return;
     }
 
@@ -236,8 +349,16 @@ export const DishesView: React.FC<DishesViewProps> = ({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setSelectedCuisine('All Cuisines');
+    setSelectedQuickFilter(null);
+    setShowOnlyFavorites(false);
+  };
+
   return (
-    <div className="flex-1 pb-28 pt-3 px-4 space-y-4 max-w-md mx-auto w-full">
+    <div className="flex-1 pb-28 pt-3 px-4 space-y-3.5 max-w-md mx-auto w-full">
       {/* Toast Notification */}
       {toastMsg && (
         <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
@@ -251,7 +372,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
         type="file"
         ref={fileInputRef}
         onChange={handleImportFile}
-        accept=".zip,.json"
+        accept=".zip,.json,.csv,.txt"
         className="hidden"
       />
 
@@ -278,7 +399,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
           }`}
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>System Library ({systemLibraryCount})</span>
+          <span>System Library ({systemLibraryCount.toLocaleString()})</span>
         </button>
       </div>
 
@@ -291,11 +412,11 @@ export const DishesView: React.FC<DishesViewProps> = ({
             placeholder={
               libraryScope === 'family'
                 ? 'Search Family Cookbook...'
-                : 'Search All System Recipes...'
+                : 'Search 3,000+ System Recipes...'
             }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs font-medium pl-9 pr-4 py-2.5 bg-white text-slate-900 placeholder:text-slate-400 rounded-xl border border-[#EAE6DF] focus:outline-hidden focus:border-slate-400 shadow-2xs"
+            className="w-full text-xs font-medium pl-9 pr-8 py-2.5 bg-white text-slate-900 placeholder:text-slate-400 rounded-xl border border-[#EAE6DF] focus:outline-hidden focus:border-slate-400 shadow-2xs"
           />
           {searchQuery && (
             <button
@@ -329,10 +450,30 @@ export const DishesView: React.FC<DishesViewProps> = ({
         <button
           onClick={() => fileInputRef.current?.click()}
           className="p-2.5 rounded-xl border border-[#EAE6DF] bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer"
-          title="Import Recipe Zip/JSON"
+          title="Import Recipe Zip/JSON/CSV"
         >
           <Upload className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* 1-Tap Quick Filter Pills Bar */}
+      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+        {QUICK_FILTERS.map((pill) => {
+          const isSelected = selectedQuickFilter === pill.id;
+          return (
+            <button
+              key={pill.id}
+              onClick={() => setSelectedQuickFilter(isSelected ? null : pill.id)}
+              className={`text-[11px] font-bold px-2.5 py-1 rounded-full transition-all whitespace-nowrap cursor-pointer ${
+                isSelected
+                  ? 'bg-[#2B2D42] text-white shadow-xs'
+                  : 'bg-white text-slate-600 border border-[#EAE6DF] hover:bg-slate-50'
+              }`}
+            >
+              {pill.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Sort By & Cuisine Filter Bar */}
@@ -346,10 +487,10 @@ export const DishesView: React.FC<DishesViewProps> = ({
             onChange={(e) => setSortBy(e.target.value as any)}
             className="text-xs font-bold text-slate-900 bg-transparent focus:outline-hidden cursor-pointer"
           >
-            <option value="quickest">Quickest Meals</option>
-            <option value="least_ingredients">Least Ingredients</option>
-            <option value="name">Name (A-Z)</option>
-            <option value="recent">Recently Added</option>
+            <option value="quickest">⏱️ Quickest Meals</option>
+            <option value="least_ingredients">🥬 Least Ingredients</option>
+            <option value="name">🔤 Name (A-Z)</option>
+            <option value="recent">🕒 Recently Added</option>
           </select>
         </div>
 
@@ -359,7 +500,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
           <select
             value={selectedCuisine}
             onChange={(e) => setSelectedCuisine(e.target.value)}
-            className="text-xs font-bold text-slate-900 bg-transparent focus:outline-hidden cursor-pointer"
+            className="text-xs font-bold text-slate-900 bg-transparent focus:outline-hidden cursor-pointer max-w-[120px] truncate"
           >
             {CUISINES.map((c) => (
               <option key={c} value={c}>
@@ -371,7 +512,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
       </div>
 
       {/* "Our Category" Section */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
             Our Category
@@ -462,61 +603,62 @@ export const DishesView: React.FC<DishesViewProps> = ({
       <div className="flex items-center justify-between pt-1">
         <div className="flex items-center gap-1.5">
           <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            {libraryScope === 'family' ? 'Family Homemade Recipes' : 'All System Recipes'} ({filteredDishes.length})
+            {libraryScope === 'family' ? 'Family Homemade Recipes' : 'All System Recipes'} (
+            {filteredDishes.length.toLocaleString()})
           </h3>
         </div>
         
         {!isSelectMode && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsCreatorOpen(true)}
-              className="text-xs font-bold text-slate-800 flex items-center gap-1 hover:underline cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New Recipe</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setIsCreatorOpen(true)}
+            className="text-xs font-bold text-slate-800 flex items-center gap-1 hover:underline cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Recipe</span>
+          </button>
         )}
       </div>
 
-      {/* Dishes List / Cards in Pure White #FFFFFF */}
+      {/* Dishes List / Cards */}
       {filteredDishes.length === 0 ? (
-        <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-[#EAE6DF] space-y-3 shadow-sm">
+        <div className="bg-white rounded-2xl p-7 text-center border border-dashed border-[#EAE6DF] space-y-3 shadow-sm animate-in fade-in">
           <div className="w-12 h-12 rounded-xl bg-[#F4F1EA] text-slate-600 flex items-center justify-center mx-auto text-2xl">
-            {libraryScope === 'family' ? '📖' : '🍳'}
+            {libraryScope === 'family' ? '📖' : '🔍'}
           </div>
           <div className="space-y-1">
             <h4 className="text-sm font-bold text-slate-900">
-              {libraryScope === 'family' ? 'No family recipes in this view' : 'No recipes found'}
+              {libraryScope === 'family' ? 'No recipes in your Family Cookbook yet' : 'No matching recipes found'}
             </h4>
             <p className="text-xs text-slate-500">
               {libraryScope === 'family'
-                ? 'Switch to System Library to add recipes to your Family Cookbook, or create a new family recipe!'
-                : 'Try adjusting your search or cuisine filters.'}
+                ? 'Switch to the System Library to browse 3,000+ curated recipes and tap "+ Add to Cookbook"!'
+                : `No recipes matched your search filters. Try clearing your search or picking a popular category.`}
             </p>
           </div>
-          <div className="flex items-center justify-center gap-2 pt-1">
-            {libraryScope === 'family' && (
+
+          <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
+            {libraryScope === 'family' ? (
               <button
                 onClick={() => setLibraryScope('system')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE6DF] text-slate-800 text-xs font-bold transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] text-white text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
               >
-                <Globe className="w-4 h-4" />
+                <Globe className="w-3.5 h-3.5" />
                 <span>Explore System Library</span>
               </button>
+            ) : (
+              <button
+                onClick={handleResetFilters}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE6DF] text-slate-800 text-xs font-bold transition cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Clear Filters</span>
+              </button>
             )}
-            <button
-              onClick={() => setIsCreatorOpen(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Recipe</span>
-            </button>
           </div>
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredDishes.map((dish) => {
+          {displayedDishes.map((dish) => {
             const isFavoritedByMe = currentMember && dish.favoritedByMembers?.includes(currentMember);
             const isSelected = selectedDishIds.has(dish.id);
             const isInFamilyCookbook = dish.isFamilyRecipe !== false;
@@ -561,6 +703,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                       <img
                         src={dish.imageUrl}
                         alt={dish.name}
+                        loading="lazy"
                         className="w-16 h-16 rounded-xl object-cover border border-[#EAE6DF] shadow-2xs"
                       />
                     ) : (
@@ -571,7 +714,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 mb-0.5">
+                    <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-[#F4F1EA] px-1.5 py-0.2 rounded-md">
                         {dish.category}
                       </span>
@@ -618,64 +761,86 @@ export const DishesView: React.FC<DishesViewProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 pl-2 shrink-0">
-                  {/* Family Cookbook Toggle Button */}
+                <div className="flex flex-col items-end gap-1.5 pl-2 shrink-0">
+                  {/* Explicit 1-Click Cookbook Toggle Button */}
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleToggleFamilyCookbook(dish);
                     }}
-                    className={`p-1.5 rounded-lg transition active:scale-110 cursor-pointer ${
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition active:scale-95 cursor-pointer border ${
                       isInFamilyCookbook
-                        ? 'text-slate-900 hover:text-slate-600'
-                        : 'text-slate-300 hover:text-slate-600'
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs'
+                        : 'bg-[#EDF2F4] text-slate-700 border-[#E2E8F0] hover:bg-[#E2E8F0]'
                     }`}
-                    title={isInFamilyCookbook ? 'In Family Cookbook (Click to remove)' : 'Add to Family Cookbook'}
+                    title={isInFamilyCookbook ? 'In Family Cookbook (Tap to remove)' : 'Add to Family Cookbook'}
                   >
                     {isInFamilyCookbook ? (
-                      <BookmarkCheck className="w-4 h-4 fill-slate-800 text-white" />
+                      <>
+                        <Check className="w-3 h-3 text-emerald-700 stroke-[3]" />
+                        <span>In Cookbook</span>
+                      </>
                     ) : (
-                      <BookmarkPlus className="w-4 h-4" />
+                      <>
+                        <BookmarkPlus className="w-3 h-3 text-slate-600" />
+                        <span>+ Cookbook</span>
+                      </>
                     )}
                   </button>
 
-                  {/* Quick Favorite Heart */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleFavoriteDish(dish.id);
-                    }}
-                    className="p-1.5 text-slate-300 hover:text-rose-500 transition active:scale-125 cursor-pointer"
-                    title="Toggle Favorite"
-                  >
-                    <Heart
-                      className={`w-4 h-4 ${
-                        isFavoritedByMe ? 'fill-rose-500 text-rose-500' : 'text-slate-300 hover:text-rose-400'
-                      }`}
-                    />
-                  </button>
+                  {/* Actions Row (Favorite Heart & Add to Planner) */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavoriteDish(dish.id);
+                      }}
+                      className="p-1 text-slate-300 hover:text-rose-500 transition active:scale-125 cursor-pointer"
+                      title="Toggle Favorite"
+                    >
+                      <Heart
+                        className={`w-3.5 h-3.5 ${
+                          isFavoritedByMe ? 'fill-rose-500 text-rose-500' : 'text-slate-300 hover:text-rose-400'
+                        }`}
+                      />
+                    </button>
 
-                  {/* Clean "+ ADD" button in neutral slate gray */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (onQuickPlanDish) {
-                        onQuickPlanDish(dish);
-                      } else {
-                        setViewingDish(dish);
-                      }
-                    }}
-                    className="px-2.5 py-1.5 bg-[#EDF2F4] hover:bg-[#E2E8F0] text-slate-800 text-[11px] font-bold rounded-xl border border-[#E2E8F0] active:scale-95 transition-all cursor-pointer"
-                  >
-                    ADD
-                  </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onQuickPlanDish) {
+                          onQuickPlanDish(dish);
+                        } else {
+                          setViewingDish(dish);
+                        }
+                      }}
+                      className="px-2 py-0.5 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-[10px] font-bold rounded-md shadow-2xs active:scale-95 transition cursor-pointer"
+                    >
+                      + Plan
+                    </button>
+                  </div>
                 </div>
               </div>
             );
           })}
+
+          {/* Progressive Loading Sentinel / Show More Trigger */}
+          {displayedDishes.length < filteredDishes.length && (
+            <div
+              ref={loadMoreObserverRef}
+              className="py-4 text-center"
+            >
+              <button
+                onClick={() => setVisibleLimit((prev) => prev + INITIAL_BATCH_SIZE)}
+                className="px-5 py-2 rounded-xl bg-white border border-[#EAE6DF] text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer"
+              >
+                Showing {displayedDishes.length} of {filteredDishes.length.toLocaleString()} recipes • Load More
+              </button>
+            </div>
+          )}
         </div>
       )}
 
