@@ -280,7 +280,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-slate-700" />
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Profile
+              {language === 'zh-CN' ? '个人档案与空间' : 'Profile'}
             </h3>
           </div>
           <button
@@ -288,7 +288,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             onClick={onOpenProfileModal}
             className="text-[11px] font-semibold text-slate-600 hover:text-slate-900 hover:underline cursor-pointer"
           >
-            Switch User
+            {t('settings.switchMemberBtn')}
           </button>
         </div>
 
@@ -319,7 +319,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               type="button"
               onClick={() => avatarInputRef.current?.click()}
               className="absolute -bottom-1 -right-1 p-1.5 bg-[#2B2D42] text-white rounded-xl shadow-sm hover:bg-[#1E1F2E] transition cursor-pointer"
-              title="Upload Photo"
+              title={language === 'zh-CN' ? '上传头像' : 'Upload Photo'}
             >
               <Camera className="w-3 h-3" />
             </button>
@@ -332,7 +332,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onClick={() => avatarInputRef.current?.click()}
                 className="text-xs font-semibold text-slate-800 bg-[#F4F1EA] hover:bg-[#EAE6DF] border border-[#EAE6DF] px-3 py-1 rounded-xl transition cursor-pointer"
               >
-                Upload Photo
+                {language === 'zh-CN' ? '上传头像' : 'Upload Photo'}
               </button>
               {editAvatarUrl && (
                 <button
@@ -352,7 +352,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="grid grid-cols-2 gap-2.5">
           <div>
             <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-              Family Name
+              {t('settings.currentFamily')}
             </label>
             <input
               type="text"
@@ -365,7 +365,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           <div>
             <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-              Member Name
+              {t('settings.currentMember')}
             </label>
             <input
               type="text"
@@ -382,7 +382,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           className="w-full py-2 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <Save className="w-3.5 h-3.5" />
-          <span>Save Profile</span>
+          <span>{t('common.save')}</span>
         </button>
       </form>
 
@@ -392,7 +392,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-slate-700" />
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Family Members ({appData.familyMembers.length})
+              {language === 'zh-CN' ? `家庭成员 (${appData.familyMembers.length})` : `Family Members (${appData.familyMembers.length})`}
             </h3>
           </div>
         </div>
@@ -419,7 +419,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     {isCurrentUser && (
                       <span className="text-[9px] text-emerald-700 font-bold flex items-center gap-1">
                         <UserCheck className="w-2.5 h-2.5" />
-                        Active User
+                        {language === 'zh-CN' ? '当前登录' : 'Active User'}
                       </span>
                     )}
                   </div>
@@ -444,39 +444,39 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <form onSubmit={handleAddMember} className="pt-1 flex gap-2">
           <input
             type="text"
-            placeholder="Add family member..."
+            placeholder={language === 'zh-CN' ? '输入新成员姓名...' : 'Add family member...'}
             value={newMemberNameInput}
             onChange={(e) => setNewMemberNameInput(e.target.value)}
             className="flex-1 px-3 py-2 text-xs font-semibold rounded-xl border border-[#EAE6DF] bg-white text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-slate-500 shadow-2xs"
           />
           <button
             type="submit"
-            className="px-3 py-2 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1 cursor-pointer"
+            disabled={!newMemberNameInput.trim()}
+            className="px-3.5 py-2 bg-[#2B2D42] hover:bg-[#1E1F2E] disabled:opacity-40 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-xs"
           >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>Add</span>
+            <UserPlus className="w-4 h-4" />
           </button>
         </form>
       </div>
 
       {/* Meal Schedule Customization Trigger */}
-      <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-2">
+      <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sliders className="w-4 h-4 text-slate-700" />
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Meal Schedule
+              {t('planner.manageSchedules')}
             </h3>
           </div>
           <button
             onClick={() => setIsScheduleSettingsOpen(true)}
             className="text-xs font-semibold text-slate-800 bg-[#F4F1EA] hover:bg-[#EAE6DF] border border-[#EAE6DF] px-3 py-1.5 rounded-xl transition active:scale-95 cursor-pointer"
           >
-            Configure
+            {language === 'zh-CN' ? '设置餐段' : 'Configure'}
           </button>
         </div>
         <p className="text-xs text-slate-500">
-          Configure weekday and weekend meals.
+          {language === 'zh-CN' ? '自定义每日餐饮餐段 (如早/午/晚/加餐) 及生效星期。' : 'Configure weekday and weekend meals.'}
         </p>
       </div>
 
@@ -485,11 +485,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="flex items-center gap-2">
           <Share2 className="w-4 h-4 text-slate-700" />
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-            Backup & Restore
+            {t('settings.backupRestoreTitle')}
           </h3>
         </div>
         <p className="text-xs text-slate-500">
-          Export or import your family meal plans and recipes.
+          {language === 'zh-CN' ? '导出或导入家庭全套菜谱、排餐计划及储藏室数据。' : 'Export or import your family meal plans and recipes.'}
         </p>
 
         <div className="grid grid-cols-2 gap-2 pt-1">
@@ -498,7 +498,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             className="flex items-center justify-center gap-1.5 py-2.5 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export (.zip)</span>
+            <span>{t('settings.exportZipBtn')}</span>
           </button>
 
           <input
@@ -514,7 +514,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             className="flex items-center justify-center gap-1.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl active:scale-95 transition-all border border-[#EAE6DF] cursor-pointer shadow-2xs"
           >
             <FileArchive className="w-3.5 h-3.5 text-slate-500" />
-            <span>Import File</span>
+            <span>{t('settings.importZipBtn')}</span>
           </button>
         </div>
 
@@ -542,12 +542,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="flex items-center gap-2">
           <Smartphone className="w-4 h-4 text-slate-700" />
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-            Install App
+            {language === 'zh-CN' ? '添加到手机主屏幕' : 'Install App'}
           </h3>
         </div>
         <div className="text-xs text-slate-500 space-y-1">
-          <p>• <strong>iPhone (Safari)</strong>: Share → "Add to Home Screen"</p>
-          <p>• <strong>Android (Chrome)</strong>: Menu ⋮ → "Install App"</p>
+          <p>• <strong>iPhone (Safari)</strong>: {language === 'zh-CN' ? '分享按钮 → "添加到主屏幕"' : 'Share → "Add to Home Screen"'}</p>
+          <p>• <strong>Android (Chrome)</strong>: {language === 'zh-CN' ? '右上角菜单 ⋮ → "安装应用"' : 'Menu ⋮ → "Install App"'}</p>
         </div>
       </div>
 
@@ -557,7 +557,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex items-center gap-2">
             <LogOut className="w-4 h-4 text-slate-700" />
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Account
+              {language === 'zh-CN' ? '账号与退出' : 'Account'}
             </h3>
           </div>
           <span className="text-[10px] font-bold text-slate-500 bg-[#F4F1EA] px-2 py-0.5 rounded-md">
@@ -569,14 +569,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <button
             type="button"
             onClick={() => {
-              if (window.confirm(`Log out of ${editFamilyName}?`)) {
+              if (window.confirm(language === 'zh-CN' ? `确定要退出 ${editFamilyName} 吗？` : `Log out of ${editFamilyName}?`)) {
                 onLogout();
               }
             }}
             className="w-full py-2 rounded-xl border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Log Out</span>
+            <span>{language === 'zh-CN' ? '退出登录' : 'Log Out'}</span>
           </button>
         )}
       </div>
@@ -700,17 +700,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* Reset Defaults */}
       <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-2">
         <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-          Restore Defaults
+          {t('settings.resetTitle')}
         </h3>
         <p className="text-xs text-slate-500">
-          Reset meal plans, grocery, and starter recipes to defaults. Profile & members are preserved.
+          {t('settings.resetDesc')}
         </p>
         <button
           onClick={handleResetSampleData}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F4F1EA] hover:bg-rose-50 hover:text-rose-700 text-slate-600 text-xs font-semibold transition-colors active:scale-95 cursor-pointer border border-[#EAE6DF]"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          <span>Restore Defaults</span>
+          <span>{t('settings.resetBtn')}</span>
         </button>
       </div>
 

@@ -22,6 +22,7 @@ import { DishDetailModal } from './DishDetailModal';
 import { DishFormModal } from './DishFormModal';
 import { exportToZip, parseUploadedDataFile } from '../../services/zipExportService';
 import { loadMasterSystemRecipes } from '../../services/systemRecipesService';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface DishesViewProps {
   familyName: string;
@@ -54,13 +55,12 @@ const CUISINES = ['All Cuisines', 'Asian', 'Japanese', 'Korean', 'Cantonese', 'T
 
 // 1-Tap Quick Filter Chips
 const QUICK_FILTERS = [
-  { id: 'under_20m', label: '⚡ Under 20 Mins', type: 'time', maxTime: 20 },
-  { id: 'chicken', label: '🍗 Chicken', type: 'keyword', keyword: 'chicken' },
-  { id: 'beef_pork', label: '🥩 Beef & Pork', type: 'keyword', keyword: 'beef pork' },
-  { id: 'seafood', label: '🐟 Seafood', type: 'keyword', keyword: 'fish salmon shrimp prawn seafood' },
-  { id: 'noodles', label: '🍜 Noodles & Pasta', type: 'keyword', keyword: 'noodle pasta ramen spaghetti' },
-  { id: 'rice', label: '🍚 Rice Bowls', type: 'keyword', keyword: 'rice donburi fried rice' },
-  { id: 'vegetarian', label: '🥬 Vegetarian & Tofu', type: 'keyword', keyword: 'tofu vegetarian vegan vegetable' },
+  { id: 'under_20m', label: '⚡ Under 20 Mins', labelZh: '⚡ 20分钟快手菜', type: 'time', maxTime: 20 },
+  { id: 'chicken', label: '🍗 Chicken', labelZh: '🍗 鸡肉料理', type: 'keyword', keyword: 'chicken' },
+  { id: 'beef_pork', label: '🥩 Beef & Pork', labelZh: '🥩 牛肉/猪肉', type: 'keyword', keyword: 'beef pork' },
+  { id: 'seafood', label: '🐟 Seafood', labelZh: '🐟 海鲜水产', type: 'keyword', keyword: 'fish salmon shrimp prawn seafood' },
+  { id: 'veggie', label: '🥦 Veggie & Tofu', labelZh: '🥦 素食与豆腐', type: 'keyword', keyword: 'tofu vegetable broccoli mushroom vegetarian' },
+  { id: 'noodles_rice', label: '🍜 Noodles & Rice', labelZh: '🍜 饭面主食', type: 'keyword', keyword: 'rice noodle pasta udon ramen fried rice' }
 ];
 
 const INITIAL_BATCH_SIZE = 30;
@@ -82,6 +82,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
   initialScope = 'family',
   showSystemGuideHint = false
 }) => {
+  const { language, t, formatCategory, formatCuisine } = useLanguage();
   // Library vs Family Cookbook Scope Switcher
   const [libraryScope, setLibraryScope] = useState<'family' | 'system'>(initialScope);
   const [showGuideBanner, setShowGuideBanner] = useState(showSystemGuideHint);
@@ -414,7 +415,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
-          <span>Family Cookbook ({familyCookbookCount})</span>
+          <span>{t('dishes.familyTab')} ({familyCookbookCount})</span>
         </button>
 
         <button
@@ -426,7 +427,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
           }`}
         >
           <Search className="w-3.5 h-3.5" />
-          <span>Recipe Library ({systemLibraryCount.toLocaleString()})</span>
+          <span>{t('dishes.libraryTab')} ({systemLibraryCount.toLocaleString()})</span>
         </button>
       </div>
 
@@ -440,10 +441,14 @@ export const DishesView: React.FC<DishesViewProps> = ({
               </div>
               <div className="space-y-0.5">
                 <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span>Recipe Library (3,000+ Dishes)</span>
+                  <span>{language === 'zh-CN' ? '系统食谱库 (3,000+ 精选食谱)' : 'Recipe Library (3,000+ Dishes)'}</span>
                 </h4>
                 <p className="text-[11px] text-slate-200 leading-snug">
-                  👉 Tap <strong>"+ Cookbook"</strong> on any recipe to save it to your Family Cookbook.
+                  {language === 'zh-CN' ? (
+                    <>👉 点击任意菜谱上的 <strong>"+ 收藏到家庭菜谱"</strong> 即可存入专属菜单进行排餐。</>
+                  ) : (
+                    <>👉 Tap <strong>"+ Cookbook"</strong> on any recipe to save it to your Family Cookbook.</>
+                  )}
                 </p>
               </div>
             </div>
@@ -451,7 +456,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
               onClick={() => setShowGuideBanner(false)}
               className="text-[10px] font-bold bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded-lg transition shrink-0 cursor-pointer"
             >
-              Got it! ✓
+              {language === 'zh-CN' ? '知道了 ✓' : 'Got it! ✓'}
             </button>
           </div>
         </div>
@@ -465,8 +470,8 @@ export const DishesView: React.FC<DishesViewProps> = ({
             type="text"
             placeholder={
               libraryScope === 'family'
-                ? 'Search Family Cookbook...'
-                : 'Search Recipe Library...'
+                ? t('planner.searchCookbookPlaceholder')
+                : t('planner.searchLibraryPlaceholder')
             }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -514,6 +519,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
       <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
         {QUICK_FILTERS.map((pill) => {
           const isSelected = selectedQuickFilter === pill.id;
+          const displayLabel = language === 'zh-CN' && (pill as any).labelZh ? (pill as any).labelZh : pill.label;
           return (
             <button
               key={pill.id}
@@ -524,7 +530,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                   : 'bg-white text-slate-600 border border-[#EAE6DF] hover:bg-slate-50'
               }`}
             >
-              {pill.label}
+              {displayLabel}
             </button>
           );
         })}
@@ -535,16 +541,16 @@ export const DishesView: React.FC<DishesViewProps> = ({
         {/* Sort By Selector */}
         <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] shadow-2xs">
           <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
-          <span className="text-[10px] font-bold text-slate-500 uppercase">Sort:</span>
+          <span className="text-[10px] font-bold text-slate-500 uppercase">{language === 'zh-CN' ? '排序:' : 'Sort:'}</span>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
             className="text-xs font-bold text-slate-900 bg-transparent focus:outline-hidden cursor-pointer"
           >
-            <option value="quickest">⏱️ Quickest Meals</option>
-            <option value="least_ingredients">🥬 Least Ingredients</option>
-            <option value="name">🔤 Name (A-Z)</option>
-            <option value="recent">🕒 Recently Added</option>
+            <option value="quickest">{language === 'zh-CN' ? '⏱️ 用时最短' : '⏱️ Quickest Meals'}</option>
+            <option value="least_ingredients">{language === 'zh-CN' ? '🥬 食材最少' : '🥬 Least Ingredients'}</option>
+            <option value="name">{language === 'zh-CN' ? '🔤 名称排序' : '🔤 Name (A-Z)'}</option>
+            <option value="recent">{language === 'zh-CN' ? '🕒 最近添加' : '🕒 Recently Added'}</option>
           </select>
         </div>
 
@@ -558,7 +564,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
           >
             {CUISINES.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {formatCuisine(c)}
               </option>
             ))}
           </select>
@@ -569,7 +575,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            Our Category
+            {language === 'zh-CN' ? '菜品分类' : 'Our Category'}
           </h3>
           <button
             onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
@@ -580,48 +586,38 @@ export const DishesView: React.FC<DishesViewProps> = ({
             }`}
           >
             <Heart className={`w-3 h-3 ${showOnlyFavorites ? 'fill-white' : 'text-rose-500'}`} />
-            <span>My Favorites</span>
+            <span>{t('common.favorites')}</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-3 overflow-x-auto scrollbar-none py-1">
+        {/* Category Pills Slider */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
           {categories.map((cat) => {
-            const isSelected = selectedCategory === cat && !showOnlyFavorites;
-            const imgUrl = CATEGORY_IMAGES[cat] || CATEGORY_IMAGES.Dinner;
+            const isSelected = selectedCategory === cat;
             const count = categoryCounts[cat] || 0;
-
             return (
               <button
                 key={cat}
-                onClick={() => {
-                  setSelectedCategory(cat);
-                  setShowOnlyFavorites(false);
-                }}
-                className={`flex flex-col items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
-                  isSelected ? 'scale-105' : 'opacity-75 hover:opacity-100'
+                onClick={() => setSelectedCategory(cat)}
+                className={`flex items-center gap-2 p-1.5 pr-3 rounded-2xl transition-all whitespace-nowrap cursor-pointer ${
+                  isSelected
+                    ? 'bg-[#2B2D42] text-white shadow-xs'
+                    : 'bg-white text-slate-700 border border-[#EAE6DF] hover:bg-slate-50'
                 }`}
               >
-                <div
-                  className={`w-14 h-14 rounded-full overflow-hidden p-0.5 transition-all ${
-                    isSelected
-                      ? 'border-2 border-[#2B2D42] shadow-sm ring-2 ring-slate-200'
-                      : 'border border-[#EAE6DF]'
+                <img
+                  src={CATEGORY_IMAGES[cat] || CATEGORY_IMAGES.All}
+                  alt={cat}
+                  className="w-6 h-6 rounded-xl object-cover"
+                />
+                <span className="text-xs font-bold">{formatCategory(cat)}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
+                    isSelected ? 'bg-white/20 text-white' : 'bg-[#F4F1EA] text-slate-500'
                   }`}
                 >
-                  <img
-                    src={imgUrl}
-                    alt={cat}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                </div>
-                <div className="text-center leading-tight">
-                  <span className={`text-[11px] font-bold block ${isSelected ? 'text-slate-900' : 'text-slate-600'}`}>
-                    {cat}
-                  </span>
-                  <span className="text-[9px] text-slate-400 font-medium">
-                    {count} Menu
-                  </span>
-                </div>
+                  {count}
+                </span>
               </button>
             );
           })}
@@ -636,10 +632,12 @@ export const DishesView: React.FC<DishesViewProps> = ({
               onClick={handleSelectAll}
               className="text-xs font-bold text-slate-900 underline flex items-center gap-1 cursor-pointer"
             >
-              {selectedDishIds.size === filteredDishes.length ? 'Deselect All' : 'Select All'}
+              {selectedDishIds.size === filteredDishes.length
+                ? (language === 'zh-CN' ? '取消全选' : 'Deselect All')
+                : (language === 'zh-CN' ? '全选' : 'Select All')}
             </button>
             <span className="text-xs text-slate-500">
-              ({selectedDishIds.size} selected)
+              ({selectedDishIds.size} {language === 'zh-CN' ? '项已选' : 'selected'})
             </span>
           </div>
 
@@ -648,7 +646,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export Zip</span>
+            <span>{language === 'zh-CN' ? '导出 ZIP' : 'Export Zip'}</span>
           </button>
         </div>
       )}
@@ -657,7 +655,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
       <div className="flex items-center justify-between pt-1">
         <div className="flex items-center gap-1.5">
           <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            {libraryScope === 'family' ? 'Family Cookbook' : 'Recipe Library'} (
+            {libraryScope === 'family' ? t('dishes.familyTab') : t('dishes.libraryTab')} (
             {filteredDishes.length.toLocaleString()})
           </h3>
         </div>
@@ -668,7 +666,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
             className="text-xs font-bold text-slate-800 flex items-center gap-1 hover:underline cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>New Recipe</span>
+            <span>{t('dishes.newRecipe')}</span>
           </button>
         )}
       </div>
@@ -681,12 +679,12 @@ export const DishesView: React.FC<DishesViewProps> = ({
           </div>
           <div className="space-y-1">
             <h4 className="text-sm font-bold text-slate-900">
-              {libraryScope === 'family' ? 'No recipes in Family Cookbook yet' : 'No matching recipes found'}
+              {libraryScope === 'family' ? t('dishes.emptyCookbookTitle') : t('planner.noRecipesFound')}
             </h4>
             <p className="text-xs text-slate-500">
               {libraryScope === 'family'
-                ? 'Switch to Recipe Library to browse 3,000+ dishes and tap "+ Cookbook"!'
-                : 'Try clearing filters or changing search keywords.'}
+                ? t('dishes.emptyCookbookSubtitle')
+                : t('planner.noRecipesFoundSub')}
             </p>
           </div>
 
@@ -697,7 +695,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] text-white text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
               >
                 <Search className="w-3.5 h-3.5" />
-                <span>Browse Recipe Library</span>
+                <span>{t('dishes.exploreRecipesBtn')}</span>
               </button>
             ) : (
               <button
@@ -705,7 +703,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE6DF] text-slate-800 text-xs font-bold transition cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Clear Filters</span>
+                <span>{t('common.clear')}</span>
               </button>
             )}
           </div>
@@ -770,11 +768,11 @@ export const DishesView: React.FC<DishesViewProps> = ({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-[#F4F1EA] px-1.5 py-0.2 rounded-md">
-                        {dish.category}
+                        {formatCategory(dish.category)}
                       </span>
                       {dish.cuisine && (
                         <span className="text-[10px] font-semibold text-slate-500 bg-[#FDFBF7] border border-[#EAE6DF] px-1.5 py-0.2 rounded-md">
-                          {dish.cuisine}
+                          {formatCuisine(dish.cuisine)}
                         </span>
                       )}
                     </div>
@@ -799,7 +797,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
 
                       <span className="text-slate-300">•</span>
                       <span className="text-slate-500">
-                        {dish.ingredients.length} ingr.
+                        {t('dishes.ingredientsCount', { count: dish.ingredients.length })}
                       </span>
                     </div>
 
@@ -833,12 +831,12 @@ export const DishesView: React.FC<DishesViewProps> = ({
                     {isInFamilyCookbook ? (
                       <>
                         <Check className="w-3 h-3 text-emerald-700 stroke-[3]" />
-                        <span>In Cookbook</span>
+                        <span>{t('dishes.addedToCookbook')}</span>
                       </>
                     ) : (
                       <>
                         <BookmarkPlus className="w-3 h-3 text-slate-600" />
-                        <span>+ Cookbook</span>
+                        <span>{t('dishes.addToCookbook')}</span>
                       </>
                     )}
                   </button>
@@ -873,7 +871,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                       }}
                       className="px-2 py-0.5 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-[10px] font-bold rounded-md shadow-2xs active:scale-95 transition cursor-pointer"
                     >
-                      + Plan
+                      {language === 'zh-CN' ? '+ 排餐' : '+ Plan'}
                     </button>
                   </div>
                 </div>

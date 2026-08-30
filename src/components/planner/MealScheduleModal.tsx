@@ -32,7 +32,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const { formatDate } = useLanguage();
+  const { t, formatScheduleName, formatDate } = useLanguage();
 
   const initialSelectedIds = useMemo(() => {
     if (currentEntry?.dishIds && currentEntry.dishIds.length > 0) return currentEntry.dishIds;
@@ -57,31 +57,22 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
 
   const systemDishes = dishes;
 
-  // Filter current list based on search and active tab
-  const currentList = activeTab === 'family' ? familyDishes : systemDishes;
-
+  // Filtered dishes
   const filteredDishes = useMemo(() => {
-    let result = currentList;
+    const list = activeTab === 'family' ? familyDishes : systemDishes;
+    return list.filter((dish) => {
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        dish.name.toLowerCase().includes(q) ||
+        dish.category.toLowerCase().includes(q) ||
+        (dish.cuisine && dish.cuisine.toLowerCase().includes(q)) ||
+        dish.ingredients.some((i) => i.name.toLowerCase().includes(q));
 
-    if (showOnlyFavorites) {
-      result = result.filter((d) => d.favoritedByMembers && d.favoritedByMembers.length > 0);
-    }
-
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return result;
-    const tokens = q.split(/\s+/).filter(Boolean);
-
-    return result.filter((d) => {
-      const name = (d.name || '').toLowerCase();
-      const category = (d.category || '').toLowerCase();
-      const cuisine = (d.cuisine || '').toLowerCase();
-      const tags = (d.tags || []).join(' ').toLowerCase();
-      const ingredients = (d.ingredients || []).map((i) => i.name).join(' ').toLowerCase();
-
-      const fullText = `${name} ${category} ${cuisine} ${tags} ${ingredients}`;
-      return tokens.every((token) => fullText.includes(token));
+      const matchesFav = !showOnlyFavorites || Boolean(dish.favoritedByMembers && dish.favoritedByMembers.length > 0);
+      return matchesSearch && matchesFav;
     });
-  }, [currentList, searchQuery, showOnlyFavorites]);
+  }, [activeTab, familyDishes, systemDishes, searchQuery, showOnlyFavorites]);
 
   const handleToggleDish = (dish: Dish) => {
     // If selecting a system dish that is not yet in family cookbook, add it to family cookbook
@@ -99,13 +90,20 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
   };
 
   const handleSaveAll = () => {
-    if (selectedDishIds.length === 0 && !customText.trim()) {
-      onSaveEntry(date, scheduleId, null);
+    if (selectedDishIds.length === 0) {
+      if (customText.trim()) {
+        onSaveEntry(date, scheduleId, {
+          customText: customText.trim(),
+          servingsMultiplier
+        });
+      } else {
+        onSaveEntry(date, scheduleId, null);
+      }
     } else {
       onSaveEntry(date, scheduleId, {
+        dishId: selectedDishIds[0],
         dishIds: selectedDishIds,
-        dishId: selectedDishIds[0] || null,
-        customText: customText.trim(),
+        customText: customText.trim() || undefined,
         servingsMultiplier
       });
     }
@@ -115,14 +113,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
   const handleSaveCustom = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customText.trim() && selectedDishIds.length === 0) return;
-
-    onSaveEntry(date, scheduleId, {
-      dishIds: selectedDishIds,
-      dishId: selectedDishIds[0] || null,
-      customText: customText.trim(),
-      servingsMultiplier: 1
-    });
-    onClose();
+    handleSaveAll();
   };
 
   const handleClearSchedule = () => {
@@ -138,16 +129,16 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-lg max-h-[88vh] sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col overflow-hidden border border-[#EAE6DF] animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in">
+      <div className="bg-[#FDFBF7] rounded-3xl w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl border border-[#EAE6DF] overflow-hidden">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#F4F1EA] bg-[#FDFBF7]">
+        <div className="p-4 border-b border-[#F4F1EA] bg-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="text-xl">🍲</span>
+            <span className="text-2xl p-2 bg-[#F4F1EA] rounded-2xl">🍲</span>
             <div>
               <h2 className="text-sm font-bold text-slate-900">
-                Plan {scheduleName}
+                {t('planner.planScheduleTitle', { name: formatScheduleName(scheduleName) })}
               </h2>
               <p className="text-xs text-slate-500 font-medium">{formattedDate}</p>
             </div>
@@ -174,7 +165,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span className="truncate">Cookbook ({familyDishes.length})</span>
+            <span className="truncate">{t('planner.cookbookTab', { count: familyDishes.length })}</span>
           </button>
 
           <button
@@ -189,7 +180,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
             }`}
           >
             <Search className="w-3.5 h-3.5" />
-            <span className="truncate">Recipe Library</span>
+            <span className="truncate">{t('planner.libraryTab')}</span>
           </button>
 
           <button
@@ -200,7 +191,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                 : 'bg-[#F4F1EA] text-slate-600 hover:text-slate-900'
             }`}
           >
-            <span>✏️ Quick Note</span>
+            <span>{t('planner.quickNoteTab')}</span>
           </button>
         </div>
 

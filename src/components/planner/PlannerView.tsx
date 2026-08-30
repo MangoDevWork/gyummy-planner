@@ -48,7 +48,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   onToggleFamilyRecipe,
   onGoToGrocery
 }) => {
-  const { t } = useLanguage();
+  const { language, t, formatScheduleName, formatDayOfWeek, formatDate } = useLanguage();
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
   const [currentBaseDate, setCurrentBaseDate] = useState<Date>(new Date());
   const [selectedMonthDate, setSelectedMonthDate] = useState<string>(
@@ -580,7 +580,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                       <div className="h-[1px] bg-slate-300 flex-1" />
                       <div className="flex items-center gap-1 bg-[#F4F1EA] text-slate-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-[#EAE6DF]">
                         <Calendar className="w-3 h-3 text-slate-500" />
-                        <span>NEXT WEEK (STARTS MON)</span>
+                        <span>{language === 'zh-CN' ? '下周 (周一开始)' : 'NEXT WEEK (STARTS MON)'}</span>
                       </div>
                       <div className="h-[1px] bg-slate-300 flex-1" />
                     </div>
@@ -599,27 +599,26 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                         {day.isToday ? (
                           <span className="flex items-center gap-1 text-xs font-extrabold px-3 py-1 rounded-xl bg-[#2B2D42] text-white shadow-xs tracking-wide">
                             <Sparkles className="w-3 h-3 text-amber-300 fill-amber-300" />
-                            <span>TODAY • {day.dayName}</span>
+                            <span>{t('common.today')} • {formatDayOfWeek(day.dateStr)}</span>
                           </span>
                         ) : (
                           <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg bg-[#F4F1EA] text-slate-700">
-                            {day.dayName}
+                            {formatDayOfWeek(day.dateStr)}
                           </span>
                         )}
                         <span className={`text-xs font-semibold ${day.isToday ? 'text-slate-900 font-bold' : 'text-slate-800'}`}>
-                          {day.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {formatDate(day.dateStr, { month: 'short', day: 'numeric' })}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {/* '+ Add Schedule' Button in Clean Neutral Slate Gray (#EDF2F4) */}
+                        {/* Simplified '+' Button */}
                         <button
                           onClick={() => handleAddManualScheduleToDay(day.dateStr)}
-                          className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-[#EDF2F4] hover:bg-[#E2E8F0] px-2.5 py-1 rounded-lg transition cursor-pointer border border-[#E2E8F0]"
-                          title="Add extra meal schedule to this day"
+                          className="w-7 h-7 rounded-xl bg-[#EDF2F4] hover:bg-[#E2E8F0] text-slate-700 flex items-center justify-center transition cursor-pointer border border-[#E2E8F0] shadow-2xs active:scale-95"
+                          title={t('planner.addSchedule')}
                         >
-                          <Plus className="w-3 h-3 text-slate-600" />
-                          <span>+ Add Schedule</span>
+                          <Plus className="w-4 h-4 text-slate-700" />
                         </button>
                       </div>
                     </div>
@@ -629,6 +628,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                       {allScheduleIds.map((scheduleId) => {
                         const configuredSchedule = mealSchedules.find((s) => s.id === scheduleId);
                         const scheduleLabel = configuredSchedule?.name || scheduleId.replace('extra_', 'Extra ').replace('schedule_', '');
+                        const displayScheduleName = formatScheduleName(scheduleLabel);
                         const entry = dayPlan[scheduleId];
                         
                         const entryDishIds = entry?.dishIds && entry.dishIds.length > 0
@@ -670,10 +670,10 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                                 <span>🍲</span>
-                                <span className="truncate max-w-[80px]">{scheduleLabel}</span>
+                                <span className="truncate max-w-[80px]">{displayScheduleName}</span>
                               </div>
                               {hasPlan ? (
-                                <span title="Drag to reschedule">
+                                <span title={t('planner.dragHint')}>
                                   <Move className="w-3 h-3 text-slate-400 opacity-60" />
                                 </span>
                               ) : (
@@ -707,13 +707,13 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                               </div>
                             ) : entry?.customText ? (
                               <div className="mt-1">
-                                <span className="text-xs font-medium text-slate-700 italic truncate block">
+                                <span className="text-[10px] text-slate-500 italic block truncate">
                                   📝 {entry.customText}
                                 </span>
                               </div>
                             ) : (
                               <div className="mt-1">
-                                <span className="text-[11px] text-slate-400 font-medium">+ Add Meal</span>
+                                <span className="text-[11px] text-slate-400 font-medium">{t('planner.addMeal')}</span>
                               </div>
                             )}
                           </div>
@@ -730,7 +730,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
           <div className="space-y-4">
             <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm">
               <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                {(language === 'zh-CN' ? ['一', '二', '三', '四', '五', '六', '日'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']).map((day) => (
                   <span key={day} className="text-[10px] font-bold uppercase text-slate-400">
                     {day}
                   </span>
@@ -777,23 +777,26 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
             <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[#F4F1EA]">
                 <h3 className="text-xs font-bold text-slate-900">
-                  Meals on {new Date(selectedMonthDate + 'T00:00:00').toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'short',
-                    day: 'numeric'
+                  {t('planner.mealsOnDay', {
+                    date: formatDate(selectedMonthDate, {
+                      weekday: 'long',
+                      month: 'short',
+                      day: 'numeric'
+                    })
                   })}
                 </h3>
                 <div className="flex items-center gap-1.5">
                   {selectedMonthDate === todayISO && (
                     <span className="text-[10px] font-bold text-white bg-slate-900 px-2 py-0.5 rounded-md">
-                      Today
+                      {t('common.today')}
                     </span>
                   )}
                   <button
                     onClick={() => handleAddManualScheduleToDay(selectedMonthDate)}
-                    className="text-[11px] font-semibold text-slate-700 bg-[#EDF2F4] hover:bg-[#E2E8F0] px-2.5 py-0.5 rounded-lg border border-[#E2E8F0] cursor-pointer"
+                    className="w-7 h-7 rounded-xl bg-[#EDF2F4] hover:bg-[#E2E8F0] text-slate-700 flex items-center justify-center transition cursor-pointer border border-[#E2E8F0] shadow-2xs active:scale-95"
+                    title={t('planner.addSchedule')}
                   >
-                    + Schedule
+                    <Plus className="w-4 h-4 text-slate-700" />
                   </button>
                 </div>
               </div>
@@ -827,7 +830,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                           <span>🍲</span>
-                          <span>{schedule.name}</span>
+                          <span>{formatScheduleName(schedule.name)}</span>
                         </div>
                         {!hasPlan && <Plus className="w-3 h-3 text-slate-400" />}
                       </div>
@@ -849,11 +852,15 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                           )}
                         </div>
                       ) : entry?.customText ? (
-                        <span className="text-xs font-medium text-slate-700 italic truncate block mt-1">
-                          📝 {entry.customText}
-                        </span>
+                        <div className="mt-1">
+                          <span className="text-xs font-medium text-slate-700 italic truncate block">
+                            📝 {entry.customText}
+                          </span>
+                        </div>
                       ) : (
-                        <span className="text-[11px] text-slate-400 font-medium block mt-1">+ Add Meal</span>
+                        <div className="mt-1">
+                          <span className="text-[11px] text-slate-400 font-medium">{t('planner.addMeal')}</span>
+                        </div>
                       )}
                     </div>
                   );

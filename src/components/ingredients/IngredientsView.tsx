@@ -3,6 +3,7 @@ import type { MasterIngredient, GroceryCategory } from '../../types';
 import { GROCERY_CATEGORIES } from '../../types';
 import { Search, Edit3, Plus, Trash2, Save, Download, Upload, AlertCircle, CheckCircle2, Home, Check } from 'lucide-react';
 import { exportToZip, parseUploadedDataFile } from '../../services/zipExportService';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface IngredientsViewProps {
   familyName: string;
@@ -21,6 +22,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
   onSaveIngredients,
   onUpdatePantryIngredients
 }) => {
+  const { language, t, formatCategory } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [showOnlyPantry, setShowOnlyPantry] = useState(false);
@@ -235,7 +237,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search master ingredients..."
+            placeholder={language === 'zh-CN' ? '搜索食材总库...' : 'Search master ingredients...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full text-xs font-medium pl-9 pr-4 py-2.5 bg-white text-slate-900 placeholder:text-slate-400 rounded-xl border border-[#EAE6DF] focus:outline-hidden focus:border-slate-400 shadow-2xs"
@@ -273,7 +275,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
           <div className="flex items-center gap-2">
             <Home className="w-4 h-4 text-emerald-700" />
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              In My Pantry ({pantryIngredients.length} Staples)
+              {t('pantry.inMyPantryTitle', { count: pantryIngredients.length })}
             </h3>
           </div>
           <button
@@ -285,7 +287,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                 : 'bg-[#F4F1EA] text-slate-700 border-[#EAE6DF] hover:bg-[#EAE6DF]'
             }`}
           >
-            {showOnlyPantry ? 'Show All Catalog' : 'Filter Pantry Only'}
+            {showOnlyPantry ? t('pantry.showAllCatalog') : t('pantry.filterPantryOnly')}
           </button>
         </div>
 
@@ -308,7 +310,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
             </span>
           ))}
           {pantryIngredients.length === 0 && (
-            <p className="text-xs text-slate-400 italic">No pantry items stocked yet. Tap "+ Pantry" on any ingredient below!</p>
+            <p className="text-xs text-slate-400 italic">{t('pantry.noPantryItems')}</p>
           )}
         </div>
 
@@ -316,7 +318,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
         <div className="bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EAE6DF] text-[11px] text-slate-600 flex items-start gap-2">
           <span className="text-sm">✨</span>
           <p className="leading-snug">
-            <strong>Smart Substitution Active:</strong> When generating your grocery list, pantry staples automatically mark off matching or equivalent ingredients (e.g. <em>Cooking Oil</em> covers <em>Olive Oil</em>).
+            <strong>{t('pantry.smartSubNoticeTitle')}</strong> {t('pantry.smartSubNoticeDesc')}
           </p>
         </div>
       </div>
@@ -331,7 +333,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
               : 'bg-white text-slate-600 border border-[#EAE6DF] hover:bg-slate-50'
           }`}
         >
-          All ({activeList.length})
+          {formatCategory('All')} ({activeList.length})
         </button>
 
         {GROCERY_CATEGORIES.map((cat) => {
@@ -347,7 +349,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                   : 'bg-white text-slate-600 border border-[#EAE6DF] hover:bg-slate-50'
               }`}
             >
-              {cat} ({count})
+              {formatCategory(cat)} ({count})
             </button>
           );
         })}
@@ -364,7 +366,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
       {/* Action Header & Mode Toggle */}
       <div className="flex items-center justify-between pt-1">
         <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-          Library ({filtered.length} items)
+          {t('pantry.libraryCount', { count: filtered.length })}
         </span>
 
         <div className="flex items-center gap-2">
@@ -375,14 +377,14 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                 className="flex items-center gap-1 text-xs font-semibold text-slate-800 bg-[#F4F1EA] hover:bg-[#EAE6DF] px-2.5 py-1 rounded-xl transition cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Add Item</span>
+                <span>{t('pantry.addItem')}</span>
               </button>
 
               <button
                 onClick={handleCancelEditMode}
                 className="text-xs font-semibold text-slate-500 hover:text-slate-900 px-2 py-1 transition cursor-pointer"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
 
               <button
@@ -390,7 +392,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                 className="flex items-center gap-1 text-xs font-bold bg-[#2B2D42] hover:bg-[#1E1F2E] text-white px-3 py-1.5 rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" />
-                <span>Save</span>
+                <span>{t('common.save')}</span>
               </button>
             </>
           ) : (
@@ -399,7 +401,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
               className="flex items-center gap-1.5 text-xs font-bold text-slate-800 bg-white border border-[#EAE6DF] hover:bg-slate-50 px-3 py-1.5 rounded-xl transition active:scale-95 cursor-pointer shadow-2xs"
             >
               <Edit3 className="w-3.5 h-3.5 text-slate-600" />
-              <span>Edit Mode</span>
+              <span>{t('common.editMode')}</span>
             </button>
           )}
         </div>
