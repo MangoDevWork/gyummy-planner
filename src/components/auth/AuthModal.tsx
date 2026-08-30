@@ -307,9 +307,9 @@ export function AuthModal({
                     <button
                       type="button"
                       onClick={onLogout}
-                      className="w-full py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full py-2.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 border border-rose-200 dark:border-rose-500/30 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                     >
-                      <LogOut className="w-3.5 h-3.5" />
+                      <LogOut className="w-3.5 h-3.5 shrink-0" />
                       <span>Log Out of {currentProfile.familyName}</span>
                     </button>
                   )}

@@ -225,8 +225,10 @@
 .dark .border-emerald-200,
 .dark .border-emerald-300 { border-color: rgba(0, 245, 160, 0.3) !important; }
 
-/* Rose / error states */
-.dark .bg-rose-50   { background-color: rgba(244, 63, 94, 0.15) !important; }
+/* Rose / error / destructive states */
+.dark .bg-rose-50,
+.dark .bg-rose-50\/50 { background-color: rgba(244, 63, 94, 0.15) !important; }
+.dark .text-rose-600,
 .dark .text-rose-700 { color: #FB7185 !important; }
 .dark .border-rose-200 { border-color: rgba(244, 63, 94, 0.3) !important; }
 

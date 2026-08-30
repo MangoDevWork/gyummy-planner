@@ -573,9 +573,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onLogout();
               }
             }}
-            className="w-full py-2 rounded-xl border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs"
+            className="w-full py-2.5 rounded-xl border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-3.5 h-3.5 shrink-0" />
             <span>{language === 'zh-CN' ? '退出登录' : 'Log Out'}</span>
           </button>
         )}
@@ -667,30 +667,29 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </p>
           </div>
 
-          {/* Toggle Switch */}
+          {/* Toggle Switch with Centered Sun / Moon Icon */}
           <button
             type="button"
             role="switch"
             aria-checked={isDarkMode}
             onClick={handleToggleDarkMode}
-            className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none ${
+            className={`relative inline-flex items-center h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none ${
               isDarkMode
                 ? 'bg-[#00F5A0] border-[#00D68F]'
                 : 'bg-[#EAE6DF] border-[#D5CAB9]'
             }`}
           >
             <span
-              className={`pointer-events-none inline-block h-5.5 w-5.5 transform rounded-full shadow-md transition-transform duration-200 ease-in-out flex items-center justify-center ${
+              className={`pointer-events-none flex h-5 w-5 items-center justify-center rounded-full shadow-md transition-transform duration-200 ease-in-out ${
                 isDarkMode
-                  ? 'translate-x-6 bg-[#0B0D11]'
+                  ? 'translate-x-5.5 bg-[#0B0D11]'
                   : 'translate-x-0.5 bg-white'
               }`}
-              style={{ marginTop: '1px' }}
             >
               {isDarkMode ? (
-                <Moon className="w-3 h-3 text-[#00F5A0]" />
+                <Moon className="w-3 h-3 text-[#00F5A0] shrink-0" />
               ) : (
-                <Sun className="w-3 h-3 text-amber-500" />
+                <Sun className="w-3 h-3 text-amber-500 shrink-0" />
               )}
             </span>
           </button>
