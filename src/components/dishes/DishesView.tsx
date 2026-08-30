@@ -594,31 +594,31 @@ export const DishesView: React.FC<DishesViewProps> = ({
       {/* Sort By & Cuisine Filter Bar */}
       <div className="flex items-center justify-between gap-2 text-xs">
         {/* Sort By Selector */}
-        <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] shadow-2xs">
+        <div className="flex items-center gap-1.5 bg-white dark:bg-[#151922] px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] dark:border-slate-800 shadow-2xs">
           <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
           <span className="text-[10px] font-bold text-slate-500 uppercase">{language === 'zh-CN' ? '排序:' : 'Sort:'}</span>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="text-xs font-bold text-slate-900 bg-transparent focus:outline-hidden cursor-pointer"
+            className="text-xs font-bold text-slate-900 dark:text-slate-100 bg-transparent focus:outline-hidden cursor-pointer"
           >
-            <option value="quickest">{language === 'zh-CN' ? '⏱️ 用时最短' : '⏱️ Quickest Meals'}</option>
-            <option value="least_ingredients">{language === 'zh-CN' ? '🥬 食材最少' : '🥬 Least Ingredients'}</option>
-            <option value="name">{language === 'zh-CN' ? '🔤 名称排序' : '🔤 Name (A-Z)'}</option>
-            <option value="recent">{language === 'zh-CN' ? '🕒 最近添加' : '🕒 Recently Added'}</option>
+            <option value="quickest" className="bg-white dark:bg-[#1E232F] text-slate-900 dark:text-slate-100">{language === 'zh-CN' ? '⏱️ 用时最短' : '⏱️ Quickest Meals'}</option>
+            <option value="least_ingredients" className="bg-white dark:bg-[#1E232F] text-slate-900 dark:text-slate-100">{language === 'zh-CN' ? '🥬 食材最少' : '🥬 Least Ingredients'}</option>
+            <option value="name" className="bg-white dark:bg-[#1E232F] text-slate-900 dark:text-slate-100">{language === 'zh-CN' ? '🔤 名称排序' : '🔤 Name (A-Z)'}</option>
+            <option value="recent" className="bg-white dark:bg-[#1E232F] text-slate-900 dark:text-slate-100">{language === 'zh-CN' ? '🕒 最近添加' : '🕒 Recently Added'}</option>
           </select>
         </div>
 
         {/* Cuisine Filter Selector */}
-        <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] shadow-2xs">
+        <div className="flex items-center gap-1.5 bg-white dark:bg-[#151922] px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] dark:border-slate-800 shadow-2xs">
           <Filter className="w-3.5 h-3.5 text-slate-500" />
           <select
             value={selectedCuisine}
             onChange={(e) => setSelectedCuisine(e.target.value)}
-            className="text-xs font-bold text-slate-900 bg-transparent focus:outline-hidden cursor-pointer max-w-[120px] truncate"
+            className="text-xs font-bold text-slate-900 dark:text-slate-100 bg-transparent focus:outline-hidden cursor-pointer max-w-[130px] truncate"
           >
             {CUISINES.map((c) => (
-              <option key={c} value={c}>
+              <option key={c} value={c} className="bg-white dark:bg-[#1E232F] text-slate-900 dark:text-slate-100">
                 {formatCuisine(c)}
               </option>
             ))}
