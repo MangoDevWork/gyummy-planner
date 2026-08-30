@@ -1,6 +1,7 @@
 import type { AppData, Dish, GroceryCategory, GroceryItem, MealPlan, UserProfile } from '../types';
 import { getInitialAppData, DEFAULT_MEAL_SCHEDULES, DEFAULT_PANTRY_INGREDIENTS } from './seedData';
 import { DEFAULT_MASTER_INGREDIENTS } from './masterIngredients';
+import { matchPantryIngredient } from './pantryMatching';
 
 const ACTIVE_PROFILE_KEY = 'gyummy_active_profile_v2';
 const FAMILY_DATA_PREFIX = 'gyummy_family_data_v2_';
@@ -155,8 +156,8 @@ function normalizeName(name: string): string {
 
 /**
  * Smart Grocery List Aggregation
- * Case-insensitive name matching.
- * Auto marks inPantry if user has declared the ingredient in pantry stock.
+ * Case-insensitive name matching with Smart Pantry Substitution Engine.
+ * Auto marks inPantry and attaches substitution notes if equivalent staple is found.
  */
 export function generateGroceryList(
   dishes: Dish[],
@@ -169,17 +170,6 @@ export function generateGroceryList(
   const dishMap = new Map<string, Dish>();
   dishes.forEach((d) => dishMap.set(d.id, d));
 
-  const pantrySet = new Set(pantryIngredients.map((p) => normalizeName(p)));
-
-  const isIngredientInPantry = (name: string): boolean => {
-    const norm = normalizeName(name);
-    if (pantrySet.has(norm)) return true;
-    for (const p of pantrySet) {
-      if (norm.includes(p) || p.includes(norm)) return true;
-    }
-    return false;
-  };
-
   const aggregatedMap = new Map<
     string,
     {
@@ -188,6 +178,7 @@ export function generateGroceryList(
       unit: string;
       category: GroceryCategory;
       inPantry: boolean;
+      pantrySubstituteNote?: string;
       sourceDishes: Set<string>;
     }
   >();
@@ -226,12 +217,15 @@ export function generateGroceryList(
           }
           item.sourceDishes.add(dish.name);
         } else {
+          const pantryMatch = matchPantryIngredient(ing.name, pantryIngredients);
+
           aggregatedMap.set(key, {
             name: ing.name.trim(),
             amount: ingAmount !== null ? Math.round(ingAmount * 100) / 100 : null,
             unit: ing.unit ? ing.unit.trim() : '',
             category: ing.category || 'Other',
-            inPantry: isIngredientInPantry(ing.name),
+            inPantry: pantryMatch.inPantry,
+            pantrySubstituteNote: pantryMatch.substituteNote,
             sourceDishes: new Set([dish.name])
           });
         }
@@ -260,6 +254,7 @@ export function generateGroceryList(
     category: value.category,
     checked: existingCheckedMap.get(key) || false,
     inPantry: value.inPantry,
+    pantrySubstituteNote: value.pantrySubstituteNote,
     sourceDishes: Array.from(value.sourceDishes),
     isManual: false,
     dateRange: { start: startDate, end: endDate }

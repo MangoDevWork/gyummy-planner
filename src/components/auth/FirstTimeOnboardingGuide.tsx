@@ -153,8 +153,8 @@ export const FirstTimeOnboardingGuide: React.FC<FirstTimeOnboardingGuideProps> =
               <div className="bg-[#FAF8F5] p-3 rounded-2xl border border-[#EAE6DF] space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">🍚</span>
-                    <span className="text-xs font-bold text-slate-900">Jasmine Rice</span>
+                    <span className="text-base">🍳</span>
+                    <span className="text-xs font-bold text-slate-900">Cooking Oil</span>
                   </div>
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">
                     <Check className="w-3 h-3" />
@@ -162,7 +162,7 @@ export const FirstTimeOnboardingGuide: React.FC<FirstTimeOnboardingGuideProps> =
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 leading-relaxed">
-                  In the <strong>Ingredients</strong> tab, tap the <strong>🏡 In Pantry</strong> button next to staples you have at home (e.g. <em>Jasmine Rice</em>, salt, oil).
+                  Default staples (<em>Jasmine Rice, Soy Sauce, Cooking Oil, Sea Salt, Black Pepper</em>) are pre-saved in your pantry stock.
                 </p>
               </div>
 
@@ -172,10 +172,10 @@ export const FirstTimeOnboardingGuide: React.FC<FirstTimeOnboardingGuideProps> =
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-slate-900">
-                    Smart Grocery Half-Marking
+                    Smart Substitution & Auto Mark-Off
                   </h4>
-                  <p className="text-[11px] text-slate-500">
-                    When you generate your grocery list, pantry items are automatically marked as <em>"🏡 In Pantry"</em> and dimmed so you don't buy duplicates!
+                  <p className="text-[11px] text-slate-500 leading-snug">
+                    If a dish calls for <em>Olive Oil</em> or <em>Kosher Salt</em>, Gyummy groups similar staples together and notifies you that it's covered by your pantry!
                   </p>
                 </div>
               </div>

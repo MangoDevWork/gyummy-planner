@@ -87,9 +87,10 @@ export interface GroceryItem {
   unit: string;
   category: GroceryCategory;
   checked: boolean;
-  inPantry?: boolean;     // True if user declared this ingredient as in stock at home
-  sourceDishes: string[]; // List of dish names that contributed this ingredient
-  isManual?: boolean;     // True if user manually added it
+  inPantry?: boolean;             // True if user declared this ingredient as in stock at home
+  pantrySubstituteNote?: string; // e.g. "Covered by Cooking Oil at home"
+  sourceDishes: string[];         // List of dish names that contributed this ingredient
+  isManual?: boolean;             // True if user manually added it
   dateRange?: {
     start: string;
     end: string;

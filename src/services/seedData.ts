@@ -244,7 +244,11 @@ export const INITIAL_DISHES: Dish[] = [
 ];
 
 export const DEFAULT_PANTRY_INGREDIENTS: string[] = [
-  'Jasmine Rice'
+  'Jasmine Rice',
+  'Soy Sauce',
+  'Cooking Oil',
+  'Sea Salt',
+  'Black Pepper'
 ];
 
 export function getInitialAppData(currentProfile: AppData['currentProfile'] | null = null): AppData {

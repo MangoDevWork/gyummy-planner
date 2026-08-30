@@ -19,6 +19,7 @@ import {
   parseUploadedDataFile,
   copyGroceryListAsMessage
 } from '../../services/zipExportService';
+import { matchPantryIngredient } from '../../services/pantryMatching';
 
 interface GroceryViewProps {
   familyName: string;
@@ -107,9 +108,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
     const cleanName = manualName.trim();
     if (!cleanName) return;
 
-    const isInPantry = pantryIngredients.some(
-      (p) => p.toLowerCase() === cleanName.toLowerCase()
-    );
+    const pantryMatch = matchPantryIngredient(cleanName, pantryIngredients);
 
     const newItem: GroceryItem = {
       id: `groc_manual_${Date.now()}`,
@@ -118,7 +117,8 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
       unit: manualUnit,
       category: manualCategory,
       checked: false,
-      inPantry: isInPantry,
+      inPantry: pantryMatch.inPantry,
+      pantrySubstituteNote: pantryMatch.substituteNote,
       sourceDishes: ['Manual Add'],
       isManual: true,
       dateRange: { start: startDate, end: endDate }
@@ -630,10 +630,11 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
                               {item.name}
                             </span>
 
-                            {/* Pantry Auto Half-Mark Badge */}
+                            {/* Pantry Auto Half-Mark Badge with Substitute Notice */}
                             {isInPantry && !item.checked && (
-                              <span className="text-[9px] font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-md border border-emerald-200">
-                                🏡 In Pantry (Have at home)
+                              <span className="text-[9px] font-extrabold tracking-wide bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md border border-emerald-200 inline-flex items-center gap-1">
+                                <span>🏡</span>
+                                <span>{item.pantrySubstituteNote ? item.pantrySubstituteNote : 'In Pantry (Have at home)'}</span>
                               </span>
                             )}
                           </div>
