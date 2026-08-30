@@ -18,7 +18,8 @@ import {
   LogOut,
   UserCheck,
   Moon,
-  Sun
+  Sun,
+  Globe
 } from 'lucide-react';
 import { exportToZip, parseUploadedDataFile, mergeImportedData } from '../../services/zipExportService';
 import { MealScheduleSettingsModal } from './MealScheduleSettingsModal';
@@ -26,6 +27,7 @@ import { compressImage } from '../../services/imageUtils';
 import { EasterEggModal } from '../common/EasterEggModal';
 import { getCachedSystemRecipes, mergeSystemWithUserDishes } from '../../services/systemRecipesService';
 import { saveDarkModePreference } from '../../services/darkMode';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface SettingsViewProps {
   appData: AppData;
@@ -44,6 +46,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   isDarkMode = false,
   onToggleDarkMode
 }) => {
+  const { language, setLanguage, t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isScheduleSettingsOpen, setIsScheduleSettingsOpen] = useState(false);
@@ -578,6 +581,63 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         )}
       </div>
 
+      {/* Language Preferences — user-specific */}
+      <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-slate-700" />
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              {t('settings.languageTitle')}
+            </h3>
+          </div>
+          <span className="text-[10px] font-semibold text-slate-500 bg-[#F4F1EA] px-2 py-0.5 rounded-md">
+            {t('common.justForYou')}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-slate-800">
+              {language === 'zh-CN' ? '🇨🇳 简体中文' : '🇺🇸 English'}
+            </p>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {t('settings.languageDesc')}
+            </p>
+          </div>
+
+          <div className="flex items-center p-1 bg-[#F4F1EA] rounded-xl border border-[#EAE6DF] gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                setLanguage('en');
+                showToast('Language switched to English');
+              }}
+              className={`text-xs font-bold px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                language === 'en'
+                  ? 'bg-white text-slate-900 shadow-2xs border border-[#EAE6DF]'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              English
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLanguage('zh-CN');
+                showToast('语言已切换为简体中文');
+              }}
+              className={`text-xs font-bold px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                language === 'zh-CN'
+                  ? 'bg-white text-slate-900 shadow-2xs border border-[#EAE6DF]'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              中文
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Display Preferences — user-specific */}
       <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
         <div className="flex items-center justify-between">
@@ -588,11 +648,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <Sun className="w-4 h-4 text-slate-700" />
             )}
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Display
+              {t('settings.displayTitle')}
             </h3>
           </div>
           <span className="text-[10px] font-semibold text-slate-500 bg-[#F4F1EA] px-2 py-0.5 rounded-md">
-            Just for you
+            {t('common.justForYou')}
           </span>
         </div>
 
@@ -600,10 +660,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-slate-800">
-              {isDarkMode ? '🌙 Dark Mode' : '☀️ Light Mode'}
+              {isDarkMode ? t('settings.darkModeTitle') : t('settings.lightModeTitle')}
             </p>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              {isDarkMode ? 'Modern obsidian & electric mint fizz' : 'Classic warm beige theme'}
+              {isDarkMode ? t('settings.darkModeDesc') : t('settings.lightModeDesc')}
             </p>
           </div>
 

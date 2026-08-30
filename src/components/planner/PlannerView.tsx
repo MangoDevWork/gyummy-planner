@@ -19,6 +19,7 @@ import { MealScheduleModal } from './MealScheduleModal';
 import { WeekCopyModal } from './WeekCopyModal';
 import { MealScheduleSettingsModal } from '../settings/MealScheduleSettingsModal';
 import { exportToZip, parseUploadedDataFile, copyMealPlanAsMessage } from '../../services/zipExportService';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface PlannerViewProps {
   familyName: string;
@@ -47,6 +48,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   onToggleFamilyRecipe,
   onGoToGrocery
 }) => {
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
   const [currentBaseDate, setCurrentBaseDate] = useState<Date>(new Date());
   const [selectedMonthDate, setSelectedMonthDate] = useState<string>(
@@ -503,7 +505,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
               onClick={handleJumpToday}
               className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 hover:underline cursor-pointer"
             >
-              Jump to Today
+              {t('common.today')}
             </button>
           </div>
 
@@ -520,9 +522,9 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
       {/* Main Grocery List Banner */}
       <div className="bg-[#E6EBE0] rounded-2xl p-3.5 text-slate-800 shadow-sm border border-[#D9E2D2] flex items-center justify-between">
         <div>
-          <h4 className="text-xs font-bold text-slate-900">Grocery List</h4>
+          <h4 className="text-xs font-bold text-slate-900">{t('nav.grocery')}</h4>
           <span className="text-[10px] text-slate-600 font-medium">
-            {weekRangeLabel} ({totalMealsPlannedThisWeek} meals planned)
+            {weekRangeLabel} ({t('planner.scheduledMealsCount', { count: totalMealsPlannedThisWeek })})
           </span>
         </div>
         <button
@@ -530,7 +532,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
           className="flex items-center gap-1.5 bg-white text-slate-900 text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-xs active:scale-95 transition-all hover:bg-slate-50 cursor-pointer border border-[#D9E2D2]"
         >
           <ShoppingCart className="w-3.5 h-3.5 text-slate-700" />
-          <span>View List</span>
+          <span>{t('grocery.shareListBtn').replace('分享', '查看').replace('Share', 'View')}</span>
         </button>
       </div>
 
@@ -538,9 +540,9 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
       {viewMode === 'week' && totalMealsPlannedThisWeek === 0 && (
         <div className="bg-white rounded-2xl p-5 text-center border border-dashed border-[#EAE6DF] space-y-2 shadow-2xs animate-in fade-in">
           <div className="text-2xl">🗓️ 🍲</div>
-          <h4 className="text-xs font-bold text-slate-900">No meals planned for this week yet</h4>
+          <h4 className="text-xs font-bold text-slate-900">{t('planner.emptyWeekTitle')}</h4>
           <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
-            Tap "+ Plan" on any slot below or browse your Family Cookbook to get started!
+            {t('planner.emptyWeekSubtitle')}
           </p>
         </div>
       )}

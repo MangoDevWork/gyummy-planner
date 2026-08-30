@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, UtensilsCrossed, Home, ShoppingCart, Settings } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export type TabType = 'planner' | 'dishes' | 'ingredients' | 'grocery' | 'settings';
 
@@ -14,34 +15,36 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   setActiveTab,
   groceryPendingCount
 }) => {
+  const { t } = useLanguage();
+
   const tabs = [
     {
       id: 'planner' as TabType,
-      label: 'Planner',
+      label: t('nav.planner'),
       icon: Calendar,
       badge: null
     },
     {
       id: 'dishes' as TabType,
-      label: 'Recipes',
+      label: t('nav.recipes'),
       icon: UtensilsCrossed,
       badge: null
     },
     {
       id: 'ingredients' as TabType,
-      label: 'Pantry',
+      label: t('nav.pantry'),
       icon: Home,
       badge: null
     },
     {
       id: 'grocery' as TabType,
-      label: 'Grocery',
+      label: t('nav.grocery'),
       icon: ShoppingCart,
       badge: groceryPendingCount > 0 ? groceryPendingCount : null
     },
     {
       id: 'settings' as TabType,
-      label: 'Settings',
+      label: t('nav.settings'),
       icon: Settings,
       badge: null
     }

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { Dish, MealScheduleEntry } from '../../types';
 import { X, Search, Plus, Trash2, Utensils, Check, BookOpen, ArrowRight, Sparkles, Heart } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface MealScheduleModalProps {
   isOpen: boolean;
@@ -31,6 +32,8 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  const { formatDate } = useLanguage();
+
   const initialSelectedIds = useMemo(() => {
     if (currentEntry?.dishIds && currentEntry.dishIds.length > 0) return currentEntry.dishIds;
     if (currentEntry?.dishId) return [currentEntry.dishId];
@@ -45,11 +48,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
   const [visibleLimit, setVisibleLimit] = useState(30);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 
-  const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  });
+  const formattedDate = formatDate(date);
 
   // Split dishes into Family Cookbook vs System Library
   const familyDishes = useMemo(() => {

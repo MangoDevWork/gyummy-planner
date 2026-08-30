@@ -2,6 +2,7 @@ import React from 'react';
 import type { TabType } from './BottomNav';
 import type { UserProfile } from '../types';
 import { Home } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface NavbarProps {
   activeTab: TabType;
@@ -16,18 +17,20 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenProfileModal,
   onOpenDishCreator
 }) => {
+  const { t } = useLanguage();
+
   const getHeaderTitle = () => {
     switch (activeTab) {
       case 'planner':
-        return 'Meal Planner';
+        return t('header.subtitleMealPlan');
       case 'dishes':
-        return 'Family Cookbook';
+        return t('header.subtitleCookbook');
       case 'ingredients':
-        return 'My Pantry';
+        return t('header.subtitlePantry');
       case 'grocery':
-        return 'Grocery Checklist';
+        return t('header.subtitleGrocery');
       case 'settings':
-        return 'Family & Profile';
+        return t('header.subtitleSettings');
     }
   };
 

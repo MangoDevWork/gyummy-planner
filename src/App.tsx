@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { AppData, Dish, MasterIngredient, MealPlan, MealScheduleConfig, MealScheduleEntry, UserProfile } from './types';
 import { loadAppData, saveAppData, generateGroceryList, setActiveProfile, resetActiveSession } from './services/storage';
 import { getInitialAppData } from './services/seedData';
+import { LanguageProvider } from './i18n/LanguageContext';
 import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
 import type { TabType } from './components/BottomNav';
@@ -360,141 +361,144 @@ export function App() {
   const familyName = appData.currentProfile?.familyName || 'Family';
 
   return (
-    <div className="min-h-screen bg-[#F4F1EA] flex flex-col items-center justify-start text-slate-800">
-      {/* Mobile Shell Constraints */}
-      <div className="w-full max-w-md min-h-screen bg-[#FDFBF7] flex flex-col relative shadow-xl border-x border-[#EAE6DF]/80">
-        
-        {/* Top Navbar */}
-        <Navbar
-          activeTab={activeTab}
-          currentProfile={appData.currentProfile}
-          onOpenProfileModal={() => setIsProfileModalOpen(true)}
-          onOpenDishCreator={() => setIsDishCreatorOpen(true)}
-        />
+    <LanguageProvider activeMemberName={appData.currentProfile?.memberName}>
+      <div className="min-h-screen bg-[#F4F1EA] flex flex-col items-center justify-start text-slate-800">
+        {/* Mobile Shell Constraints */}
+        <div className="w-full max-w-md min-h-screen bg-[#FDFBF7] flex flex-col relative shadow-xl border-x border-[#EAE6DF]/80">
+          
+          {/* Top Navbar */}
+          <Navbar
+            activeTab={activeTab}
+            currentProfile={appData.currentProfile}
+            onOpenProfileModal={() => setIsProfileModalOpen(true)}
+            onOpenDishCreator={() => setIsDishCreatorOpen(true)}
+          />
 
-        {/* Screen Content */}
-        <main className="flex-1 flex flex-col">
-          {activeTab === 'planner' && (
-            <PlannerView
-              familyName={familyName}
-              dishes={appData.dishes}
-              mealPlan={appData.mealPlan}
-              mealSchedules={appData.mealSchedules || []}
-              onUpdateMealPlan={handleUpdateMealPlan}
-              onBatchUpdateMealPlan={handleBatchUpdateMealPlan}
-              onSaveMealSchedules={handleSaveMealSchedules}
-              onOpenDishCreator={() => {
-                setActiveTab('dishes');
-                setIsDishCreatorOpen(true);
-              }}
-              onNavigateToLibrary={() => {
-                setActiveTab('dishes');
-                setIsSystemGuideActive(true);
-              }}
-              onToggleFamilyRecipe={handleToggleFamilyRecipe}
-              onGoToGrocery={handleGoToGrocery}
-            />
-          )}
+          {/* Screen Content */}
+          <main className="flex-1 flex flex-col">
+            {activeTab === 'planner' && (
+              <PlannerView
+                familyName={familyName}
+                dishes={appData.dishes}
+                mealPlan={appData.mealPlan}
+                mealSchedules={appData.mealSchedules || []}
+                onUpdateMealPlan={handleUpdateMealPlan}
+                onBatchUpdateMealPlan={handleBatchUpdateMealPlan}
+                onSaveMealSchedules={handleSaveMealSchedules}
+                onOpenDishCreator={() => {
+                  setActiveTab('dishes');
+                  setIsDishCreatorOpen(true);
+                }}
+                onNavigateToLibrary={() => {
+                  setActiveTab('dishes');
+                  setIsSystemGuideActive(true);
+                }}
+                onToggleFamilyRecipe={handleToggleFamilyRecipe}
+                onGoToGrocery={handleGoToGrocery}
+              />
+            )}
 
-          {activeTab === 'dishes' && (
-            <DishesView
-              familyName={familyName}
-              currentProfile={appData.currentProfile}
-              dishes={appData.dishes}
-              masterIngredients={appData.masterIngredients}
-              initialScope={isSystemGuideActive ? 'system' : 'family'}
-              showSystemGuideHint={isSystemGuideActive}
-              onSaveDish={handleSaveDish}
-              onDeleteDish={handleDeleteDish}
-              onToggleFavoriteDish={handleToggleFavoriteDish}
-              onToggleFamilyRecipe={handleToggleFamilyRecipe}
-              onAddMasterIngredient={handleAddSingleMasterIngredient}
-              onImportDishes={handleImportDishes}
-              onQuickPlanDish={(dish) => {
-                const today = new Date().toISOString().split('T')[0];
-                handleUpdateMealPlan(today, 'dinner', { dishId: dish.id });
-                setActiveTab('planner');
-              }}
-              isCreatorOpen={isDishCreatorOpen}
-              setIsCreatorOpen={setIsDishCreatorOpen}
-            />
-          )}
+            {activeTab === 'dishes' && (
+              <DishesView
+                familyName={familyName}
+                currentProfile={appData.currentProfile}
+                dishes={appData.dishes}
+                masterIngredients={appData.masterIngredients}
+                initialScope={isSystemGuideActive ? 'system' : 'family'}
+                showSystemGuideHint={isSystemGuideActive}
+                onSaveDish={handleSaveDish}
+                onDeleteDish={handleDeleteDish}
+                onToggleFavoriteDish={handleToggleFavoriteDish}
+                onToggleFamilyRecipe={handleToggleFamilyRecipe}
+                onAddMasterIngredient={handleAddSingleMasterIngredient}
+                onImportDishes={handleImportDishes}
+                onQuickPlanDish={(dish) => {
+                  const today = new Date().toISOString().split('T')[0];
+                  handleUpdateMealPlan(today, 'dinner', { dishId: dish.id });
+                  setActiveTab('planner');
+                }}
+                isCreatorOpen={isDishCreatorOpen}
+                setIsCreatorOpen={setIsDishCreatorOpen}
+              />
+            )}
 
-          {activeTab === 'ingredients' && (
-            <IngredientsView
-              familyName={familyName}
-              ingredients={appData.masterIngredients}
-              pantryIngredients={appData.pantryIngredients || []}
-              onSaveIngredients={handleSaveIngredients}
-              onUpdatePantryIngredients={handleUpdatePantryIngredients}
-            />
-          )}
+            {activeTab === 'ingredients' && (
+              <IngredientsView
+                familyName={familyName}
+                ingredients={appData.masterIngredients}
+                pantryIngredients={appData.pantryIngredients || []}
+                onSaveIngredients={handleSaveIngredients}
+                onUpdatePantryIngredients={handleUpdatePantryIngredients}
+              />
+            )}
 
-          {activeTab === 'grocery' && (
-            <GroceryView
-              familyName={familyName}
-              dishes={appData.dishes}
-              mealPlan={appData.mealPlan}
-              pantryIngredients={appData.pantryIngredients || []}
-              groceryList={appData.groceryList}
-              onUpdateGroceryList={handleUpdateGroceryList}
-            />
-          )}
+            {activeTab === 'grocery' && (
+              <GroceryView
+                familyName={familyName}
+                dishes={appData.dishes}
+                mealPlan={appData.mealPlan}
+                pantryIngredients={appData.pantryIngredients || []}
+                groceryList={appData.groceryList}
+                onUpdateGroceryList={handleUpdateGroceryList}
+              />
+            )}
 
-          {activeTab === 'settings' && (
-            <SettingsView
-              appData={appData}
-              onUpdateAppData={setAppData}
-              onOpenProfileModal={() => setIsProfileModalOpen(true)}
-              onLogout={handleLogout}
-              isDarkMode={isDarkMode}
-              onToggleDarkMode={(val: boolean) => setIsDarkMode(val)}
-            />
-          )}
-        </main>
+            {activeTab === 'settings' && (
+              <SettingsView
+                appData={appData}
+                onUpdateAppData={setAppData}
+                onOpenProfileModal={() => setIsProfileModalOpen(true)}
+                onLogout={handleLogout}
+                isDarkMode={isDarkMode}
+                onToggleDarkMode={(val: boolean) => setIsDarkMode(val)}
+              />
+            )}
+          </main>
 
-        {/* Bottom Mobile Tab Bar */}
-        <BottomNav
-          activeTab={activeTab}
-          setActiveTab={(tab) => {
-            setIsSystemGuideActive(false);
-            setActiveTab(tab);
-          }}
-          groceryPendingCount={pendingGroceryCount}
-        />
+          {/* Bottom Mobile Tab Bar */}
+          <BottomNav
+            activeTab={activeTab}
+            setActiveTab={(tab) => {
+              setIsSystemGuideActive(false);
+              setActiveTab(tab);
+            }}
+            groceryPendingCount={pendingGroceryCount}
+          />
 
-        {/* Auth / Register / Profile Switcher Modal */}
-        <AuthModal
-          isOpen={isProfileModalOpen}
-          currentProfile={appData.currentProfile}
-          familyMembers={appData.familyMembers}
-          onSelectProfile={handleSelectProfile}
-          onRemoveMember={handleRemoveMember}
-          onLogout={handleLogout}
-          onClose={() => setIsProfileModalOpen(false)}
-          isMandatory={false}
-        />
+          {/* Auth / Register / Profile Switcher Modal */}
+          <AuthModal
+            isOpen={isProfileModalOpen}
+            currentProfile={appData.currentProfile}
+            familyMembers={appData.familyMembers}
+            onSelectProfile={handleSelectProfile}
+            onRemoveMember={handleRemoveMember}
+            onLogout={handleLogout}
+            onClose={() => setIsProfileModalOpen(false)}
+            isMandatory={false}
+          />
 
-        {/* First Launch Guided Onboarding Modal (Meal Schedule Setup & Recipe Library Walkthrough) */}
-        <FirstTimeOnboardingGuide
-          isOpen={isOnboardingGuideOpen}
-          mealSchedules={appData.mealSchedules}
-          onSaveMealSchedules={handleSaveMealSchedules}
-          onCompleteOnboarding={() => {
-            setIsOnboardingGuideOpen(false);
-            setAppData((prev) => ({
-              ...prev,
-              settings: { ...prev.settings, hasCompletedScheduleOnboarding: true }
-            }));
-            setActiveTab('planner');
-          }}
-          onGoToRecipeLibrary={() => {
-            setActiveTab('dishes');
-            setIsSystemGuideActive(true);
-          }}
-        />
+          {/* First Launch Guided Onboarding Modal (Meal Schedule Setup & Recipe Library Walkthrough) */}
+          <FirstTimeOnboardingGuide
+            isOpen={isOnboardingGuideOpen}
+            mealSchedules={appData.mealSchedules}
+            onSaveMealSchedules={handleSaveMealSchedules}
+            onCompleteOnboarding={() => {
+              setIsOnboardingGuideOpen(false);
+              setAppData((prev) => ({
+                ...prev,
+                settings: { ...prev.settings, hasCompletedScheduleOnboarding: true }
+              }));
+              setActiveTab('planner');
+            }}
+            onGoToRecipeLibrary={() => {
+              setIsOnboardingGuideOpen(false);
+              setActiveTab('dishes');
+              setIsSystemGuideActive(true);
+            }}
+          />
+        </div>
       </div>
-    </div>
+    </LanguageProvider>
   );
 }
 
