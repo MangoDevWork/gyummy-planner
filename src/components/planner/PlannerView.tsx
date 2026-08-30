@@ -15,6 +15,8 @@ interface PlannerViewProps {
   onBatchUpdateMealPlan: (updatedPlan: MealPlan) => void;
   onSaveMealSchedules: (schedules: MealScheduleConfig[]) => void;
   onOpenDishCreator: () => void;
+  onNavigateToLibrary?: () => void;
+  onToggleFamilyRecipe?: (dishId: string) => void;
   onGoToGrocery: (startDate: string, endDate: string) => void;
 }
 
@@ -27,6 +29,8 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   onBatchUpdateMealPlan,
   onSaveMealSchedules,
   onOpenDishCreator,
+  onNavigateToLibrary,
+  onToggleFamilyRecipe,
   onGoToGrocery
 }) => {
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
@@ -811,6 +815,8 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
             setSelectedModalSchedule(null);
           }}
           onCreateNewDish={onOpenDishCreator}
+          onNavigateToLibrary={onNavigateToLibrary}
+          onToggleFamilyRecipe={onToggleFamilyRecipe}
         />
       )}
 

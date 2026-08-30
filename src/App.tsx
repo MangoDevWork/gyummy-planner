@@ -340,6 +340,11 @@ export function App() {
                 setActiveTab('dishes');
                 setIsDishCreatorOpen(true);
               }}
+              onNavigateToLibrary={() => {
+                setActiveTab('dishes');
+                setIsSystemGuideActive(true);
+              }}
+              onToggleFamilyRecipe={handleToggleFamilyRecipe}
               onGoToGrocery={handleGoToGrocery}
             />
           )}
