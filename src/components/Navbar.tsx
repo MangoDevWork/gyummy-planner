@@ -21,9 +21,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       case 'planner':
         return 'Meal Planner';
       case 'dishes':
-        return 'Recipe Library';
+        return 'Family Cookbook';
       case 'ingredients':
-        return 'Master Ingredients';
+        return 'My Pantry';
       case 'grocery':
         return 'Grocery Checklist';
       case 'settings':

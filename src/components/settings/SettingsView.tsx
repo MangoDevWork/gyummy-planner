@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import type { AppData, MealScheduleConfig, UserProfile } from '../../types';
-import { clearAllAppData } from '../../services/storage';
-import { getInitialAppData } from '../../services/seedData';
+import { getInitialAppData, DEFAULT_PANTRY_INGREDIENTS, DEFAULT_MEAL_SCHEDULES } from '../../services/seedData';
 import {
   Share2,
   RotateCcw,
@@ -17,26 +16,33 @@ import {
   Save,
   UserPlus,
   LogOut,
-  UserCheck
+  UserCheck,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { exportToZip, parseUploadedDataFile, mergeImportedData } from '../../services/zipExportService';
 import { MealScheduleSettingsModal } from './MealScheduleSettingsModal';
 import { compressImage } from '../../services/imageUtils';
 import { EasterEggModal } from '../common/EasterEggModal';
 import { getCachedSystemRecipes, mergeSystemWithUserDishes } from '../../services/systemRecipesService';
+import { saveDarkModePreference } from '../../services/darkMode';
 
 interface SettingsViewProps {
   appData: AppData;
   onUpdateAppData: (data: AppData) => void;
   onOpenProfileModal: () => void;
   onLogout?: () => void;
+  isDarkMode?: boolean;
+  onToggleDarkMode?: (val: boolean) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   appData,
   onUpdateAppData,
   onOpenProfileModal,
-  onLogout
+  onLogout,
+  isDarkMode = false,
+  onToggleDarkMode
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -66,6 +72,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   const currentMember = appData.currentProfile?.memberName || '';
 
+  // Dark mode toggle — saves per-member preference to localStorage
+  const handleToggleDarkMode = () => {
+    const newVal = !isDarkMode;
+    if (currentMember) {
+      saveDarkModePreference(currentMember, newVal);
+    }
+    onToggleDarkMode?.(newVal);
+  };
+
   // Avatar Upload Handler
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -74,9 +89,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     try {
       const compressed = await compressImage(file, 400, 400, 0.8);
       setEditAvatarUrl(compressed);
-      showToast('📷 Photo uploaded!');
+      showToast('📷 Photo updated');
     } catch (err) {
-      showToast('❌ Image upload failed');
+      showToast('❌ Upload failed');
     }
   };
 
@@ -87,7 +102,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const cleanMember = editMemberName.trim();
 
     if (!cleanFamily || !cleanMember) {
-      showToast('⚠️ Family and Member names are required');
+      showToast('⚠️ Names required');
       return;
     }
 
@@ -117,7 +132,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       familyMembers: Array.from(membersSet)
     });
 
-    showToast('✅ Profile updated!');
+    showToast('✅ Profile saved');
   };
 
   const handleEasterEggConfirm = () => {
@@ -135,7 +150,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     if (!clean) return;
 
     if (appData.familyMembers.some((m) => m.toLowerCase() === clean.toLowerCase())) {
-      showToast(`⚠️ "${clean}" is already in this family.`);
+      showToast(`⚠️ "${clean}" already exists.`);
       return;
     }
 
@@ -146,20 +161,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     });
 
     setNewMemberNameInput('');
-    showToast(`✅ Added member "${clean}"!`);
+    showToast(`✅ Added "${clean}"`);
   };
 
   // Remove a family member (prevent removing current active member)
   const handleRemoveMember = (memberToRemove: string) => {
     if (memberToRemove === currentMember) {
-      showToast('⚠️ You cannot remove the currently active logged-in user.');
+      showToast('⚠️ Cannot remove current user');
       return;
     }
 
-    if (window.confirm(`Are you sure you want to remove "${memberToRemove}" from this family?`)) {
+    if (window.confirm(`Remove "${memberToRemove}"?`)) {
       const updatedMembers = appData.familyMembers.filter((m) => m !== memberToRemove);
       
-      // Clean up favorites
       const updatedDishes = appData.dishes.map((dish) => {
         if (dish.favoritedByMembers && dish.favoritedByMembers.includes(memberToRemove)) {
           return {
@@ -176,7 +190,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         dishes: updatedDishes
       });
 
-      showToast(`🗑️ Removed "${memberToRemove}" from family.`);
+      showToast(`🗑️ Removed "${memberToRemove}"`);
     }
   };
 
@@ -184,7 +198,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const handleExportFullZip = async () => {
     try {
       const filename = await exportToZip(editFamilyName, 'FullBackup', appData);
-      showToast(`📦 Exported full backup ${filename}`);
+      showToast(`📦 Exported ${filename}`);
     } catch (err: any) {
       showToast(`❌ Export failed: ${err.message}`);
     }
@@ -210,7 +224,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     onUpdateAppData(updatedData);
     setImportStatus({
       type: 'success',
-      message: `Successfully imported data: ${summary}`
+      message: `Imported: ${summary}`
     });
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -221,26 +235,29 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       ...appData,
       mealSchedules: schedules
     });
-    showToast('✅ Saved Meal Schedules configuration');
+    showToast('✅ Saved meal schedules');
   };
 
-  // Reset to Starter Data (preserves full 3,000+ system recipe library)
+  // Reset to Starter Data (preserves auth profile, members, settings, and full 3,000+ recipe library)
   const handleResetSampleData = () => {
     if (
       window.confirm(
-        'Reset Family Cookbook to starter recipes? Custom plans will be cleared. The 3,000+ System Recipe Library will remain completely intact.'
+        'Restore defaults for meal plan, grocery list, and starter recipes? Your profile and members will remain intact.'
       )
     ) {
-      clearAllAppData();
       const fresh = getInitialAppData(appData.currentProfile);
       const systemDishes = getCachedSystemRecipes();
       const mergedDishes = mergeSystemWithUserDishes(fresh.dishes, systemDishes);
 
       onUpdateAppData({
-        ...fresh,
-        dishes: mergedDishes
+        ...appData,
+        dishes: mergedDishes,
+        mealPlan: fresh.mealPlan,
+        groceryList: fresh.groceryList,
+        pantryIngredients: DEFAULT_PANTRY_INGREDIENTS,
+        mealSchedules: DEFAULT_MEAL_SCHEDULES
       });
-      setImportStatus({ type: 'success', message: 'Restored starter family recipes. System Library (3,000+ recipes) preserved.' });
+      setImportStatus({ type: 'success', message: 'Restored defaults.' });
     }
   };
 
@@ -255,12 +272,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       )}
 
       {/* Edit Profile & Photo Avatar Card */}
-      <form onSubmit={handleSaveProfile} className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-4">
+      <form onSubmit={handleSaveProfile} className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-[#F4F1EA]">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-slate-700" />
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Profile & Member Photo
+              Profile
             </h3>
           </div>
           <button
@@ -287,10 +304,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <img
                 src={editAvatarUrl}
                 alt="Member Avatar"
-                className="w-16 h-16 rounded-2xl object-cover border border-[#EAE6DF] shadow-xs"
+                className="w-14 h-14 rounded-2xl object-cover border border-[#EAE6DF] shadow-xs"
               />
             ) : (
-              <div className="w-16 h-16 rounded-2xl bg-[#E2D9CC] text-slate-800 font-bold text-xl flex items-center justify-center border border-[#D5CAB9] shadow-xs">
+              <div className="w-14 h-14 rounded-2xl bg-[#E2D9CC] text-slate-800 font-bold text-lg flex items-center justify-center border border-[#D5CAB9] shadow-xs">
                 {editMemberName.charAt(0).toUpperCase()}
               </div>
             )}
@@ -301,7 +318,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               className="absolute -bottom-1 -right-1 p-1.5 bg-[#2B2D42] text-white rounded-xl shadow-sm hover:bg-[#1E1F2E] transition cursor-pointer"
               title="Upload Photo"
             >
-              <Camera className="w-3.5 h-3.5" />
+              <Camera className="w-3 h-3" />
             </button>
           </div>
 
@@ -310,9 +327,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="text-xs font-semibold text-slate-800 bg-[#F4F1EA] hover:bg-[#EAE6DF] border border-[#EAE6DF] px-3 py-1.5 rounded-xl transition cursor-pointer"
+                className="text-xs font-semibold text-slate-800 bg-[#F4F1EA] hover:bg-[#EAE6DF] border border-[#EAE6DF] px-3 py-1 rounded-xl transition cursor-pointer"
               >
-                Upload User Photo
+                Upload Photo
               </button>
               {editAvatarUrl && (
                 <button
@@ -325,9 +342,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </button>
               )}
             </div>
-            <p className="text-[10px] text-slate-500">
-              Photo is displayed at the top left as your user icon.
-            </p>
           </div>
         </div>
 
@@ -362,10 +376,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         <button
           type="submit"
-          className="w-full py-2.5 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+          className="w-full py-2 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <Save className="w-3.5 h-3.5" />
-          <span>Save Profile Changes</span>
+          <span>Save Profile</span>
         </button>
       </form>
 
@@ -378,7 +392,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               Family Members ({appData.familyMembers.length})
             </h3>
           </div>
-          <span className="text-[10px] text-slate-400">Manage household</span>
         </div>
 
         {/* Member List */}
@@ -388,11 +401,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             return (
               <div
                 key={member}
-                className="flex items-center justify-between p-2.5 rounded-xl border border-[#EAE6DF] bg-[#FAF8F5]"
+                className="flex items-center justify-between p-2 rounded-xl border border-[#EAE6DF] bg-[#FAF8F5]"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
                   <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
                       isCurrentUser ? 'bg-[#2B2D42] text-white' : 'bg-[#E2D9CC] text-slate-800'
                     }`}
                   >
@@ -400,13 +413,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </div>
                   <div className="min-w-0">
                     <span className="text-xs font-bold text-slate-800 block truncate">{member}</span>
-                    {isCurrentUser ? (
+                    {isCurrentUser && (
                       <span className="text-[9px] text-emerald-700 font-bold flex items-center gap-1">
-                        <UserCheck className="w-3 h-3" />
-                        Active Logged-In User
+                        <UserCheck className="w-2.5 h-2.5" />
+                        Active User
                       </span>
-                    ) : (
-                      <span className="text-[9px] text-slate-400 block">Family Member</span>
                     )}
                   </div>
                 </div>
@@ -415,7 +426,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <button
                     type="button"
                     onClick={() => handleRemoveMember(member)}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
                     title={`Remove ${member}`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -430,14 +441,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <form onSubmit={handleAddMember} className="pt-1 flex gap-2">
           <input
             type="text"
-            placeholder="Add new family member..."
+            placeholder="Add family member..."
             value={newMemberNameInput}
             onChange={(e) => setNewMemberNameInput(e.target.value)}
             className="flex-1 px-3 py-2 text-xs font-semibold rounded-xl border border-[#EAE6DF] bg-white text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-slate-500 shadow-2xs"
           />
           <button
             type="submit"
-            className="px-3.5 py-2 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1 cursor-pointer"
+            className="px-3 py-2 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1 cursor-pointer"
           >
             <UserPlus className="w-3.5 h-3.5" />
             <span>Add</span>
@@ -451,40 +462,40 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex items-center gap-2">
             <Sliders className="w-4 h-4 text-slate-700" />
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Meal Schedule Configuration
+              Meal Schedule
             </h3>
           </div>
           <button
             onClick={() => setIsScheduleSettingsOpen(true)}
             className="text-xs font-semibold text-slate-800 bg-[#F4F1EA] hover:bg-[#EAE6DF] border border-[#EAE6DF] px-3 py-1.5 rounded-xl transition active:scale-95 cursor-pointer"
           >
-            Customize
+            Configure
           </button>
         </div>
         <p className="text-xs text-slate-500">
-          Set different meal schedules for Weekdays (Mon-Fri) vs Weekends (Sat-Sun).
+          Configure weekday and weekend meals.
         </p>
       </div>
 
-      {/* Share & Backup Section */}
+      {/* Backup & Restore Section */}
       <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
         <div className="flex items-center gap-2">
           <Share2 className="w-4 h-4 text-slate-700" />
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-            Family Data Sharing (Zip)
+            Backup & Restore
           </h3>
         </div>
         <p className="text-xs text-slate-500">
-          Export or import complete family meal plans, recipes, and master ingredients as easy-to-email Zip files.
+          Export or import your family meal plans and recipes.
         </p>
 
-        <div className="space-y-2 pt-1">
+        <div className="grid grid-cols-2 gap-2 pt-1">
           <button
             onClick={handleExportFullZip}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer"
+            className="flex items-center justify-center gap-1.5 py-2.5 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer"
           >
-            <Download className="w-4 h-4" />
-            <span>Export Complete Family Backup (.zip)</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>Export (.zip)</span>
           </button>
 
           <input
@@ -497,17 +508,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl active:scale-95 transition-all border border-[#EAE6DF] cursor-pointer shadow-2xs"
+            className="flex items-center justify-center gap-1.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl active:scale-95 transition-all border border-[#EAE6DF] cursor-pointer shadow-2xs"
           >
-            <FileArchive className="w-4 h-4 text-slate-500" />
-            <span>Import Data from Zip or JSON</span>
+            <FileArchive className="w-3.5 h-3.5 text-slate-500" />
+            <span>Import File</span>
           </button>
         </div>
 
         {/* Import Feedback */}
         {importStatus.type && (
           <div
-            className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+            className={`p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
               importStatus.type === 'success'
                 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                 : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -528,16 +539,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="flex items-center gap-2">
           <Smartphone className="w-4 h-4 text-slate-700" />
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-            Install on Mobile (Pixel & iPhone)
+            Install App
           </h3>
         </div>
-        <div className="space-y-1.5 text-xs text-slate-500">
-          <p>
-            • <strong className="text-slate-800">iPhone (Safari)</strong>: Tap the <span className="font-semibold text-slate-700">Share</span> icon, then choose <span className="font-semibold text-slate-900">"Add to Home Screen"</span>.
-          </p>
-          <p>
-            • <strong className="text-slate-800">Pixel 9 Pro XL (Chrome)</strong>: Tap the <span className="font-semibold text-slate-700">Three Dots</span> menu, then choose <span className="font-semibold text-slate-900">"Install app"</span>.
-          </p>
+        <div className="text-xs text-slate-500 space-y-1">
+          <p>• <strong>iPhone (Safari)</strong>: Share → "Add to Home Screen"</p>
+          <p>• <strong>Android (Chrome)</strong>: Menu ⋮ → "Install App"</p>
         </div>
       </div>
 
@@ -547,16 +554,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="flex items-center gap-2">
             <LogOut className="w-4 h-4 text-slate-700" />
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Account & Session
+              Account
             </h3>
           </div>
           <span className="text-[10px] font-bold text-slate-500 bg-[#F4F1EA] px-2 py-0.5 rounded-md">
             {editFamilyName}
           </span>
         </div>
-        <p className="text-xs text-slate-500">
-          Log out to switch to another family household or member account.
-        </p>
 
         {onLogout && (
           <button
@@ -566,28 +570,87 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onLogout();
               }
             }}
-            className="w-full py-2.5 rounded-xl border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs"
+            className="w-full py-2 rounded-xl border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Log Out of Family</span>
+            <span>Log Out</span>
           </button>
         )}
       </div>
 
-      {/* Reset Family Cookbook Data */}
+      {/* Display Preferences — user-specific */}
+      <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {isDarkMode ? (
+              <Moon className="w-4 h-4 text-slate-700" />
+            ) : (
+              <Sun className="w-4 h-4 text-slate-700" />
+            )}
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Display
+            </h3>
+          </div>
+          <span className="text-[10px] font-semibold text-slate-500 bg-[#F4F1EA] px-2 py-0.5 rounded-md">
+            Just for you
+          </span>
+        </div>
+
+        {/* Dark Mode Toggle Row */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-slate-800">
+              {isDarkMode ? '🌙 Dark Mode' : '☀️ Light Mode'}
+            </p>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {isDarkMode ? 'Modern obsidian & electric mint fizz' : 'Classic warm beige theme'}
+            </p>
+          </div>
+
+          {/* Toggle Switch */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isDarkMode}
+            onClick={handleToggleDarkMode}
+            className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none ${
+              isDarkMode
+                ? 'bg-[#00F5A0] border-[#00D68F]'
+                : 'bg-[#EAE6DF] border-[#D5CAB9]'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5.5 w-5.5 transform rounded-full shadow-md transition-transform duration-200 ease-in-out flex items-center justify-center ${
+                isDarkMode
+                  ? 'translate-x-6 bg-[#0B0D11]'
+                  : 'translate-x-0.5 bg-white'
+              }`}
+              style={{ marginTop: '1px' }}
+            >
+              {isDarkMode ? (
+                <Moon className="w-3 h-3 text-[#00F5A0]" />
+              ) : (
+                <Sun className="w-3 h-3 text-amber-500" />
+              )}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Reset Defaults */}
       <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-2">
         <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-          Reset Family Cookbook
+          Restore Defaults
         </h3>
         <p className="text-xs text-slate-500">
-          Restore starter curated home recipes to your Family Cookbook and reset custom meal plans. All 3,000+ System Library recipes will remain completely preserved and accessible.
+          Reset meal plans, grocery, and starter recipes to defaults. Profile & members are preserved.
         </p>
         <button
           onClick={handleResetSampleData}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F4F1EA] hover:bg-rose-50 hover:text-rose-700 text-slate-600 text-xs font-semibold transition-colors active:scale-95 cursor-pointer border border-[#EAE6DF]"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F4F1EA] hover:bg-rose-50 hover:text-rose-700 text-slate-600 text-xs font-semibold transition-colors active:scale-95 cursor-pointer border border-[#EAE6DF]"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          <span>Restore Starter Family Recipes</span>
+          <span>Restore Defaults</span>
         </button>
       </div>
 

@@ -68,7 +68,8 @@ export interface MealScheduleConfig {
 }
 
 export interface MealScheduleEntry {
-  dishId: string | null;
+  dishId?: string | null;
+  dishIds?: string[]; // Array of dish IDs for multiple recipes in one meal slot
   customText?: string;
   servingsMultiplier?: number;
   notes?: string;

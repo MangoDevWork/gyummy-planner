@@ -341,6 +341,77 @@ export async function copyGroceryListAsMessage(
 }
 
 /**
+ * Format the weekly meal plan as an emoji-formatted message and copy to clipboard
+ */
+export async function copyMealPlanAsMessage(
+  mealPlan: MealPlan,
+  dishes: Dish[],
+  days: Array<{ dateStr: string; dayName: string; isToday: boolean }>,
+  weekRangeLabel: string
+): Promise<{ success: boolean; text: string }> {
+  const dishMap = new Map<string, Dish>();
+  dishes.forEach((d) => dishMap.set(d.id, d));
+
+  let hasAnyMeals = false;
+  let message = `📅 *Gyummy Meal Plan* (${weekRangeLabel})\n`;
+
+  days.forEach((day) => {
+    const dayPlan = mealPlan[day.dateStr] || {};
+    const slots = Object.entries(dayPlan).filter(([, entry]) =>
+      Boolean(entry && ((entry.dishIds && entry.dishIds.length > 0) || entry.dishId || entry.customText))
+    );
+    
+    if (slots.length > 0) {
+      hasAnyMeals = true;
+      const todayBadge = day.isToday ? ' (Today)' : '';
+      message += `\n🗓️ *${day.dayName}, ${day.dateStr}*${todayBadge}\n`;
+      slots.forEach(([slotId, entry]) => {
+        if (!entry) return;
+        const entryDishIds = entry.dishIds && entry.dishIds.length > 0
+          ? entry.dishIds
+          : (entry.dishId ? [entry.dishId] : []);
+        const entryDishes = entryDishIds.map((id) => dishMap.get(id)).filter(Boolean) as Dish[];
+        
+        let dishTitles = entryDishes.map((d) => `${d.imageEmoji || '🍲'} ${d.name}`).join(' + ');
+        if (entry.customText) {
+          dishTitles = dishTitles ? `${dishTitles} (📝 ${entry.customText})` : `📝 ${entry.customText}`;
+        }
+        if (!dishTitles) dishTitles = 'Planned Meal';
+
+        const slotLabel = slotId.charAt(0).toUpperCase() + slotId.slice(1);
+        message += `  • ${slotLabel}: ${dishTitles}\n`;
+      });
+    }
+  });
+
+  if (!hasAnyMeals) {
+    return { success: false, text: 'No meals scheduled for this week to share.' };
+  }
+
+  message += `\n✨ Sent via Gyummy Planner`;
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(message);
+    } else {
+      const textArea = document.createElement('textarea');
+      textArea.value = message;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    }
+    return { success: true, text: message };
+  } catch (err) {
+    console.error('Failed to copy to clipboard:', err);
+    return { success: false, text: 'Could not access clipboard' };
+  }
+}
+
+
+/**
  * Compact CSV & Markdown Table Parser for fast multi-recipe ingestion
  * Format: Name | Cuisine | Category | PrepTime | Ingredients (comma-separated) | Instructions
  */

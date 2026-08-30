@@ -139,7 +139,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              First Time / Get Started
+              New Family
             </button>
             <button
               type="button"
@@ -153,7 +153,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Returning User Login
+              Returning User
             </button>
           </div>
 
@@ -168,7 +168,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Family / Household Name *
+                  Family Name *
                 </label>
                 <input
                   type="text"
@@ -182,7 +182,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
 
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Your Member Name *
+                  Your Name *
                 </label>
                 <input
                   type="text"
@@ -197,7 +197,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
               {/* Photo Upload Section */}
               <div className="bg-[#FDFBF7] p-3 rounded-2xl border border-[#EAE6DF] space-y-2">
                 <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                  Member Photo Avatar (Optional)
+                  Photo (Optional)
                 </label>
                 
                 <input
@@ -236,7 +236,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
                 type="submit"
                 className="w-full py-3 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-md active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Get Started & Set Up Schedules</span>
+                <span>Get Started</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
@@ -246,7 +246,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
               {familyMembers.length > 0 && (
                 <div className="space-y-2">
                   <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-                    Select Member Account to Log In:
+                    Select Member:
                   </label>
 
                   <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
@@ -272,13 +272,13 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
 
               <form onSubmit={handleSubmit} className="space-y-3 pt-2 border-t border-[#F4F1EA]">
                 <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Or Log In with Name:
+                  Or Log In by Name:
                 </label>
 
                 <input
                   type="text"
                   required
-                  placeholder="Family Name (e.g. Miller Family)"
+                  placeholder="Family Name"
                   value={familyName}
                   onChange={(e) => setFamilyName(e.target.value)}
                   className="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl border border-[#EAE6DF] bg-[#FDFBF7] text-slate-900 shadow-2xs"
@@ -287,7 +287,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="Member Name (e.g. Gilbert)"
+                  placeholder="Member Name"
                   value={memberName}
                   onChange={(e) => setMemberName(e.target.value)}
                   className="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl border border-[#EAE6DF] bg-[#FDFBF7] text-slate-900 shadow-2xs"
@@ -297,7 +297,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
                   type="submit"
                   className="w-full py-3 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-md active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>Log In to App</span>
+                  <span>Log In</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
@@ -309,7 +309,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
         <div className="grid grid-cols-3 gap-2 text-center text-white">
           <div className="bg-black/40 backdrop-blur-md p-2.5 rounded-2xl border border-white/20 space-y-1">
             <Calendar className="w-5 h-5 mx-auto text-amber-300" />
-            <span className="text-[10px] font-bold block leading-tight">Rolling 7-Day Plan</span>
+            <span className="text-[10px] font-bold block leading-tight">Weekly Plan</span>
           </div>
 
           <div className="bg-black/40 backdrop-blur-md p-2.5 rounded-2xl border border-white/20 space-y-1">
@@ -319,7 +319,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
 
           <div className="bg-black/40 backdrop-blur-md p-2.5 rounded-2xl border border-white/20 space-y-1">
             <ShoppingBag className="w-5 h-5 mx-auto text-sky-300" />
-            <span className="text-[10px] font-bold block leading-tight">Smart Grocery List</span>
+            <span className="text-[10px] font-bold block leading-tight">Smart Grocery</span>
           </div>
         </div>
       </main>

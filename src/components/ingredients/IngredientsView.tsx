@@ -267,23 +267,58 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
         </button>
       </div>
 
-      {/* Pantry Stock Bar & Category Filter */}
-      <div className="flex items-center justify-between gap-2">
-        <button
-          onClick={() => setShowOnlyPantry(!showOnlyPantry)}
-          className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
-            showOnlyPantry
-              ? 'bg-[#2B2D42] border-[#2B2D42] text-white shadow-xs'
-              : 'bg-white border-[#EAE6DF] text-slate-700 hover:bg-slate-50'
-          }`}
-        >
-          <Home className="w-3.5 h-3.5" />
-          <span>🏡 In My Pantry ({pantryIngredients.length})</span>
-        </button>
+      {/* In My Pantry Overview & Live Benefit Card */}
+      <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#F4F1EA]">
+          <div className="flex items-center gap-2">
+            <Home className="w-4 h-4 text-emerald-700" />
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              In My Pantry ({pantryIngredients.length} Staples)
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowOnlyPantry(!showOnlyPantry)}
+            className={`text-[11px] font-bold px-2.5 py-1 rounded-xl transition cursor-pointer border ${
+              showOnlyPantry
+                ? 'bg-[#2B2D42] text-white border-[#2B2D42]'
+                : 'bg-[#F4F1EA] text-slate-700 border-[#EAE6DF] hover:bg-[#EAE6DF]'
+            }`}
+          >
+            {showOnlyPantry ? 'Show All Catalog' : 'Filter Pantry Only'}
+          </button>
+        </div>
 
-        <span className="text-[11px] text-slate-500 font-medium">
-          {showOnlyPantry ? 'Showing pantry stock' : 'Tap 🏡 to toggle pantry items'}
-        </span>
+        {/* Stocked Pantry Chips */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {pantryIngredients.map((item) => (
+            <span
+              key={item}
+              className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold px-2.5 py-1 rounded-xl shadow-2xs"
+            >
+              <span>🏡 {item}</span>
+              <button
+                type="button"
+                onClick={() => handleTogglePantryItem(item)}
+                className="w-4 h-4 rounded-full hover:bg-emerald-200 flex items-center justify-center text-emerald-700 cursor-pointer ml-0.5"
+                title={`Remove ${item} from pantry`}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+          {pantryIngredients.length === 0 && (
+            <p className="text-xs text-slate-400 italic">No pantry items stocked yet. Tap "+ Pantry" on any ingredient below!</p>
+          )}
+        </div>
+
+        {/* Smart Substitution Engine Live Notice */}
+        <div className="bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EAE6DF] text-[11px] text-slate-600 flex items-start gap-2">
+          <span className="text-sm">✨</span>
+          <p className="leading-snug">
+            <strong>Smart Substitution Active:</strong> When generating your grocery list, pantry staples automatically mark off matching or equivalent ingredients (e.g. <em>Cooking Oil</em> covers <em>Olive Oil</em>).
+          </p>
+        </div>
       </div>
 
       {/* Category Filter Pills */}

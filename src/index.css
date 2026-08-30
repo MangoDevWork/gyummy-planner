@@ -1,25 +1,83 @@
 @import "tailwindcss";
 
+/* =========================================================
+   LIGHT MODE TOKENS (default)
+   ========================================================= */
+:root {
+  --bg-page:        #F4F1EA;
+  --bg-shell:       #FDFBF7;
+  --bg-card:        #FFFFFF;
+  --bg-input:       #FDFBF7;
+  --bg-muted:       #F4F1EA;
+  --bg-muted2:      #EAE6DF;
+  --border:         #EAE6DF;
+  --border2:        #D5CAB9;
+  --text-primary:   #1E293B;
+  --text-secondary: #64748B;
+  --text-muted:     #94A3B8;
+  --text-inverse:   #FFFFFF;
+  --accent-bg:      #2B2D42;
+  --accent-hover:   #1E1F2E;
+  --accent-text:    #FFFFFF;
+  --navbar-bg:      rgba(253, 251, 247, 0.90);
+  --tag-bg:         #E2D9CC;
+  --tag-text:       #3D3929;
+}
+
+/* =========================================================
+   DARK MODE TOKENS
+   — Modern Sleek Obsidian & Charcoal Dark Mode
+   — Electric Mint Fizz (#00F5A0, #00D68F, #C6F1D6, #DFF7F0)
+     for light-colored UI elements, badges, highlights & CTAs
+   ========================================================= */
+.dark {
+  --bg-page:        #0B0D11; /* Ultra-deep dark obsidian */
+  --bg-shell:       #12151C; /* Sleek slate dark shell */
+  --bg-card:        #181D26; /* Elevated card surface */
+  --bg-input:       #1F2430; /* Input and component background */
+  --bg-muted:       #1F2430; 
+  --bg-muted2:      #262C3A; 
+  --border:         #2A3242; /* Clean modern dark borders */
+  --border2:        #212836; 
+  --text-primary:   #FFFFFF; /* Pure crisp bright white for primary text & dish titles */
+  --text-secondary: #E2E8F0; /* Bright crisp silver for secondary labels */
+  --text-muted:     #94A3B8; /* High-contrast readable slate for metadata and headers */
+  --text-inverse:   #090B0E; 
+  --accent-bg:      #00F5A0; /* Vibrant Mint Fizz Electric Green */
+  --accent-hover:   #00D68F; 
+  --accent-text:    #090B0E; 
+  --navbar-bg:      rgba(18, 21, 28, 0.92);
+  --tag-bg:         rgba(0, 245, 160, 0.12); /* Translucent Mint Fizz */
+  --tag-text:       #00F5A0;
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-    background-color: #FDFBF7;
+    background-color: var(--bg-page);
   }
   
   body {
-    background-color: #FDFBF7;
-    color: #1E293B;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     overscroll-behavior-y: none;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   input, textarea, select {
     user-select: auto;
     -webkit-user-select: auto;
-    color-scheme: light;
+  }
+
+  /* In dark mode, system input color-scheme should be dark too */
+  .dark input,
+  .dark textarea,
+  .dark select {
+    color-scheme: dark;
   }
 }
 
@@ -49,4 +107,160 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.dark .light-glass {
+  background: rgba(24, 29, 38, 0.85);
+  border: 1px solid rgba(42, 50, 66, 0.8);
+}
+
+/* =========================================================
+   DARK MODE UTILITY OVERRIDES
+   — Modern obsidian surfaces with electric Mint Fizz accents
+   ========================================================= */
+
+/* Page & shell backgrounds */
+.dark .bg-\[\#FDFBF7\]  { background-color: var(--bg-shell) !important; }
+.dark .bg-\[\#F4F1EA\]  { background-color: var(--bg-muted) !important; }
+.dark .bg-\[\#EAE6DF\]  { background-color: var(--bg-muted2) !important; }
+.dark .bg-\[\#FAF8F5\]  { background-color: var(--bg-input) !important; }
+.dark .bg-white         { background-color: var(--bg-card) !important; }
+.dark .bg-white\/95     { background-color: rgba(24, 29, 38, 0.96) !important; }
+
+/* Card borders */
+.dark .border-\[\#EAE6DF\] { border-color: var(--border) !important; }
+.dark .border-\[\#D5CAB9\] { border-color: var(--border2) !important; }
+.dark .border-\[\#F4F1EA\] { border-color: var(--border2) !important; }
+
+/* Text: High Contrast & Pure White Visibility in Dark Mode */
+.dark .text-slate-900   { color: #FFFFFF !important; }
+.dark .text-slate-800   { color: #FFFFFF !important; }
+.dark .text-slate-700   { color: #F1F5F9 !important; }
+.dark .text-slate-600   { color: #E2E8F0 !important; }
+.dark .text-slate-500   { color: #A5B4CB !important; }
+.dark .text-slate-400   { color: #8C9CB5 !important; }
+
+/* Dedicated Meal Planner Slot Headers & Dish Titles */
+.dark .grid-cols-2 .text-slate-800,
+.dark .grid-cols-2 .text-slate-900 {
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+.dark .grid-cols-2 .text-slate-500 {
+  color: #00F5A0 !important; /* Mint Fizz label for meal slots like BREAKFAST, LUNCH, DINNER */
+  font-weight: 800 !important;
+  letter-spacing: 0.05em;
+}
+.dark .grid-cols-2 .text-slate-700 {
+  color: #F8FAFC !important;
+}
+
+/* Unplanned meal slot text and icon styling in dark mode */
+.dark .grid-cols-2 .text-slate-400 {
+  color: #94A3B8 !important; /* Crisp readable silver/slate for + Add Meal */
+}
+.dark .grid-cols-2 .border-dashed {
+  border-color: #2A3242 !important; /* Seamless match with solid cards */
+  background-color: var(--bg-input) !important;
+}
+.dark .grid-cols-2 .border-dashed:hover {
+  border-color: #00F5A0 !important;
+  background-color: #262C3A !important;
+}
+.dark .grid-cols-2 .border-dashed .text-\[11px\] {
+  color: #CBD5E1 !important; /* Clear, bright, easy-to-read + Add Meal text */
+  font-weight: 600 !important;
+}
+.dark .grid-cols-2 .border-dashed svg {
+  color: #00F5A0 !important; /* Mint Fizz + icon */
+}
+
+/* Primary CTA dark button -> becomes electric Mint Fizz button */
+.dark .bg-\[\#2B2D42\]         { background-color: var(--accent-bg) !important; }
+.dark .hover\:bg-\[\#1E1F2E\]:hover { background-color: var(--accent-hover) !important; }
+.dark .bg-\[\#2B2D42\] *,
+.dark .hover\:bg-\[\#1E1F2E\]:hover * { color: var(--text-inverse) !important; font-weight: 700 !important; }
+
+/* Tag / chip backgrounds */
+.dark .bg-\[\#E2D9CC\]  { background-color: var(--tag-bg) !important; color: var(--tag-text) !important; }
+
+/* Navbar */
+.dark .bg-\[\#FDFBF7\]\/90 { background-color: var(--navbar-bg) !important; }
+
+/* Muted chip/badge */
+.dark .bg-\[\#F4F1EA\]\/60 { background-color: rgba(31, 36, 48, 0.6) !important; }
+
+/* Bottom nav */
+.dark .bg-\[\#FDFBF7\]\/95 { background-color: rgba(18, 21, 28, 0.96) !important; }
+
+/* Hover states */
+.dark .hover\:bg-slate-50:hover  { background-color: var(--bg-muted) !important; }
+.dark .hover\:bg-\[\#F4F1EA\]:hover { background-color: var(--bg-muted) !important; }
+.dark .hover\:\bg-\[\#EAE6DF\]:hover { background-color: var(--bg-muted2) !important; }
+
+/* Active tab text + indicator bar in BottomNav (Mint Fizz #00F5A0) */
+.dark .text-\[\#2B2D42\]   { color: #00F5A0 !important; }
+.dark .bg-\[\#2B2D42\].text-\[\#2B2D42\] { background-color: transparent !important; }
+
+/* Bottom-nav active indicator */
+.dark .bg-\[\#2B2D42\].rounded-full.h-0\.5 {
+  background-color: #00F5A0 !important;
+  box-shadow: 0 0 10px rgba(0, 245, 160, 0.5) !important;
+}
+
+/* App page & shell outer wrappers */
+.dark .bg-\[\#F4F1EA\] { background-color: var(--bg-page) !important; }
+.dark .min-h-screen.bg-\[\#F4F1EA\] { background-color: var(--bg-page) !important; }
+
+/* Modal overlays */
+.dark .bg-black\/50 { background-color: rgba(0, 0, 0, 0.75) !important; }
+.dark .bg-black\/40 { background-color: rgba(0, 0, 0, 0.6) !important; }
+
+/* Mint Fizz / Success states */
+.dark .bg-emerald-50    { background-color: rgba(0, 245, 160, 0.12) !important; }
+.dark .bg-emerald-100   { background-color: rgba(0, 245, 160, 0.18) !important; }
+.dark .text-emerald-700 { color: #00F5A0 !important; }
+.dark .text-emerald-800 { color: #00F5A0 !important; }
+.dark .text-emerald-900 { color: #DFF7F0 !important; }
+.dark .border-emerald-200,
+.dark .border-emerald-300 { border-color: rgba(0, 245, 160, 0.3) !important; }
+
+/* Rose / error states */
+.dark .bg-rose-50   { background-color: rgba(244, 63, 94, 0.15) !important; }
+.dark .text-rose-700 { color: #FB7185 !important; }
+.dark .border-rose-200 { border-color: rgba(244, 63, 94, 0.3) !important; }
+
+/* Amber highlights (star/ratings) */
+.dark .text-amber-500 { color: #FBBF24 !important; }
+.dark .text-amber-600 { color: #FBBF24 !important; }
+.dark .text-amber-800 { color: #FDE68A !important; }
+.dark .bg-amber-50    { background-color: rgba(245, 158, 11, 0.15) !important; }
+.dark .border-amber-200,
+.dark .border-amber-200\/60 { border-color: rgba(245, 158, 11, 0.25) !important; }
+
+/* Slate & extra backgrounds / borders */
+.dark .bg-\[\#E6EBE0\] { background-color: #1A212D !important; border-color: #2D3748 !important; }
+.dark .border-\[\#D9E2D2\] { border-color: #2D3748 !important; }
+.dark .bg-\[\#EDF2F4\] { background-color: var(--bg-input) !important; }
+.dark .border-\[\#E2E8F0\] { border-color: var(--border) !important; }
+.dark .bg-slate-100   { background-color: var(--bg-input) !important; }
+.dark .border-slate-300 { border-color: var(--border) !important; }
+.dark .border-slate-400 { border-color: #384357 !important; }
+
+/* Focus and input borders */
+.dark .focus\:border-slate-500:focus { border-color: #00F5A0 !important; }
+.dark .focus\:border-slate-400:focus { border-color: #00F5A0 !important; }
+
+/* Today active day ring & border in planner */
+.dark .border-slate-900 { border-color: #00F5A0 !important; }
+.dark .ring-slate-900\/20 { --tw-ring-color: rgba(0, 245, 160, 0.25) !important; }
+
+/* Dark mode shadows */
+.dark .shadow-2xl { box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75) !important; }
+.dark .shadow-md  { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important; }
+
+/* Placeholder text in dark inputs */
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-muted) !important;
 }

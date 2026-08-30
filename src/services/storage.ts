@@ -29,14 +29,18 @@ export function setActiveProfile(profile: UserProfile | null): void {
   }
 }
 
+export function resetActiveSession(): void {
+  setActiveProfile(null);
+}
+
 export function getFamilyStorageKey(familyName: string): string {
   const safeName = familyName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
   return `${FAMILY_DATA_PREFIX}${safeName}`;
 }
 
-export function loadAppData(): AppData {
+export function loadAppData(profileOverride?: UserProfile | null): AppData {
   try {
-    const currentProfile = getActiveProfile();
+    const currentProfile = profileOverride !== undefined ? profileOverride : getActiveProfile();
     const familyKey = currentProfile ? getFamilyStorageKey(currentProfile.familyName) : null;
     
     let raw = familyKey ? localStorage.getItem(familyKey) : null;
@@ -202,44 +206,52 @@ export function generateGroceryList(
 
     Object.keys(dayPlan).forEach((scheduleId) => {
       const entry = dayPlan[scheduleId];
-      if (!entry || !entry.dishId) return;
+      if (!entry) return;
 
-      const dish = dishMap.get(entry.dishId);
-      if (!dish) return;
+      const targetDishIds = entry.dishIds && entry.dishIds.length > 0
+        ? entry.dishIds
+        : (entry.dishId ? [entry.dishId] : []);
+
+      if (targetDishIds.length === 0) return;
 
       const multiplier = typeof entry.servingsMultiplier === 'number' && entry.servingsMultiplier > 0
         ? entry.servingsMultiplier
         : 1;
 
-      dish.ingredients.forEach((ing) => {
-        const normName = normalizeName(ing.name);
-        const normUnit = (ing.unit || '').trim().toLowerCase();
-        
-        const key = `${normName}|${normUnit}|${ing.category}`;
+      targetDishIds.forEach((dId) => {
+        const dish = dishMap.get(dId);
+        if (!dish) return;
 
-        const ingAmount = typeof ing.amount === 'number' ? ing.amount * multiplier : null;
+        dish.ingredients.forEach((ing) => {
+          const normName = normalizeName(ing.name);
+          const normUnit = (ing.unit || '').trim().toLowerCase();
+          
+          const key = `${normName}|${normUnit}|${ing.category}`;
 
-        if (aggregatedMap.has(key)) {
-          const item = aggregatedMap.get(key)!;
-          if (typeof item.amount === 'number' && typeof ingAmount === 'number') {
-            item.amount = Math.round((item.amount + ingAmount) * 100) / 100;
-          } else if (item.amount === null && typeof ingAmount === 'number') {
-            item.amount = Math.round(ingAmount * 100) / 100;
+          const ingAmount = typeof ing.amount === 'number' ? ing.amount * multiplier : null;
+
+          if (aggregatedMap.has(key)) {
+            const item = aggregatedMap.get(key)!;
+            if (typeof item.amount === 'number' && typeof ingAmount === 'number') {
+              item.amount = Math.round((item.amount + ingAmount) * 100) / 100;
+            } else if (item.amount === null && typeof ingAmount === 'number') {
+              item.amount = Math.round(ingAmount * 100) / 100;
+            }
+            item.sourceDishes.add(dish.name);
+          } else {
+            const pantryMatch = matchPantryIngredient(ing.name, pantryIngredients);
+
+            aggregatedMap.set(key, {
+              name: ing.name.trim(),
+              amount: ingAmount !== null ? Math.round(ingAmount * 100) / 100 : null,
+              unit: ing.unit ? ing.unit.trim() : '',
+              category: ing.category || 'Other',
+              inPantry: pantryMatch.inPantry,
+              pantrySubstituteNote: pantryMatch.substituteNote,
+              sourceDishes: new Set([dish.name])
+            });
           }
-          item.sourceDishes.add(dish.name);
-        } else {
-          const pantryMatch = matchPantryIngredient(ing.name, pantryIngredients);
-
-          aggregatedMap.set(key, {
-            name: ing.name.trim(),
-            amount: ingAmount !== null ? Math.round(ingAmount * 100) / 100 : null,
-            unit: ing.unit ? ing.unit.trim() : '',
-            category: ing.category || 'Other',
-            inPantry: pantryMatch.inPantry,
-            pantrySubstituteNote: pantryMatch.substituteNote,
-            sourceDishes: new Set([dish.name])
-          });
-        }
+        });
       });
     });
   });

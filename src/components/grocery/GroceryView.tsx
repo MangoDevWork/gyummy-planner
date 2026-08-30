@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import type { AppData, Dish, GroceryCategory, GroceryItem, MealPlan } from '../../types';
 import { GROCERY_CATEGORIES } from '../../types';
 import { generateGroceryList } from '../../services/storage';
@@ -12,7 +12,10 @@ import {
   Plus,
   Edit2,
   MessageSquareShare,
-  Home
+  Home,
+  Calendar,
+  Sparkles,
+  ChevronDown
 } from 'lucide-react';
 import {
   exportToZip,
@@ -45,6 +48,20 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
   const [showCelebration, setShowCelebration] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
+  const { items, startDate, endDate, undoStack } = groceryList;
+
+  // Date Range Generator State
+  const defaultToday = new Date().toISOString().split('T')[0];
+  const defaultNextWeek = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 6);
+    return d.toISOString().split('T')[0];
+  })();
+
+  const [rangeStart, setRangeStart] = useState<string>(startDate || defaultToday);
+  const [rangeEnd, setRangeEnd] = useState<string>(endDate || defaultNextWeek);
+  const [isDateEditorOpen, setIsDateEditorOpen] = useState(false);
+
   // Manual Item Add Modal
   const [isManualAddOpen, setIsManualAddOpen] = useState(false);
   const [manualName, setManualName] = useState('');
@@ -64,7 +81,23 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
     setTimeout(() => setToastMsg(null), 3500);
   };
 
-  const { items, startDate, endDate, undoStack } = groceryList;
+  // Count planned meals within the selected date range
+  const plannedMealsInRange = useMemo(() => {
+    let count = 0;
+    if (!rangeStart || !rangeEnd) return 0;
+    const start = new Date(rangeStart);
+    const end = new Date(rangeEnd);
+
+    Object.entries(mealPlan).forEach(([dateStr, dayPlan]) => {
+      const d = new Date(dateStr);
+      if (d >= start && d <= end && dayPlan) {
+        Object.values(dayPlan).forEach((slot) => {
+          if ((slot?.dishIds && slot.dishIds.length > 0) || slot?.dishId || slot?.customText) count++;
+        });
+      }
+    });
+    return count;
+  }, [mealPlan, rangeStart, rangeEnd]);
 
   const totalCount = items.length;
   const checkedCount = items.filter((i) => i.checked).length;
@@ -87,19 +120,57 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
     });
   };
 
-  // Regenerate List from Plan
-  const handleRegenerate = () => {
-    if (!startDate || !endDate) {
-      showToast('⚠️ Please select a date range from Planner first');
-      return;
-    }
+  // Generate / Regenerate List from Plan with dates
+  const handleGenerate = (customStart?: string, customEnd?: string) => {
+    const effectiveStart = customStart || rangeStart || defaultToday;
+    const effectiveEnd = customEnd || rangeEnd || defaultNextWeek;
 
-    const newItems = generateGroceryList(dishes, mealPlan, startDate, endDate, items, pantryIngredients);
+    const newItems = generateGroceryList(
+      dishes,
+      mealPlan,
+      effectiveStart,
+      effectiveEnd,
+      items,
+      pantryIngredients
+    );
+
     onUpdateGroceryList({
       ...groceryList,
+      startDate: effectiveStart,
+      endDate: effectiveEnd,
       items: newItems
     });
-    showToast('🔄 Refreshed grocery list from Meal Plan!');
+    setRangeStart(effectiveStart);
+    setRangeEnd(effectiveEnd);
+    showToast(`⚡ Generated ${newItems.length} items for ${effectiveStart} to ${effectiveEnd}!`);
+  };
+
+  const handleApplyPreset = (preset: 'this_week' | 'next_week' | 'next_7') => {
+    const today = new Date();
+    let startStr = '';
+    let endStr = '';
+
+    if (preset === 'this_week' || preset === 'next_7') {
+      startStr = today.toISOString().split('T')[0];
+      const endD = new Date(today);
+      endD.setDate(today.getDate() + 6);
+      endStr = endD.toISOString().split('T')[0];
+    } else if (preset === 'next_week') {
+      const nextStart = new Date(today);
+      nextStart.setDate(today.getDate() + 7);
+      startStr = nextStart.toISOString().split('T')[0];
+      const nextEnd = new Date(today);
+      nextEnd.setDate(today.getDate() + 13);
+      endStr = nextEnd.toISOString().split('T')[0];
+    }
+
+    setRangeStart(startStr);
+    setRangeEnd(endStr);
+    handleGenerate(startStr, endStr);
+  };
+
+  const handleRegenerate = () => {
+    handleGenerate();
   };
 
   // Manual Item Add
@@ -315,6 +386,80 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
         className="hidden"
       />
 
+      {/* Date Range Generator Bar */}
+      <div className="bg-white rounded-2xl p-3.5 border border-[#EAE6DF] shadow-sm space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-slate-700" />
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Plan Period & Generator
+            </h3>
+          </div>
+          <span className="text-[10px] font-bold text-slate-600 bg-[#F4F1EA] px-2 py-0.5 rounded-md">
+            {plannedMealsInRange} meal{plannedMealsInRange === 1 ? '' : 's'} planned
+          </span>
+        </div>
+
+        {/* Presets + Date Inputs */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => handleApplyPreset('this_week')}
+            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE6DF] text-slate-800 border border-[#EAE6DF] transition active:scale-95 cursor-pointer"
+          >
+            This Week
+          </button>
+          <button
+            type="button"
+            onClick={() => handleApplyPreset('next_week')}
+            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE6DF] text-slate-800 border border-[#EAE6DF] transition active:scale-95 cursor-pointer"
+          >
+            Next Week
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsDateEditorOpen(!isDateEditorOpen)}
+            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-white hover:bg-slate-50 text-slate-600 border border-[#EAE6DF] transition active:scale-95 cursor-pointer flex items-center gap-1"
+          >
+            <span>{rangeStart} → {rangeEnd}</span>
+            <ChevronDown className="w-3 h-3 text-slate-400" />
+          </button>
+        </div>
+
+        {/* Custom Date Inputs if opened */}
+        {isDateEditorOpen && (
+          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#F4F1EA] animate-in fade-in">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase">Start Date</label>
+              <input
+                type="date"
+                value={rangeStart}
+                onChange={(e) => setRangeStart(e.target.value)}
+                className="w-full text-xs font-bold px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] bg-[#FDFBF7] text-slate-900 shadow-2xs"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase">End Date</label>
+              <input
+                type="date"
+                value={rangeEnd}
+                onChange={(e) => setRangeEnd(e.target.value)}
+                className="w-full text-xs font-bold px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] bg-[#FDFBF7] text-slate-900 shadow-2xs"
+              />
+            </div>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => handleGenerate()}
+          className="w-full py-2 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
+          <span>Generate / Refresh from Meal Plan</span>
+        </button>
+      </div>
+
       {/* Progress & Overview Card */}
       <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
         <div className="flex items-center justify-between">
@@ -380,7 +525,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#EDF2F4] hover:bg-[#E2E8F0] border border-[#E2E8F0] text-slate-800 text-xs font-semibold transition active:scale-95 cursor-pointer shadow-2xs"
           >
             <Plus className="w-3.5 h-3.5 text-slate-600" />
-            <span>+ Add Once-off Item</span>
+            <span>+ Add Item</span>
           </button>
 
           <div className="flex items-center gap-2">
@@ -415,7 +560,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
         >
           <div className="flex items-center justify-between pb-1 border-b border-[#F4F1EA]">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              + Add Once-off Item
+              + Add Item
             </h3>
             <button
               type="button"
@@ -561,14 +706,27 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
 
       {/* Items List Grouped by Category in Pure White #FFFFFF Cards */}
       {displayItems.length === 0 ? (
-        <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-[#EAE6DF] space-y-2 shadow-sm">
-          <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto opacity-60" />
-          <h4 className="text-sm font-bold text-slate-900">
-            {activeTab === 'checked' ? 'No items in cart' : 'All items purchased!'}
-          </h4>
-          <p className="text-xs text-slate-500">
-            Plan recipes in your calendar or add manual items to build your grocery list.
-          </p>
+        <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-[#EAE6DF] space-y-3 shadow-sm">
+          <CheckCircle2 className="w-8 h-8 text-slate-400 mx-auto opacity-60" />
+          <div className="space-y-1">
+            <h4 className="text-sm font-bold text-slate-900">
+              {totalCount === 0 ? 'No grocery items yet' : activeTab === 'checked' ? 'No items in cart' : 'All items purchased!'}
+            </h4>
+            <p className="text-xs text-slate-500">
+              {totalCount === 0
+                ? 'Generate list from your weekly meal plan or add items manually.'
+                : 'Plan recipes in your calendar or add manual items.'}
+            </p>
+          </div>
+          {totalCount === 0 && (
+            <button
+              onClick={handleRegenerate}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] text-white text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Generate From This Week's Plan</span>
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">

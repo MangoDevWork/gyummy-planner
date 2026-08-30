@@ -45,7 +45,7 @@ export const WeekCopyModal: React.FC<WeekCopyModalProps> = ({
     let count = 0;
     days.forEach((day) => {
       if (mealPlan[day]) {
-        count += Object.values(mealPlan[day] || {}).filter((e) => e?.dishId || e?.customText).length;
+        count += Object.values(mealPlan[day] || {}).filter((e) => (e?.dishIds && e.dishIds.length > 0) || e?.dishId || e?.customText).length;
       }
     });
     return count;
@@ -84,7 +84,7 @@ export const WeekCopyModal: React.FC<WeekCopyModalProps> = ({
 
       Object.keys(srcDay).forEach((scheduleId) => {
         const entry = srcDay[scheduleId];
-        if (entry && (entry.dishId || entry.customText)) {
+        if (entry && ((entry.dishIds && entry.dishIds.length > 0) || entry.dishId || entry.customText)) {
           if (overwriteExisting || !dstDay[scheduleId]) {
             dstDay[scheduleId] = { ...entry };
             copiedCount++;

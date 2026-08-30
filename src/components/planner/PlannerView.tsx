@@ -1,10 +1,24 @@
 import React, { useState, useMemo, useRef } from 'react';
 import type { Dish, MealPlan, MealScheduleConfig, MealScheduleEntry } from '../../types';
-import { ChevronLeft, ChevronRight, Plus, ShoppingCart, Copy, Download, Upload, Sliders, CheckCircle2, Move, Sparkles, Calendar } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  ShoppingCart,
+  Copy,
+  Download,
+  Upload,
+  Sliders,
+  CheckCircle2,
+  Move,
+  Sparkles,
+  Calendar,
+  MessageSquareShare
+} from 'lucide-react';
 import { MealScheduleModal } from './MealScheduleModal';
 import { WeekCopyModal } from './WeekCopyModal';
 import { MealScheduleSettingsModal } from '../settings/MealScheduleSettingsModal';
-import { exportToZip, parseUploadedDataFile } from '../../services/zipExportService';
+import { exportToZip, parseUploadedDataFile, copyMealPlanAsMessage } from '../../services/zipExportService';
 
 interface PlannerViewProps {
   familyName: string;
@@ -189,17 +203,18 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
       isToday: boolean;
     }> = [];
 
-    // Prev month padding
-    const prevMonthLastDate = new Date(year, month, 0).getDate();
+    // Previous month padding
     for (let i = startOffset - 1; i >= 0; i--) {
-      const prevDate = new Date(year, month - 1, prevMonthLastDate - i);
+      const prevDate = new Date(year, month, 0 - i);
       const str = formatDateISO(prevDate);
+      const dayPlan = mealPlan[str] || {};
+      const count = Object.values(dayPlan).filter((s) => (s?.dishIds && s.dishIds.length > 0) || s?.dishId || s?.customText).length;
       cells.push({
         dateStr: str,
         dayNumber: prevDate.getDate(),
         isCurrentMonth: false,
-        hasMeals: Boolean(mealPlan[str] && Object.values(mealPlan[str] || {}).some((s) => s?.dishId || s?.customText)),
-        mealCount: mealPlan[str] ? Object.values(mealPlan[str] || {}).filter((s) => s?.dishId || s?.customText).length : 0,
+        hasMeals: count > 0,
+        mealCount: count,
         isToday: str === todayISO
       });
     }
@@ -208,8 +223,8 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
     for (let day = 1; day <= totalDaysInMonth; day++) {
       const currDate = new Date(year, month, day);
       const str = formatDateISO(currDate);
-      const dayPlan = mealPlan[str];
-      const count = dayPlan ? Object.values(dayPlan).filter((s) => s?.dishId || s?.customText).length : 0;
+      const dayPlan = mealPlan[str] || {};
+      const count = Object.values(dayPlan).filter((s) => (s?.dishIds && s.dishIds.length > 0) || s?.dishId || s?.customText).length;
       cells.push({
         dateStr: str,
         dayNumber: day,
@@ -225,12 +240,14 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
     for (let i = 1; i <= remaining; i++) {
       const nextDate = new Date(year, month + 1, i);
       const str = formatDateISO(nextDate);
+      const dayPlan = mealPlan[str] || {};
+      const count = Object.values(dayPlan).filter((s) => (s?.dishIds && s.dishIds.length > 0) || s?.dishId || s?.customText).length;
       cells.push({
         dateStr: str,
         dayNumber: i,
         isCurrentMonth: false,
-        hasMeals: Boolean(mealPlan[str] && Object.values(mealPlan[str] || {}).some((s) => s?.dishId || s?.customText)),
-        mealCount: mealPlan[str] ? Object.values(mealPlan[str] || {}).filter((s) => s?.dishId || s?.customText).length : 0,
+        hasMeals: count > 0,
+        mealCount: count,
         isToday: str === todayISO
       });
     }
@@ -313,6 +330,33 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
     });
   };
 
+  const handleShareMealPlan = async () => {
+    const days = currentWeekDays.map((d) => ({
+      dateStr: d.dateStr,
+      dayName: d.dayName,
+      isToday: d.isToday
+    }));
+    const res = await copyMealPlanAsMessage(mealPlan, dishes, days, weekRangeLabel);
+    if (res.success) {
+      showToast('📋 Copied weekly meal plan to clipboard!');
+    } else {
+      showToast(`⚠️ ${res.text}`);
+    }
+  };
+
+  const totalMealsPlannedThisWeek = useMemo(() => {
+    let count = 0;
+    currentWeekDays.forEach((day) => {
+      const dayPlan = mealPlan[day.dateStr];
+      if (dayPlan) {
+        Object.values(dayPlan).forEach((slot) => {
+          if ((slot?.dishIds && slot.dishIds.length > 0) || slot?.dishId || slot?.customText) count++;
+        });
+      }
+    });
+    return count;
+  }, [currentWeekDays, mealPlan]);
+
   const handleExportZip = async () => {
     try {
       const filename = await exportToZip(familyName, 'MealPlan', { mealPlan });
@@ -389,7 +433,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                 viewMode === 'week' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              7-Day Rolling Plan
+              Weekly Plan
             </button>
             <button
               onClick={() => setViewMode('month')}
@@ -397,23 +441,30 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                 viewMode === 'month' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              Monthly Overview
+              Monthly
             </button>
           </div>
 
           {/* Compact Toolbar Action Buttons */}
           <div className="flex items-center gap-1 shrink-0">
             <button
+              onClick={handleShareMealPlan}
+              className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
+              title="Share Week's Meal Plan (Copy as Message)"
+            >
+              <MessageSquareShare className="w-4 h-4" />
+            </button>
+            <button
               onClick={() => setIsWeekCopyOpen(true)}
               className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
-              title="Copy Meal Schedule across weeks"
+              title="Copy Schedule across weeks"
             >
               <Copy className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsScheduleSettingsOpen(true)}
               className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
-              title="Customize Meal Schedules (Weekdays/Weekends)"
+              title="Configure Meal Schedules"
             >
               <Sliders className="w-4 h-4" />
             </button>
@@ -439,7 +490,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
           <button
             onClick={handlePrevPeriod}
             className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition cursor-pointer"
-            title="Previous 7 Days"
+            title="Previous Period"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -459,29 +510,40 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
           <button
             onClick={handleNextPeriod}
             className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition cursor-pointer"
-            title="Next 7 Days"
+            title="Next Period"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Main 'Generate Smart Grocery List' Banner in Soft Sage Olive Green (#E6EBE0) */}
-      <div className="bg-[#E6EBE0] rounded-2xl p-4 text-slate-800 shadow-sm border border-[#D9E2D2] flex items-center justify-between">
-        <div className="space-y-0.5">
-          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-600">
-            Shopping For This Period?
+      {/* Main Grocery List Banner */}
+      <div className="bg-[#E6EBE0] rounded-2xl p-3.5 text-slate-800 shadow-sm border border-[#D9E2D2] flex items-center justify-between">
+        <div>
+          <h4 className="text-xs font-bold text-slate-900">Grocery List</h4>
+          <span className="text-[10px] text-slate-600 font-medium">
+            {weekRangeLabel} ({totalMealsPlannedThisWeek} meals planned)
           </span>
-          <h4 className="text-xs font-bold text-slate-900">Generate Smart Grocery List</h4>
         </div>
         <button
           onClick={() => onGoToGrocery(weekStartISO, weekEndISO)}
-          className="flex items-center gap-1.5 bg-white text-slate-900 text-xs font-semibold px-3.5 py-2 rounded-xl shadow-xs active:scale-95 transition-all hover:bg-slate-50 cursor-pointer border border-[#D9E2D2]"
+          className="flex items-center gap-1.5 bg-white text-slate-900 text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-xs active:scale-95 transition-all hover:bg-slate-50 cursor-pointer border border-[#D9E2D2]"
         >
           <ShoppingCart className="w-3.5 h-3.5 text-slate-700" />
           <span>View List</span>
         </button>
       </div>
+
+      {/* Empty Week Encouragement Banner */}
+      {viewMode === 'week' && totalMealsPlannedThisWeek === 0 && (
+        <div className="bg-white rounded-2xl p-5 text-center border border-dashed border-[#EAE6DF] space-y-2 shadow-2xs animate-in fade-in">
+          <div className="text-2xl">🗓️ 🍲</div>
+          <h4 className="text-xs font-bold text-slate-900">No meals planned for this week yet</h4>
+          <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+            Tap "+ Plan" on any slot below or browse your Family Cookbook to get started!
+          </p>
+        </div>
+      )}
 
       {/* Calendar View Container (Swipe Gestures Removed as Requested) */}
       <div>
@@ -566,8 +628,12 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                         const configuredSchedule = mealSchedules.find((s) => s.id === scheduleId);
                         const scheduleLabel = configuredSchedule?.name || scheduleId.replace('extra_', 'Extra ').replace('schedule_', '');
                         const entry = dayPlan[scheduleId];
-                        const dish = entry?.dishId ? dishMap.get(entry.dishId) : null;
-                        const hasPlan = Boolean(dish || entry?.customText);
+                        
+                        const entryDishIds = entry?.dishIds && entry.dishIds.length > 0
+                          ? entry.dishIds
+                          : (entry?.dishId ? [entry.dishId] : []);
+                        const entryDishes = entryDishIds.map((id) => dishMap.get(id)).filter(Boolean) as Dish[];
+                        const hasPlan = Boolean(entryDishes.length > 0 || entry?.customText);
 
                         const isDropTarget =
                           dragOverTarget?.toDate === day.dateStr && dragOverTarget?.toScheduleId === scheduleId;
@@ -596,7 +662,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                                 ? 'border-slate-500 bg-[#F4F1EA] ring-2 ring-slate-300 scale-102 shadow-md'
                                 : hasPlan
                                 ? 'bg-[#FAF8F5] border-[#EAE6DF] hover:border-slate-300 shadow-2xs'
-                                : 'bg-[#FDFBF7]/60 border-dashed border-[#EAE6DF] hover:border-slate-300 hover:bg-[#FAF8F5]'
+                                : 'bg-[#FAF8F5] border-dashed border-[#EAE6DF] hover:border-slate-300 hover:bg-[#F4F1EA] shadow-2xs'
                             }`}
                           >
                             <div className="flex items-center justify-between mb-1">
@@ -613,20 +679,29 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                               )}
                             </div>
 
-                            {dish ? (
-                              <div className="flex items-center gap-1.5 mt-1">
-                                {dish.imageUrl ? (
-                                  <img
-                                    src={dish.imageUrl}
-                                    alt={dish.name}
-                                    className="w-5 h-5 rounded-md object-cover shrink-0"
-                                  />
-                                ) : (
-                                  <span className="text-base shrink-0">{dish.imageEmoji || '🍲'}</span>
+                            {entryDishes.length > 0 ? (
+                              <div className="space-y-1 mt-1">
+                                {entryDishes.map((dish) => (
+                                  <div key={dish.id} className="flex items-center gap-1.5 min-w-0">
+                                    {dish.imageUrl ? (
+                                      <img
+                                        src={dish.imageUrl}
+                                        alt={dish.name}
+                                        className="w-4 h-4 rounded-md object-cover shrink-0"
+                                      />
+                                    ) : (
+                                      <span className="text-sm shrink-0">{dish.imageEmoji || '🍲'}</span>
+                                    )}
+                                    <span className="text-xs font-bold text-slate-800 truncate leading-tight">
+                                      {dish.name}
+                                    </span>
+                                  </div>
+                                ))}
+                                {entry?.customText && (
+                                  <span className="text-[10px] text-slate-500 italic block truncate">
+                                    📝 {entry.customText}
+                                  </span>
                                 )}
-                                <span className="text-xs font-bold text-slate-800 truncate leading-tight">
-                                  {dish.name}
-                                </span>
                               </div>
                             ) : entry?.customText ? (
                               <div className="mt-1">
@@ -724,8 +799,11 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
               <div className="grid grid-cols-2 gap-2.5">
                 {mealSchedules.filter((s) => s.defaultEnabled).map((schedule) => {
                   const entry = (mealPlan[selectedMonthDate] || {})[schedule.id];
-                  const dish = entry?.dishId ? dishMap.get(entry.dishId) : null;
-                  const hasPlan = Boolean(dish || entry?.customText);
+                  const entryDishIds = entry?.dishIds && entry.dishIds.length > 0
+                    ? entry.dishIds
+                    : (entry?.dishId ? [entry.dishId] : []);
+                  const entryDishes = entryDishIds.map((id) => dishMap.get(id)).filter(Boolean) as Dish[];
+                  const hasPlan = Boolean(entryDishes.length > 0 || entry?.customText);
 
                   return (
                     <div
@@ -740,8 +818,8 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                       }
                       className={`rounded-xl p-2.5 border transition-all cursor-pointer active:scale-[0.98] ${
                         hasPlan
-                          ? 'bg-[#FAF8F5] border-[#EAE6DF] hover:border-slate-300'
-                          : 'bg-[#FDFBF7]/60 border-dashed border-[#EAE6DF] hover:bg-[#FAF8F5]'
+                          ? 'bg-[#FAF8F5] border-[#EAE6DF] hover:border-slate-300 shadow-2xs'
+                          : 'bg-[#FAF8F5] border-dashed border-[#EAE6DF] hover:border-slate-300 hover:bg-[#F4F1EA] shadow-2xs'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -752,12 +830,21 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                         {!hasPlan && <Plus className="w-3 h-3 text-slate-400" />}
                       </div>
 
-                      {dish ? (
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span className="text-base shrink-0">{dish.imageEmoji || '🍲'}</span>
-                          <span className="text-xs font-bold text-slate-800 truncate leading-tight">
-                            {dish.name}
-                          </span>
+                      {entryDishes.length > 0 ? (
+                        <div className="space-y-1 mt-1">
+                          {entryDishes.map((dish) => (
+                            <div key={dish.id} className="flex items-center gap-1.5 min-w-0">
+                              <span className="text-base shrink-0">{dish.imageEmoji || '🍲'}</span>
+                              <span className="text-xs font-bold text-slate-800 truncate leading-tight">
+                                {dish.name}
+                              </span>
+                            </div>
+                          ))}
+                          {entry?.customText && (
+                            <span className="text-[10px] text-slate-500 italic block truncate">
+                              📝 {entry.customText}
+                            </span>
+                          )}
                         </div>
                       ) : entry?.customText ? (
                         <span className="text-xs font-medium text-slate-700 italic truncate block mt-1">

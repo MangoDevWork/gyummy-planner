@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { AppData, Dish, MasterIngredient, MealPlan, MealScheduleConfig, MealScheduleEntry, UserProfile } from './types';
-import { loadAppData, saveAppData, generateGroceryList } from './services/storage';
+import { loadAppData, saveAppData, generateGroceryList, setActiveProfile, resetActiveSession } from './services/storage';
+import { getInitialAppData } from './services/seedData';
 import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
 import type { TabType } from './components/BottomNav';
@@ -14,6 +15,7 @@ import { LandingLoginPage } from './components/auth/LandingLoginPage';
 import { FirstTimeOnboardingGuide } from './components/auth/FirstTimeOnboardingGuide';
 
 import { loadMasterSystemRecipes, mergeSystemWithUserDishes, getCachedSystemRecipes } from './services/systemRecipesService';
+import { loadDarkModePreference, applyDarkMode } from './services/darkMode';
 
 export function App() {
   const [appData, setAppData] = useState<AppData>(() => loadAppData());
@@ -22,6 +24,30 @@ export function App() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isOnboardingGuideOpen, setIsOnboardingGuideOpen] = useState(false);
   const [isSystemGuideActive, setIsSystemGuideActive] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    // On first load, check if there's an active profile and restore their preference
+    const stored = loadAppData();
+    if (stored.currentProfile?.memberName) {
+      return loadDarkModePreference(stored.currentProfile.memberName);
+    }
+    return false;
+  });
+
+  // Apply .dark class to <html> whenever isDarkMode changes
+  useEffect(() => {
+    applyDarkMode(isDarkMode);
+  }, [isDarkMode]);
+
+  // When the active member changes, restore their dark mode preference
+  useEffect(() => {
+    if (appData.currentProfile?.memberName) {
+      const pref = loadDarkModePreference(appData.currentProfile.memberName);
+      setIsDarkMode(pref);
+    } else {
+      // No profile logged in → reset to light
+      setIsDarkMode(false);
+    }
+  }, [appData.currentProfile?.memberName]);
 
   // Load master system recipes (3,000+ recipes) from static asset / IndexedDB on launch
   useEffect(() => {
@@ -47,28 +73,38 @@ export function App() {
     }
   }, [appData.currentProfile, appData.settings?.hasCompletedScheduleOnboarding]);
 
-  // Auth Profile handler
-  const handleSelectProfile = (profile: UserProfile, updatedMembers: string[]) => {
-    const isFirstTime = !appData.settings?.hasCompletedScheduleOnboarding;
+  // Auth Profile handler: loads data isolated to this family and switches directly to Planner
+  const handleSelectProfile = (profile: UserProfile, updatedMembers?: string[]) => {
+    setActiveProfile(profile);
+    const loadedData = loadAppData(profile);
+    const membersSet = new Set(loadedData.familyMembers || []);
+    if (profile.memberName) membersSet.add(profile.memberName);
+    if (updatedMembers) updatedMembers.forEach((m) => membersSet.add(m));
+
     const systemDishes = getCachedSystemRecipes();
-    setAppData((prev) => ({
-      ...prev,
+    const finalData: AppData = {
+      ...loadedData,
       currentProfile: profile,
-      familyMembers: updatedMembers,
-      dishes: mergeSystemWithUserDishes(prev.dishes, systemDishes)
-    }));
+      familyMembers: Array.from(membersSet),
+      dishes: mergeSystemWithUserDishes(loadedData.dishes, systemDishes)
+    };
+
+    setAppData(finalData);
+    saveAppData(finalData);
     setIsProfileModalOpen(false);
-    if (isFirstTime) {
+    setActiveTab('planner');
+
+    if (!finalData.settings?.hasCompletedScheduleOnboarding) {
       setIsOnboardingGuideOpen(true);
     }
   };
 
   const handleLogout = () => {
-    setAppData((prev) => ({
-      ...prev,
-      currentProfile: null
-    }));
+    resetActiveSession();
+    const initial = getInitialAppData(null);
+    setAppData(initial);
     setIsProfileModalOpen(false);
+    setActiveTab('planner');
   };
 
   const handleRemoveMember = (memberNameToRemove: string) => {
@@ -119,7 +155,18 @@ export function App() {
       Object.keys(updatedMealPlan).forEach((date) => {
         const day = { ...updatedMealPlan[date] };
         Object.keys(day).forEach((scheduleId) => {
-          if (day[scheduleId]?.dishId === dishId) {
+          const entry = day[scheduleId];
+          if (!entry) return;
+
+          if (entry.dishId === dishId) {
+            entry.dishId = null;
+          }
+          if (entry.dishIds && entry.dishIds.includes(dishId)) {
+            entry.dishIds = entry.dishIds.filter((id) => id !== dishId);
+          }
+
+          const hasDishes = Boolean((entry.dishIds && entry.dishIds.length > 0) || entry.dishId);
+          if (!hasDishes && !entry.customText) {
             delete day[scheduleId];
           }
         });
@@ -400,6 +447,8 @@ export function App() {
               onUpdateAppData={setAppData}
               onOpenProfileModal={() => setIsProfileModalOpen(true)}
               onLogout={handleLogout}
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={(val: boolean) => setIsDarkMode(val)}
             />
           )}
         </main>
@@ -407,7 +456,10 @@ export function App() {
         {/* Bottom Mobile Tab Bar */}
         <BottomNav
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab) => {
+            setIsSystemGuideActive(false);
+            setActiveTab(tab);
+          }}
           groceryPendingCount={pendingGroceryCount}
         />
 
@@ -434,6 +486,7 @@ export function App() {
               ...prev,
               settings: { ...prev.settings, hasCompletedScheduleOnboarding: true }
             }));
+            setActiveTab('planner');
           }}
           onGoToRecipeLibrary={() => {
             setActiveTab('dishes');

@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   Star,
   BookOpen,
-  Globe,
   ArrowUpDown,
   Filter,
   BookmarkPlus,
@@ -88,9 +87,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
   const [showGuideBanner, setShowGuideBanner] = useState(showSystemGuideHint);
 
   useEffect(() => {
-    if (initialScope) {
-      setLibraryScope(initialScope);
-    }
+    setLibraryScope(initialScope || 'family');
   }, [initialScope]);
 
   useEffect(() => {
@@ -406,7 +403,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
         className="hidden"
       />
 
-      {/* Scope Switcher: Family Cookbook vs System Library */}
+      {/* Scope Switcher: Family Cookbook vs Recipe Library */}
       <div className="grid grid-cols-2 bg-[#F4F1EA] p-1 rounded-2xl border border-[#EAE6DF]">
         <button
           onClick={() => setLibraryScope('family')}
@@ -428,12 +425,12 @@ export const DishesView: React.FC<DishesViewProps> = ({
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Globe className="w-3.5 h-3.5" />
-          <span>System Library ({systemLibraryCount.toLocaleString()})</span>
+          <Search className="w-3.5 h-3.5" />
+          <span>Recipe Library ({systemLibraryCount.toLocaleString()})</span>
         </button>
       </div>
 
-      {/* First Time Guidance Spotlight Banner */}
+      {/* Guidance Spotlight Banner */}
       {showGuideBanner && libraryScope === 'system' && (
         <div className="bg-[#2B2D42] text-white p-3.5 rounded-2xl shadow-md border border-slate-700 space-y-2 animate-in fade-in slide-in-from-top-2">
           <div className="flex items-start justify-between gap-2">
@@ -443,10 +440,10 @@ export const DishesView: React.FC<DishesViewProps> = ({
               </div>
               <div className="space-y-0.5">
                 <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span>System Recipe Library (3,066 Curated Dishes)</span>
+                  <span>Recipe Library (3,000+ Dishes)</span>
                 </h4>
                 <p className="text-[11px] text-slate-200 leading-snug">
-                  👉 Tap <strong>"+ Cookbook"</strong> on any recipe card below to add it to your Family Cookbook!
+                  👉 Tap <strong>"+ Cookbook"</strong> on any recipe to save it to your Family Cookbook.
                 </p>
               </div>
             </div>
@@ -469,7 +466,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
             placeholder={
               libraryScope === 'family'
                 ? 'Search Family Cookbook...'
-                : 'Search 3,000+ System Recipes...'
+                : 'Search Recipe Library...'
             }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -660,7 +657,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
       <div className="flex items-center justify-between pt-1">
         <div className="flex items-center gap-1.5">
           <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            {libraryScope === 'family' ? 'Family Homemade Recipes' : 'All System Recipes'} (
+            {libraryScope === 'family' ? 'Family Cookbook' : 'Recipe Library'} (
             {filteredDishes.length.toLocaleString()})
           </h3>
         </div>
@@ -684,12 +681,12 @@ export const DishesView: React.FC<DishesViewProps> = ({
           </div>
           <div className="space-y-1">
             <h4 className="text-sm font-bold text-slate-900">
-              {libraryScope === 'family' ? 'No recipes in your Family Cookbook yet' : 'No matching recipes found'}
+              {libraryScope === 'family' ? 'No recipes in Family Cookbook yet' : 'No matching recipes found'}
             </h4>
             <p className="text-xs text-slate-500">
               {libraryScope === 'family'
-                ? 'Switch to the System Library to browse 3,000+ curated recipes and tap "+ Add to Cookbook"!'
-                : `No recipes matched your search filters. Try clearing your search or picking a popular category.`}
+                ? 'Switch to Recipe Library to browse 3,000+ dishes and tap "+ Cookbook"!'
+                : 'Try clearing filters or changing search keywords.'}
             </p>
           </div>
 
@@ -699,8 +696,8 @@ export const DishesView: React.FC<DishesViewProps> = ({
                 onClick={() => setLibraryScope('system')}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] text-white text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
               >
-                <Globe className="w-3.5 h-3.5" />
-                <span>Explore System Library</span>
+                <Search className="w-3.5 h-3.5" />
+                <span>Browse Recipe Library</span>
               </button>
             ) : (
               <button

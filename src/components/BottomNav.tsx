@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, UtensilsCrossed, Carrot, ShoppingCart, Settings } from 'lucide-react';
+import { Calendar, UtensilsCrossed, Home, ShoppingCart, Settings } from 'lucide-react';
 
 export type TabType = 'planner' | 'dishes' | 'ingredients' | 'grocery' | 'settings';
 
@@ -29,8 +29,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     },
     {
       id: 'ingredients' as TabType,
-      label: 'Ingredients',
-      icon: Carrot,
+      label: 'Pantry',
+      icon: Home,
       badge: null
     },
     {
