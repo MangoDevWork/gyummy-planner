@@ -3,6 +3,7 @@ import type { UserProfile } from '../../types';
 import { ArrowRight, Camera, Sparkles, Calendar, BookOpen, ShoppingBag } from 'lucide-react';
 import { compressImage } from '../../services/imageUtils';
 import { EasterEggModal } from '../common/EasterEggModal';
+import heroImg from '../../assets/hero-landing.jpg';
 
 interface LandingLoginPageProps {
   currentProfile: UserProfile | null;
@@ -94,7 +95,7 @@ export const LandingLoginPage: React.FC<LandingLoginPageProps> = ({
       {/* Background Hero Banner using PXL_20260108_091927515.MP.jpg */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/hero-landing.jpg"
+          src={heroImg}
           alt="Delicious Food Header"
           className="w-full h-full object-cover object-center filter brightness-[0.85] contrast-[1.05]"
         />
