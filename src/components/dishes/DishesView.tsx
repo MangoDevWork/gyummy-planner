@@ -29,6 +29,8 @@ interface DishesViewProps {
   currentProfile: UserProfile | null;
   dishes: Dish[];
   masterIngredients: MasterIngredient[];
+  initialScope?: 'family' | 'system';
+  showSystemGuideHint?: boolean;
   onSaveDish: (dish: Dish) => void;
   onDeleteDish: (dishId: string) => void;
   onToggleFavoriteDish: (dishId: string) => void;
@@ -77,10 +79,26 @@ export const DishesView: React.FC<DishesViewProps> = ({
   onImportDishes,
   onQuickPlanDish,
   isCreatorOpen,
-  setIsCreatorOpen
+  setIsCreatorOpen,
+  initialScope = 'family',
+  showSystemGuideHint = false
 }) => {
   // Library vs Family Cookbook Scope Switcher
-  const [libraryScope, setLibraryScope] = useState<'family' | 'system'>('family');
+  const [libraryScope, setLibraryScope] = useState<'family' | 'system'>(initialScope);
+  const [showGuideBanner, setShowGuideBanner] = useState(showSystemGuideHint);
+
+  useEffect(() => {
+    if (initialScope) {
+      setLibraryScope(initialScope);
+    }
+  }, [initialScope]);
+
+  useEffect(() => {
+    if (showSystemGuideHint) {
+      setShowGuideBanner(true);
+    }
+  }, [showSystemGuideHint]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedCuisine, setSelectedCuisine] = useState<string>('All Cuisines');
@@ -414,6 +432,33 @@ export const DishesView: React.FC<DishesViewProps> = ({
           <span>System Library ({systemLibraryCount.toLocaleString()})</span>
         </button>
       </div>
+
+      {/* First Time Guidance Spotlight Banner */}
+      {showGuideBanner && libraryScope === 'system' && (
+        <div className="bg-[#2B2D42] text-white p-3.5 rounded-2xl shadow-md border border-slate-700 space-y-2 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center font-bold text-sm shrink-0 border border-amber-400/30">
+                ✨
+              </div>
+              <div className="space-y-0.5">
+                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>System Recipe Library (3,066 Curated Dishes)</span>
+                </h4>
+                <p className="text-[11px] text-slate-200 leading-snug">
+                  👉 Tap <strong>"+ Cookbook"</strong> on any recipe card below to add it to your Family Cookbook!
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowGuideBanner(false)}
+              className="text-[10px] font-bold bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded-lg transition shrink-0 cursor-pointer"
+            >
+              Got it! ✓
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Search Bar & Sharing Action Buttons */}
       <div className="flex items-center gap-2">

@@ -21,6 +21,7 @@ export function App() {
   const [isDishCreatorOpen, setIsDishCreatorOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isOnboardingGuideOpen, setIsOnboardingGuideOpen] = useState(false);
+  const [isSystemGuideActive, setIsSystemGuideActive] = useState(false);
 
   // Load master system recipes (3,000+ recipes) from static asset / IndexedDB on launch
   useEffect(() => {
@@ -349,6 +350,8 @@ export function App() {
               currentProfile={appData.currentProfile}
               dishes={appData.dishes}
               masterIngredients={appData.masterIngredients}
+              initialScope={isSystemGuideActive ? 'system' : 'family'}
+              showSystemGuideHint={isSystemGuideActive}
               onSaveDish={handleSaveDish}
               onDeleteDish={handleDeleteDish}
               onToggleFavoriteDish={handleToggleFavoriteDish}
@@ -429,6 +432,7 @@ export function App() {
           }}
           onGoToRecipeLibrary={() => {
             setActiveTab('dishes');
+            setIsSystemGuideActive(true);
           }}
         />
       </div>
