@@ -1,0 +1,1594 @@
+{
+  "app": "Gyummy Planner",
+  "version": 2,
+  "exportedAt": "2026-08-30T00:30:08.472Z",
+  "dishes": [
+    {
+      "id": "dish_scraped_1788049800469_oo45s",
+      "name": "涼拌苦瓜/家常菜 by Helen（海倫小姐）",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 30,
+      "instructions": "1. 先將所有材料備妥。苦瓜切頭去尾，中間切一長刀變成一半，用小湯匙把裹面的芯挖掉。切薄片。\n2. 將切好的薄片苦瓜放入保鮮盒中，再放入1匙鹽，蓋上蓋子上下搖晃，靜置15分鐘待出水。\n3. 把鹽水倒掉，或是直接加冰塊水冰一下，再一起倒掉。\n4. 把蒜、辣椒、香油、醬油、白醋、糖，加入，蓋上蓋子，上下搖晃，放入冰箱，即完成。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/442939/eae1f01e2b0e42ba.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:00.469Z",
+      "updatedAt": "2026-08-30T00:30:00.470Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049800469_0",
+          "name": "青苦瓜 1個",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049800469_1",
+          "name": "鹽 1.5小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049800469_2",
+          "name": "糖 2匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049800469_3",
+          "name": "香油 2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049800469_4",
+          "name": "醬油 1小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049800469_5",
+          "name": "辣椒 5根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049800469_6",
+          "name": "蒜 6瓣",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049800485_woy8e",
+      "name": "炒秋葵 / 家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 2,
+      "prepTimeMinutes": 5,
+      "instructions": "1. ●秋葵用鹽輕輕搓洗去除茸毛，泡水換水洗淨瀝乾。\n2. ●秋葵洗乾淨後刨除硬帽蓋，不要把秋葵刨破皮這樣秋葵肚子裡的黏液才能保留。\n3. ●蒜瓣跟秋葵一起泡水洗淨拍碎剝膜。\n●鴻禧菇拆封後切掉底部沖洗過剝塊。\n4. ●鍋小火加油放蒜末爆香，聞到蒜香先灑鹽再把秋葵放進來翻炒，讓秋葵沾到有鹽的油脂。\n5. ●蓋上鍋蓋蒸炒1分鐘。\n6. ●打開鍋蓋把鴻禧菇放進來後翻炒約1分鐘，聞到菇的香氣就完成啦。\n7. 鍋熱秋葵烹煮時間約2分鐘能熟，不需久煮營養才不會流失。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/493294/51da8a97aa6a4597.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:00.485Z",
+      "updatedAt": "2026-08-30T00:30:00.485Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049800484_0",
+          "name": "黃秋葵 20根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049800484_1",
+          "name": "鴻禧菇 1包",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049800484_2",
+          "name": "蒜瓣 3瓣",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049800484_3",
+          "name": "油 2小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049800484_4",
+          "name": "鹽 1/3小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049800808_oxrv3",
+      "name": "秋葵燒肉 / 家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 15,
+      "instructions": "1. 秋葵用鹽輕輕搓洗去除茸毛，洗淨刨除硬帽蓋。\n2. 二層肉用料理剪刀修掉肥油，順紋剪條狀，用醃料醃15分鐘。蒜瓣洗凈拍碎剝膜。\n3. 如果當餐有要煎蛋，可以炒菜前先煎蛋。\n雞蛋洗淨瀝乾，鍋小火加油煎蛋，蛋依喜歡的熟成度煎熟，後盛盤。\n4. 用煎蛋的原鍋原油不用再放油維持小火，放蒜末爆香，聞到蒜香後撒點鹽花，把秋葵放進鍋中翻略炒讓秋葵沾到鍋中蒜香油脂，蓋鍋蒸炒1分鐘。\n5. 打開鍋蓋把秋葵推至鍋邊，把二層肉倒進來用料理筷幫肉片展開，像吃燒烤肉一片片展開不疊在一起烤(煎)。\n6. 約3分鐘用料理將肉片一一翻面不重疊的繼續煎，把秋葵夾在肉片上才不會過熟，秋葵先盛盤。\n7. 豬肉翻面後又煎了3分鐘，豬肉兩面以微金黃，先熄火讓肉靜置讓肉汁回流，像煎牛排一樣，這樣有厚度的原肉塊保水好吃。\n8. 約靜置5分鐘後，再次轉中小火將有些厚度的二層肉煎至快焦但沒焦，熄火完成。\n9. 好吃!! 如果覺松坂肉太油，里肌肉太瘦，二層肉油脂剛好。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/492904/53569479b6df7edd.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:00.808Z",
+      "updatedAt": "2026-08-30T00:30:00.808Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049800808_0",
+          "name": "豬二層肉 290克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049800808_1",
+          "name": "秋葵 25根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049800808_2",
+          "name": "[豬二層肉醃料] 白胡椒粉 1/3小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049800808_3",
+          "name": "蒜瓣 4瓣",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049800808_4",
+          "name": "[豬二層肉醃料] 五香粉 1/3小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049800808_5",
+          "name": "鹽 1/5小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049800808_6",
+          "name": "[豬二層肉醃料] 蠔油 1.5小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049800808_7",
+          "name": "油 1/2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049801227_8jm3b",
+      "name": "秋葵炒蛋 / 家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 20,
+      "instructions": "1. 秋葵用鹽輕輕搓洗去除茸毛，刨除硬帽蓋，洗淨。\n2. 雞蛋洗淨。\n3. 秋葵橫剪1.5cm塊狀；雞蛋加點鹽花（不在材料裡）打散備用。\n4. 熱鍋加1.5小匙油，先將蛋液炒至半熟盛出。\n5. 同鍋補1.5小匙油，先灑鹽再放放秋葵快炒至秋葵變深綠色。\n6. 同鍋補1.5小匙油，先灑鹽再放放秋葵快炒至秋葵變深綠色。\n7. 用挖著湯匙配飯吃，清爽好吃。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/492114/c4c85847de597339.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:01.227Z",
+      "updatedAt": "2026-08-30T00:30:01.227Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049801227_0",
+          "name": "秋葵 350克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049801227_1",
+          "name": "雞蛋 3顆",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049801227_2",
+          "name": "油 1/2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049801227_3",
+          "name": "鹽 1/5小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049802124_s7wrn",
+      "name": "咖哩雞 / 家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 2,
+      "prepTimeMinutes": 20,
+      "instructions": "1. 冷凍美國雞腿排烹煮前一天放冷藏低溫解凍，拆封後用料理剪刀沖洗過順肉紋理剪六塊。\n\n馬鈴薯刷洗淨刨皮切塊，洋蔥洗淨切掉兩端蒂頭撕掉外膜順紋對半切再順紋切塊。\n\n咖哩加巧克力增加甘醇風味。\n2. 鍋子小火加1小匙油潤鍋，雞腿塊皮面朝鍋底鍋邊放馬鈴薯塊，蓋鍋煎6分鐘。\n3. 6分鐘到，打開鍋蓋幫雞腿跟馬鈴薯塊翻面，雞腿皮煎至冒出油脂這樣雞腿皮吃起來Q整道咖哩也不會油。\n4. 雞腿翻面後把青菜加進來拌炒至青菜炒熟，這樣咖喱就有鮮蔬可以一起吃補充膳食纖維。\n\n青菜依喜好準備，沒有標在材料料裡。\n5. 青菜炒熟後先盛盤，再把洋蔥加進來拌炒，洋蔥炒至聞到洋蔥甜味再加700ml水進來，蓋鍋熬煮至滾起。\n6. 湯汁滾起再把咖哩塊跟巧克力加進來攪拌溶解，咖哩就完成啦。\n7. 好吃的咖哩馬鈴薯跟有軟但沒化掉，雞腿肉有Q但不爛，醬汁濃稠但不膩口。\n\n咖哩雞搭飯配麵都很討喜，可以動手試試。\n8. 如圖",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/493007/c7971940803e043e.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:02.124Z",
+      "updatedAt": "2026-08-30T00:30:02.124Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049802124_0",
+          "name": "美國雞腿 1支",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049802124_1",
+          "name": "洋蔥 1顆",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049802124_2",
+          "name": "馬鈴薯 2顆",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802124_3",
+          "name": "咖哩塊 115克 (半盒)",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802124_4",
+          "name": "巧克力 15克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802124_5",
+          "name": "水 700毫升",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802124_6",
+          "name": "油 1小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049802158_2nit7",
+      "name": "肉末杏鮑菇 / 家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 20,
+      "instructions": "1. 有機杏鮑菇個頭很大，真空包買回家，每根用全新洗過抹布包起來再放回袋子裡封口封好，可以保存2周都很新鮮。\n2. 杏鮑菇沖洗過切方塊，豆腐拆封後也切方塊，豬絞肉選漂亮前腿肉洗過細絞，蒜瓣洗淨拍碎剝膜切末。\n3. 鍋小火先不放油，放(杏鮑菇塊)乾煎逼香煸至微金黃後先盛出。\n4. 用煎杏鮑菇原鍋維持小火不放油，放(豬絞肉)用炒匙鋪平擺好，蓋鍋煸5分鐘，絞肉煸過才有香氣。\n5. 把(調味料)全部加進來拌炒絞肉。\n6. 再把(豆腐跟煸香的杏鮑菇)加進來，加(200ml水)不在材料裡增加濕潤，用炒匙從鍋緣往鍋中心推，讓豆腐均勻沾滿醬汁，蓋鍋小火煨5分鐘。\n7. 5分鐘後打開鍋蓋，再次用炒匙從鍋緣往鍋中心推，轉中小火鍋中醬汁略收，就完成啦。\n8. 麻婆豆腐多了Q脆杏鮑菇口感，下飯好吃。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/492113/65ff82ead58a7d3f.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:02.158Z",
+      "updatedAt": "2026-08-30T00:30:02.158Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049802158_0",
+          "name": "杏鮑菇(大) 1根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049802158_1",
+          "name": "豬絞肉 450克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049802158_2",
+          "name": "[調味料] 蠔油 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802158_3",
+          "name": "板豆腐 1盒",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802158_4",
+          "name": "[調味料] 豆瓣醬 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802158_5",
+          "name": "蒜瓣 4瓣",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049802158_6",
+          "name": "[調味料] 白胡椒粉 1/5小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049802642_8f971",
+      "name": "蔥爆肉絲 / 家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 5,
+      "instructions": "1. 豬肉可以買喜歡部位切絲或條狀，用醃料抓醃靜置10分鐘；洋蔥青蔥洗淨，洋蔥順紋切絲青蔥切食指長段，蔥綠可以剪細絲泡水當盤飾用。\n2. 鍋小火加油把肉絲放進來拌炒。\n3. 肉炒至略變白鎖住水分後把蔥白段放進來一起煸炒出香氣。\n4. 聞到蔥香再把洋蔥絲放進進來拌炒，讓洋蔥絲均勻沾滿鍋中的油脂跟肉汁，蓋上鍋蓋蒸炒2分鐘。\n5. 2分鐘後打開鍋蓋翻炒一下，加蠔油進來提味，翻炒讓滋味均勻，洋蔥炒熟會產生甜味就完成啦。\n6. 簡單營養的家常。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/490835/4c782e16f919eafb.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:02.642Z",
+      "updatedAt": "2026-08-30T00:30:02.642Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049802642_0",
+          "name": "腰內肉 300克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049802642_1",
+          "name": "洋蔥 1顆",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049802642_2",
+          "name": "[豬肉醃料] 白胡椒粉 ¼小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049802642_3",
+          "name": "青蔥 1根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802642_4",
+          "name": "[豬肉醃料] 五香粉 ¼小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049802642_5",
+          "name": "油 1/2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802642_6",
+          "name": "[豬肉醃料] 黑胡椒粒 ¼小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049802642_7",
+          "name": "蠔油 1小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802642_8",
+          "name": "[豬肉醃料] 醬油或蠔油 1/2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049802642_9",
+          "name": "[豬肉醃料] 玉米粉或太白粉 1小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049802739_8r2ky",
+      "name": "蔥爆雞柳/家常菜 by Helen（海倫小姐）",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 20,
+      "instructions": "1. 先把所有材料備妥。在超市買的雞里肌1包約300克，它是3包連在一起賣的，第一回使用還蠻方便的，小塊小塊都處理好在袋內。也可以直接去傳統市場買。\n2. 把青蔥洗淨去尾切段。蔥白和蔥綠分開放。\n3. 把雞里肌切長條或是薄片。\n4. 用米酒、鹽巴和白胡椒粉醃雞肉放置約10分鐘，再裹上地瓜粉(太白粉)。蒜剝皮切小，辣椒去頭切小段。\n5. 拿出一平底鍋，小火，放入一大匙油，把雞里肌平均放入鍋內。變成中火。\n6. 變色後翻面。注意，一定要等到它變色，不要一下鍋就在那兒翻來翻去的，它很嫩會碎。中火。\n7. 把兩面都變色後的雞肉先盛盤。鍋內放入油，再放入蒜、辣椒和蔥白爆香。中火。\n8. 把香菇素蠔油放入鍋中，再放入雞肉。中火。\n9. 接著放入蔥綠，翻炒數下，讓蠔油均勻上色。中火。\n10. 完成。香菇素蠔油可改為醬油，差異在於口感，蠔油有些香甜且濃郁，醬油是水水溼潤。(喜愛多重口感的人，亦可以在起鍋前在鍋邊加一些黑醋)",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/493502/7c07ecfe86c92f4d.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:02.739Z",
+      "updatedAt": "2026-08-30T00:30:02.739Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049802739_0",
+          "name": "雞里肌肉 1包",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049802739_1",
+          "name": "青蔥 4根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802739_2",
+          "name": "蒜 6辨",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049802739_3",
+          "name": "辣椒 4根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802739_4",
+          "name": "米酒 1匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802739_5",
+          "name": "鹽 1匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802739_6",
+          "name": "白胡椒粉 1匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802739_7",
+          "name": "沙拉油 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049802739_8",
+          "name": "蕃薯粉 1匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049803312_pr4yd",
+      "name": "糖醋排骨 / 下飯家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 15,
+      "instructions": "1. 選整排漂亮的豬小排，請攤商幫忙橫切兩段，烹煮前沖水洗淨，順便檢查有無橫切時的碎骨，再泡水洗至碗中的清水沒有血水，這樣就可以不用汆燙。\n2. 洗乾淨的排骨瀝乾；蒜洗淨拍碎剝膜；台灣洋蔥個頭比較小用兩顆洗淨，剝除外膜切掉蒂頭，順紋剖開再橫切塊狀。\n3. 將所有的糖醋醬汁放在碗裡攪拌均勻。\n4. 鍋小火加油潤鍋，薑排骨均勻擺好，蓋鍋計時間7分鐘。\n5. 7分鐘到打開鍋蓋將排骨一一翻面，再蓋鍋計時煎3分鐘。\n6. 排骨煎3分鐘已熟，再把蒜及洋蔥加進來拌炒。\n7. 再把糖醋醬汁倒進鍋中，翻炒均勻讓每塊排骨都均勻沾滿糖醋醬汁，再次蓋鍋計時煨5分鐘。\n8. 5分鐘到打開鍋蓋翻炒均勻，轉中火讓鍋中醬汁收的更好，這樣排骨就會很入味。\n9. 如果也在意餐桌美學，可以洗菜時順洗辣椒跟香菜，最後當盤飾用。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/493460/0ffd8a0e621be939.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:03.312Z",
+      "updatedAt": "2026-08-30T00:30:03.312Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049803312_0",
+          "name": "豬小排 650克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049803312_1",
+          "name": "台灣洋蔥（小） 2顆",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049803312_2",
+          "name": "[糖醋醬汁] 天時野櫻莓果醋 4大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803312_3",
+          "name": "台灣蒜瓣 4瓣",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049803312_4",
+          "name": "[糖醋醬汁] 李錦蠔油 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803312_5",
+          "name": "油 2小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803312_6",
+          "name": "[糖醋醬汁] 台灣蜂蜜 1/2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803312_7",
+          "name": "[糖醋醬汁] 白胡椒粉 1/3小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049803374_cx2vs",
+      "name": "\\\\家常菜-香菇肉燥// by 小榯廚房",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 6,
+      "prepTimeMinutes": 30,
+      "instructions": "1. 乾香菇預先泡水，切丁。\n2. 熱油鍋，將絞肉炒香，加入肉醬罐頭\n3. 拌炒均勻後，加入香菇，與調味料醬油、油蔥、冰糖、蒜粒等，一起炒入味\n4. 拌炒均勻後，加入香菇，與調味料醬油、油蔥、冰糖、蒜粒等，一起炒入味\n5. 拌炒均勻後，加入香菇，與調味料醬油、油蔥、冰糖、蒜粒等，一起炒入味\n6. 最後加入香菇水，並補足水淹過食材，小火慢燉約20分鐘\n7. 過程檢查攪拌一下，最後試吃味道，可補水或加醬油調整鹹度",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/490656/ec5b7ddaea255435.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:03.374Z",
+      "updatedAt": "2026-08-30T00:30:03.374Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049803374_0",
+          "name": "豬絞肉 800克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049803374_1",
+          "name": "乾香菇 約10朵",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049803374_2",
+          "name": "[調味料] 醬油 2大匙~適量",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803374_3",
+          "name": "肉醬罐頭 約2罐",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049803374_4",
+          "name": "[調味料] 油蔥(可省略) 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803374_5",
+          "name": "[調味料] 蒜粒(可省略) 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049803374_6",
+          "name": "[調味料] 冰糖 1小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803374_7",
+          "name": "[調味料] 白胡椒(可省略) 適量",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049803924_bh1xp",
+      "name": "皮蛋豆腐 / 開胃家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 10,
+      "instructions": "1. ●板豆腐用淨水沖洗過瀝乾切塊，不蓋保鮮膜直接整盤放冷藏冰1小時，豆腐出水被冰箱吸乾可不用廚房紙巾拭乾。\n●皮蛋放冰箱冰過很好剝也很好切。\n●蒜瓣洗淨切掉蒂頭拍碎剝除外膜。\n●辣椒洗淨抽掉辣椒籽辣椒皮剪末。\n●忘了買蔥如果有蔥可以洗淨剪末多了蔥香。\n2. ●28吋鍋煎一塊板豆腐剛好，小火放(2小匙油)，均勻襬上(豆腐)，設定計時器蓋鍋煎5分鐘，打開鍋蓋用筷子逐幫豆腐翻面不蓋鍋再煎5分鐘。\n3. ●豆腐煎10分鐘後已金黃有黃豆香氣，把蒜末跟皮蛋加進鍋中，用的油量不多可以將鍋傾斜讓油集中，這樣煸蒜跟皮蛋都好操作，皮蛋煎過有皮蛋香。\n4. 把辣椒皮末跟調味料加進來翻拌，就完成啦。\n\n如果有蔥末可以加進來翻拌，有蔥香更好吃。\n5. 一塊豆腐三顆皮蛋，不一樣的皮蛋豆腐。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/492446/9047449d352ae6d7.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:03.924Z",
+      "updatedAt": "2026-08-30T00:30:03.924Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049803924_0",
+          "name": "板豆腐 1塊",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803924_1",
+          "name": "皮蛋 3顆",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049803924_2",
+          "name": "[調味料] 黑胡椒粉 1/4小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803924_3",
+          "name": "蒜瓣 4瓣",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049803924_4",
+          "name": "[調味料] 白胡椒粉 1/4小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803924_5",
+          "name": "辣椒去籽 1/2根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803924_6",
+          "name": "[調味料] 鹽 1/4小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803924_7",
+          "name": "青蔥末 1/3根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049803924_8",
+          "name": "油 2小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049804150_yoq63",
+      "name": "椒麻雞 / 簡單家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 2,
+      "prepTimeMinutes": 20,
+      "instructions": "1. ●真空包冷凍美國雞腿排已去骨，烹煮前一天放冷藏室低溫解凍。\n2. ●烹煮前拆封修剪掉多餘的油脂沖洗瀝乾，用刀在雞腿肉上逆雞腿紋垂直劃刀防煎熟後肉縮；再用廚房紙巾拭乾雞腿排才能酥脆，在雞排兩面撒上鹽及白胡椒粉，放冷藏靜置30分鐘。\n3. ●平底鍋小火加1小匙油潤鍋，雞腿皮面朝鍋底均勻擺好，雞腿外皮酥脆肉嫩關鍵，設定計時器蓋鍋煎7分鐘，鍋中蒸氣讓肉嫩保水。\n4. ●7分鐘到，用鍋鏟幫雞腿排翻面，雞皮油已被煎逼出略金黃但還不夠酥，翻面後再蓋鍋煎6分鐘，這樣腿排共煎13分鐘雞腿已近全熟。\n5. ●最後起鍋前，轉中火把雞皮面再次夾朝鍋底讓雞腿皮逼油搶酥也上色煎1分鐘，熄火。\n\n將雞腿推至鍋邊瀝油，這樣用1小匙耐高溫的油，免油炸、免裹粉也有金黃雞腿排。\n6. ●等待雞腿排醃入味的時間可用來準備「椒麻雞醬汁」材料。\n\n●香菜洗淨剪末、蒜瓣洗淨切掉蒂頭拍碎去膜切末、辣椒洗淨順紋對半剪開抽掉辣椒籽再剪末。\n\n●魚露用果醋、檸檬汁(檸檬角)、蠔油替代。\n7. ●淋上椒麻雞醬汁，不用20分鐘就能出餐。\n8. ●冷凍真空包去骨雞腿排放冷凍備料方便，在家也能把討喜的泰式料理輕鬆上菜，可以試試。\n9. ●在家偽餐廳商品好服務也要好，主廚桌邊服務剪小塊方便吃。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/493209/863e658cf02812ec.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:04.150Z",
+      "updatedAt": "2026-08-30T00:30:04.150Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049804150_0",
+          "name": "美國雞腿 2片",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049804150_1",
+          "name": "油 1小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049804150_2",
+          "name": "[雞腿排醃料] 白胡椒粉 1/3小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049804150_3",
+          "name": "[雞腿排醃料] 鹽巴 1/4小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049804150_4",
+          "name": "[椒麻雞醬汁] 野櫻莓果醋 3大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049804150_5",
+          "name": "[椒麻雞醬汁] 蠔油 1小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049804150_6",
+          "name": "[椒麻雞醬汁] 蒜瓣(中顆) 4瓣",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049804150_7",
+          "name": "[椒麻雞醬汁] 辣椒(去仔) 1條",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049804150_8",
+          "name": "[椒麻雞醬汁] 香菜 2株",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049804834_3souj",
+      "name": "肉燥龍鬚菜 /家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 5,
+      "instructions": "1. 龍鬚菜修剪掉粗梗洗淨剪食指長段，起湯鍋水滾汆燙2分鐘，撈起瀝乾。\n2. 肉燥哪裡來~\n南瓜麻婆豆腐\nhttps://icook.tw/recipes/492825\n3. 跟小農買的龍鬚菜很嫩，搭配好吃的肉燥，很可以。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/492831/37b25ee6ce9fa2ae.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:04.834Z",
+      "updatedAt": "2026-08-30T00:30:04.834Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049804834_0",
+          "name": "龍鬚菜 1把",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049804834_1",
+          "name": "肉燥 3大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049805442_nsj6g",
+      "name": "炒長豆 / 當季家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 3,
+      "prepTimeMinutes": 5,
+      "instructions": "1. ●長豆先整根浸泡15分鐘讓表面的農藥溶出，再用流動水沖洗換水2至3次。\n2. ●長豆洗淨再切去頭尾撕掉粗筋切5-6公分段\n●蒜瓣跟長豆一起泡水洗淨拍碎剝膜。\n●鴻禧菇拆封後切掉底部沖洗過。\n3. ●鍋小火加油，放蒜末爆香後先灑鹽。\n\n※今天先做椒麻雞，用煎雞排逼出的油脂來炒長豆。\n4. ●聞到蒜香再把長豆段放進鍋中翻炒，蓋上鍋蓋蒸炒約2分鐘讓長豆要熟透，長豆含天然皂甙要完全煮熟再食用，才不會腸胃不適。\n5. ●2分鐘後打開鍋蓋再次翻炒長豆，再把鴻禧菇剝碎加進來再次翻炒，再次蓋上鍋蓋蒸炒1分鐘。\n6. ●1分鐘後打開鍋蓋翻炒，聞到長豆跟菇的香氣，就完成啦!!\n\n※不同爐火跟鍋具，長豆約需 3 到 5 分鐘能熟透，蓋鍋蒸炒是助熟的方式或者可以加2大匙水助熟。\n7. 端午節媽媽會炒長豆跟茄子，這組合我還沒試過\n先個別炒好吃，再來玩耍媽媽的配套 !!",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/493136/4232085819a3f007.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:05.442Z",
+      "updatedAt": "2026-08-30T00:30:05.442Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049805442_0",
+          "name": "長豆 1把280克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049805442_1",
+          "name": "鴻禧菇 1包",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049805442_2",
+          "name": "蒜瓣 4瓣",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049805442_3",
+          "name": "鹽 1/4小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049805442_4",
+          "name": "油 3小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049805450_x8hc0",
+      "name": "蔥燒杏鮑菇 / 家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 10,
+      "instructions": "1. 有機巨無霸杏鮑菇滾刀切；蒜瓣泡水洗過切掉蒂頭拍碎剝膜；青蔥洗淨剪食指長段；辣椒洗淨切片配色用（若不喜可省略）。\n2. 鍋不用加油小火，均勻擺好杏鮑菇，蓋鍋煎3分鐘。\n3. 3分鐘後打開鍋蓋將杏鮑菇翻面，杏鮑菇乾煎至微金黃有香氣。\n4. 再把蔥白、蒜瓣放進鍋中加油煸香。\n5. 蔥蒜都煸出香味後再加米酒一大匙、蠔油½大匙，醬炒至杏鮑菇微皺這樣杏鮑菇就很入味。\n6. 撒上黑胡椒粒提香翻炒一下，再把蔥綠跟去籽的辣椒片放進來翻炒，熄火完成。\n7. 簡單耐吃！\n8. 超過500道家常菜懶人包\nhttps://tinyurl.com/36kvpwsf",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/491043/53d5b115b1bc3fa4.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:05.450Z",
+      "updatedAt": "2026-08-30T00:30:05.450Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049805450_0",
+          "name": "杏鮑菇（大） 2根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049805450_1",
+          "name": "青蔥 1根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049805450_2",
+          "name": "蒜瓣 3瓣",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049805450_3",
+          "name": "辣椒 1/5根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049805450_4",
+          "name": "蠔油 1/2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049805450_5",
+          "name": "米酒 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049805450_6",
+          "name": "黑胡椒粉 1/5小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049805450_7",
+          "name": "油 1/2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049805496_2v6kv",
+      "name": "奶油白菜 /家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 5,
+      "instructions": "1. 奶油白菜沖水泡洗乾淨，對半剖開。\n2. 鍋中小火加油，先灑鹽，再將奶油白菜均勻擺好。淋上1大匙水，蓋上鍋蓋，用小火蒸炒。\n3. 打開鍋蓋，用筷子將奶油白菜一一翻面，繼續加熱，當莖部呈現透明狀時即可起鍋，盛盤後用紅辣椒裝飾。\n4. 奶油白菜很像秀氣的青江菜，口感細緻也清甜，也是高鈣的葉菜，不適合長時間久煮，好吃省事。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/490424/37d4c1dafac92c8a.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:05.496Z",
+      "updatedAt": "2026-08-30T00:30:05.496Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049805496_0",
+          "name": "奶油白菜 4顆",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049805496_1",
+          "name": "食用油 1/2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049805496_2",
+          "name": "鹽 1/4小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049805496_3",
+          "name": "水 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049805496_4",
+          "name": "紅辣椒去籽 少許（裝飾用）",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049806086_45we3",
+      "name": "炒地瓜葉 / 家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 5,
+      "instructions": "1. 地瓜葉市場買得到已經摘折整理過的，很貼心。\n烹煮前泡洗瀝乾；蒜洗淨切掉蒂頭拍水剝膜。\n2. 鍋中小火加油與蒜末爆香後灑鹽。\n3. 地瓜葉用雙手抓捧均勻擺好在鍋中，蓋上鍋蓋蒸炒2分鐘。\n4. 2分鐘後打開鍋蓋油下往上翻拌，地瓜葉顏色變鮮綠就完成。\n5. 平民蔬菜地瓜葉是農藥相對較少的葉菜，營養高熱量低，富含膳食纖維、維生素A、C、葉黃素及鐵質。抗氧化保護視力降血糖，是健康的好朋友。",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/491014/eebd1ee28c203733.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:06.086Z",
+      "updatedAt": "2026-08-30T00:30:06.086Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049806086_0",
+          "name": "地瓜葉 1包",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806086_1",
+          "name": "蒜瓣 3瓣",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049806086_2",
+          "name": "油 1/2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806086_3",
+          "name": "鹽 1/5小匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049806320_x0xxa",
+      "name": "蔥燒可樂雞翅 by 愛料理官方品牌廚房",
+      "category": "Dinner",
+      "cuisine": "Asian",
+      "servings": 4,
+      "prepTimeMinutes": 45,
+      "instructions": "1. 鍋下油，放入薑片、青蔥段、洋蔥、辣椒爆香。\n2. 放入雞翅，煎至外表兩面金黃。\n3. 倒入可樂、醬油拌炒，蓋上鍋蓋，燜煮10分鐘至軟熟收汁即完成囉～",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/286195/1907a488a1945417.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:06.320Z",
+      "updatedAt": "2026-08-30T00:30:06.320Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049806320_0",
+          "name": "薑片 4片",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049806320_1",
+          "name": "青蔥 2根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806320_2",
+          "name": "洋蔥 1/4顆",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049806320_3",
+          "name": "辣椒 1根",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806320_4",
+          "name": "雞翅 20隻",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049806320_5",
+          "name": "可樂 250克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806320_6",
+          "name": "醬油 30克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049806467_h1tmr",
+      "name": "咕咾肉 by 愛料理官方品牌廚房",
+      "category": "Dinner",
+      "cuisine": "Asian",
+      "servings": 4,
+      "prepTimeMinutes": 45,
+      "instructions": "1. 用菜刀將豬胛心肉拍鬆，再切成塊狀。\n2. 將豬胛心肉與全蛋、醬油、米酒、白胡椒粉混合均勻，再倒入太白粉拌勻，靜置醃製20分鐘。\n3. 將醃製好的豬胛心肉，外表均勻沾裹地瓜粉，靜置5分鐘返潮。\n4. 將油鍋加熱至160度，放入豬胛心肉炸至表面金黃。\n5. 把番茄醬、水、糖、白醋拌勻製作成醬汁。\n6. 鍋中下油，放入洋蔥拌炒，倒入醬汁煮至微滾。\n7. 放入炸過的肉塊拌炒均勻，接著下紅、黃甜椒、鳳梨拌炒，最後倒入適量的太白粉水勾芡拌炒即完成囉～",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/286871/5a3a9961d44ef0e7.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:06.467Z",
+      "updatedAt": "2026-08-30T00:30:06.467Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049806467_0",
+          "name": "豬胛心肉 300克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049806467_1",
+          "name": "地瓜粉 適量",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_2",
+          "name": "[醃料] 蛋 1顆",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049806467_3",
+          "name": "番茄醬 60克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049806467_4",
+          "name": "[醃料] 醬油 15克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_5",
+          "name": "水 45克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_6",
+          "name": "[醃料] 米酒 15克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_7",
+          "name": "糖 30克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_8",
+          "name": "[醃料] 白胡椒粉 3克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_9",
+          "name": "白醋 45克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_10",
+          "name": "[醃料] 太白粉 15克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_11",
+          "name": "黃甜椒 半個",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_12",
+          "name": "紅甜椒 半個",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_13",
+          "name": "鳳梨 1/4個",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806467_14",
+          "name": "太白粉水 適量",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049806786_bkwb5",
+      "name": "麻婆南瓜 / 下飯家常菜 by Amy's Kitchen",
+      "category": "Dinner",
+      "cuisine": "Cantonese",
+      "servings": 4,
+      "prepTimeMinutes": 10,
+      "instructions": "1. ●栗子南瓜價格很親切一顆20元也耐放，刷洗後順紋切塊，放在能放電鍋蒸的深盤或碗，電鍋外鍋200ml淨水蒸至跳起。\n2. ●豬絞肉選漂亮前腿部位口感較軟嫩洗過細絞。\n●蒜瓣洗過拍碎剝膜切末；老薑刷洗乾淨切片再切末。\n●豆瓣醬用有辣的所以就不再加胡椒粉才不會太辣。\n●煮過很多次蠔油跟搭配的豆瓣醬份量可以抓準了。\n3. ●鍋小火不用放油，將(豬絞肉)均勻鋪平上面撒上(薑蒜末)小火，蓋鍋煎5分鐘。\n4. ●5分鐘到打開鍋蓋翻炒一下絞肉，炒到絞肉粒粒分明，油脂也收略收乾，這樣豬肉香氣才會出現。\n5. ●加進（調味料跟蒸南瓜生出的水）翻炒均勻絞肉跟醬汁燒滾融合。\n6. ●絞肉炒香再把(蒸熟的南瓜塊)加進來，翻拌讓南瓜塊沾到鍋中肉燥醬汁，再次蓋鍋煨煮3分鐘。\n7. ●3分鐘到鍋中醬汁略滾，打開鍋蓋搖晃鍋子讓南瓜滋味更均勻，轉中火讓醬汁略收吃起來南瓜更入味，就完成啦。\n8. 用南瓜替代豆腐保留麻婆的靈魂，增添了南瓜的綿密口感。\n9. 南瓜料理懶人包\nhttps://tinyurl.com/mu7rj6sm",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/491768/a9309997ee135149.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:06.786Z",
+      "updatedAt": "2026-08-30T00:30:06.786Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049806786_0",
+          "name": "栗子南瓜 2顆",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806786_1",
+          "name": "豬絞肉 600克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049806786_2",
+          "name": "[調味料] 辣豆瓣醬 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806786_3",
+          "name": "蒜瓣切末 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049806786_4",
+          "name": "[調味料] 蠔油 2大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049806786_5",
+          "name": "老薑切末 1大匙",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049806786_6",
+          "name": "[調味料] 水或南瓜水 100cc",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049807778_p57bv",
+      "name": "豬鼻子棉花糖 by 愛料理官方品牌廚房",
+      "category": "Dinner",
+      "cuisine": "Asian",
+      "servings": 4,
+      "prepTimeMinutes": 90,
+      "instructions": "1. 將水、香草精、麥芽糖、糖倒入鍋中，小火加熱至120度即可關火備用。\n2. 將蛋白以電動攪拌器打至濕性發泡，再慢慢倒入糖漿、吉利丁液，同時持續攪拌均勻。\n（吉利丁片用冰水泡軟後，要將水份都擠掉，隔水加熱或用微波爐融化成吉利丁液）\n3. 取部分裝至擠花袋中，剩下的加入乾草莓粉攪拌均勻，再裝入擠花袋中。\n4. 將適量玉米粉灑在馬卡龍矽膠墊上，先用粉紅色糖霜擠出橢圓型，接著用白色糖霜在上面點兩點，畫出像是豬的鼻子造型，再靜置風乾1小時。\n5. 最後在表面沾裹玉米粉，並把多餘的粉末涮掉即完成囉～",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/283996/b7597256484206fa.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:07.778Z",
+      "updatedAt": "2026-08-30T00:30:07.778Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049807778_0",
+          "name": "蛋白 30克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049807778_1",
+          "name": "乾草莓粉 3克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049807778_2",
+          "name": "[糖漿] 水 40克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049807778_3",
+          "name": "玉米粉 適量",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049807778_4",
+          "name": "[糖漿] 香草精 1克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049807778_5",
+          "name": "[吉利丁液] 吉利丁片 10克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049807778_6",
+          "name": "[糖漿] 麥芽糖 10克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049807778_7",
+          "name": "[吉利丁液] 冰水 30克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049807778_8",
+          "name": "[糖漿] 糖 60克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049808176_shenh",
+      "name": "鍋煮奶茶 by 愛料理官方品牌廚房",
+      "category": "Dinner",
+      "cuisine": "Asian",
+      "servings": 2,
+      "prepTimeMinutes": 15,
+      "instructions": "1. 將水倒入鍋中煮沸，倒入茶葉，煮約一分鐘至茶色散發。\n2. 倒入牛奶，小火煮至溫熱狀態。\n3. 可依個人口味喜好，加入蜂蜜調味，攪拌均勻。\n4. 最後將煮好的奶茶，過濾掉茶渣即完成囉～",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/285937/5bc90c595c2c953c.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:08.176Z",
+      "updatedAt": "2026-08-30T00:30:08.176Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049808176_0",
+          "name": "水 500克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049808176_1",
+          "name": "紅茶葉 10克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049808176_2",
+          "name": "牛奶 500克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049808176_3",
+          "name": "蜂蜜 30克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049808221_xwz1n",
+      "name": "焦糖爆米花 by 愛料理官方品牌廚房",
+      "category": "Dinner",
+      "cuisine": "Asian",
+      "servings": 4,
+      "prepTimeMinutes": 30,
+      "instructions": "1. 將30克的無鹽奶油放入鍋中，小火加熱至融化，倒入玉米粒拌炒，表面均勻裹上奶油。\n2. 蓋上鍋蓋，爆約5分鐘至嗶啵聲停止即可取出備用。\n3. 鍋中倒入二砂糖，小火加熱炒糖，邊緣融化冒小泡泡後，加入30克的無鹽奶油，拌炒均勻。\n4. 倒入爆好的爆米花，攪拌均勻，使焦糖醬均勻沾裹每顆爆米花，倒出平鋪至烤盤上，放涼1小時即完成囉～\r\n（放涼後再享用口感會較酥脆喔）",
+      "imageUrl": "https://tokyo-kitchen.icook.network/uploads/recipe/cover/258572/16d99ed5a826f852.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:30:08.221Z",
+      "updatedAt": "2026-08-30T00:30:08.221Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049808221_0",
+          "name": "玉米粒 160克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049808221_1",
+          "name": "二砂糖 120克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049808221_2",
+          "name": "[器材] LE CREUSET煎鍋 1個",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049808221_3",
+          "name": "無鹽奶油 60克",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Dairy & Eggs"
+        }
+      ]
+    }
+  ]
+}

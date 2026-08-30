@@ -2,6 +2,7 @@ import type { AppData, Dish, GroceryCategory, GroceryItem, MasterIngredient, Mea
 import { getInitialAppData, DEFAULT_MEAL_SCHEDULES, DEFAULT_PANTRY_INGREDIENTS } from './seedData';
 import { DEFAULT_MASTER_INGREDIENTS } from './masterIngredients';
 import { matchPantryIngredient } from './pantryMatching';
+import { STARTER_RECIPE_TRANSLATIONS, getLocalizedDish } from './dataLocalizationService';
 
 const ACTIVE_PROFILE_KEY = 'gyummy_active_profile_v2';
 const FAMILY_DATA_PREFIX = 'gyummy_family_data_v2_';
@@ -110,6 +111,20 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
       parsed.mealSchedules = (parsed as any).mealSlots || DEFAULT_MEAL_SCHEDULES;
     }
 
+    // Hydrate translations on known starter dishes if missing
+    parsed.dishes = parsed.dishes.map((dish) => {
+      if (!dish.translations && STARTER_RECIPE_TRANSLATIONS[dish.id]) {
+        return {
+          ...dish,
+          language: dish.language || 'en',
+          translations: {
+            'zh-CN': STARTER_RECIPE_TRANSLATIONS[dish.id]
+          }
+        };
+      }
+      return dish;
+    });
+
     if (!parsed.familyMembers) {
       parsed.familyMembers = currentProfile ? [currentProfile.memberName] : [];
     }
@@ -180,7 +195,8 @@ export function generateGroceryList(
   startDate: string,
   endDate: string,
   existingItems: GroceryItem[] = [],
-  pantryIngredients: string[] = []
+  pantryIngredients: string[] = [],
+  preferredLang: 'en' | 'zh-CN' = 'en'
 ): GroceryItem[] {
   const dishMap = new Map<string, Dish>();
   dishes.forEach((d) => dishMap.set(d.id, d));
@@ -222,7 +238,9 @@ export function generateGroceryList(
         const dish = dishMap.get(dId);
         if (!dish) return;
 
-        dish.ingredients.forEach((ing) => {
+        const localizedDish = getLocalizedDish(dish, preferredLang);
+
+        localizedDish.ingredients.forEach((ing) => {
           const normName = normalizeName(ing.name);
           const normUnit = (ing.unit || '').trim().toLowerCase();
           
@@ -237,7 +255,7 @@ export function generateGroceryList(
             } else if (item.amount === null && typeof ingAmount === 'number') {
               item.amount = Math.round(ingAmount * 100) / 100;
             }
-            item.sourceDishes.add(dish.name);
+            item.sourceDishes.add(localizedDish.name);
           } else {
             const pantryMatch = matchPantryIngredient(ing.name, pantryIngredients);
 
@@ -248,7 +266,7 @@ export function generateGroceryList(
               category: ing.category || 'Other',
               inPantry: pantryMatch.inPantry,
               pantrySubstituteNote: pantryMatch.substituteNote,
-              sourceDishes: new Set([dish.name])
+              sourceDishes: new Set([localizedDish.name])
             });
           }
         });

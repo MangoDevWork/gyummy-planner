@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import type { Dish, UserProfile } from '../../types';
 import { ArrowLeft, Clock, Users, Edit3, Trash2, CalendarPlus, Tag, Heart, Download, Star, Plus, Minus, FileText, BookmarkCheck, BookmarkPlus } from 'lucide-react';
 import { exportToZip } from '../../services/zipExportService';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { getLocalizedDish } from '../../services/dataLocalizationService';
 
 interface DishDetailModalProps {
   dish: Dish | null;
@@ -29,6 +31,9 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
   onShowToast
 }) => {
   if (!isOpen || !dish) return null;
+
+  const { language, t, formatCategory, formatCuisine } = useLanguage();
+  const localized = getLocalizedDish(dish, language);
 
   const [servingMultiplier, setServingMultiplier] = useState(1);
   const [quickNote, setQuickNote] = useState('');
@@ -123,25 +128,31 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
 
           {/* Hero Banner Star Rating & Title */}
           <div className="absolute bottom-3 left-4 right-4 text-white space-y-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <div className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white/90 text-slate-900 shadow-xs">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                 <span>4.8</span>
               </div>
 
               <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#2B2D42] text-white shadow-xs">
-                {dish.category}
+                {formatCategory(dish.category)}
               </span>
 
               {dish.cuisine && (
                 <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-md">
-                  {dish.cuisine}
+                  {formatCuisine(dish.cuisine)}
+                </span>
+              )}
+
+              {localized.fallbackTag && (
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white shadow-xs">
+                  {localized.fallbackTag}
                 </span>
               )}
             </div>
 
             <h2 className="text-xl font-bold text-white leading-tight drop-shadow-sm">
-              {dish.name}
+              {localized.name}
             </h2>
           </div>
         </div>
@@ -149,28 +160,49 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
         {/* Scrollable Details Body */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FDFBF7]">
           
+          {/* Untranslated Language Fallback Notice Banner */}
+          {localized.fallbackTag && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5 text-xs text-amber-900 shadow-2xs">
+              <span className="text-base leading-none">🌐</span>
+              <p className="leading-snug">
+                <strong>
+                  {language === 'zh-CN' ? '未提供中文翻译' : 'Untranslated Recipe'}
+                </strong>
+                <span className="block text-[11px] text-amber-800 mt-0.5">
+                  {language === 'zh-CN'
+                    ? '此菜谱暂无中文译本，已为您显示原作者编写的语言内容。'
+                    : 'This recipe is not translated yet, displaying in available language.'}
+                </span>
+              </p>
+            </div>
+          )}
+
           {/* Quick Metrics (Servings & Prep Time) */}
           <div className="flex items-center gap-2 text-xs text-slate-700 flex-wrap">
             <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-[#EAE6DF] shadow-2xs">
               <Users className="w-3.5 h-3.5 text-slate-500" />
-              <span className="font-semibold">{dish.servings * servingMultiplier} Servings</span>
+              <span className="font-semibold">
+                {dish.servings * servingMultiplier} {language === 'zh-CN' ? '人份' : 'Servings'}
+              </span>
             </div>
 
             {dish.prepTimeMinutes && (
               <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-[#EAE6DF] shadow-2xs">
                 <Clock className="w-3.5 h-3.5 text-slate-500" />
-                <span className="font-semibold">{dish.prepTimeMinutes} mins</span>
+                <span className="font-semibold">
+                  {dish.prepTimeMinutes} {language === 'zh-CN' ? '分钟' : 'mins'}
+                </span>
               </div>
             )}
 
             {isInFamilyCookbook ? (
               <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-200 text-[11px] font-semibold">
                 <BookmarkCheck className="w-3.5 h-3.5 text-emerald-700" />
-                <span>In Family Cookbook</span>
+                <span>{t('dishes.addedToCookbook')}</span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-semibold">
-                <span>System Library Only</span>
+                <span>{t('dishes.libraryTab')}</span>
               </div>
             )}
 
@@ -190,15 +222,15 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
             >
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-slate-500" />
-                <span>Add note here</span>
+                <span>{language === 'zh-CN' ? '添加个人随手记 / 烹饪心得' : 'Add note here'}</span>
               </div>
-              <span className="text-[11px] text-slate-500">{isAddingNote ? 'Close' : '+ Note'}</span>
+              <span className="text-[11px] text-slate-500">{isAddingNote ? t('common.close') : `+ ${t('common.notes')}`}</span>
             </button>
 
             {isAddingNote && (
               <textarea
                 rows={2}
-                placeholder="e.g. Extra spicy, substitute tofu, cook for guests..."
+                placeholder={language === 'zh-CN' ? '例如：少放辣、多焖5分钟、换成嫩豆腐...' : 'e.g. Extra spicy, substitute tofu, cook for guests...'}
                 value={quickNote}
                 onChange={(e) => setQuickNote(e.target.value)}
                 className="w-full text-xs text-slate-900 p-2.5 rounded-xl bg-[#FDFBF7] border border-[#EAE6DF] focus:outline-hidden focus:border-slate-400"
@@ -210,7 +242,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
           <div className="bg-white rounded-xl p-3 border border-[#EAE6DF] flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                Batch Scale:
+                {language === 'zh-CN' ? '分量倍数:' : 'Batch Scale:'}
               </span>
               <div className="flex items-center bg-[#F4F1EA] rounded-xl border border-[#EAE6DF] px-1 py-0.5">
                 <button
@@ -239,15 +271,15 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
                 }}
                 className="px-4 py-2 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-xs active:scale-95 transition cursor-pointer"
               >
-                ADD TO SCHEDULE
+                {language === 'zh-CN' ? '+ 加入排餐' : 'ADD TO SCHEDULE'}
               </button>
             )}
           </div>
 
           {/* Tags */}
-          {dish.tags && dish.tags.length > 0 && (
+          {localized.tags && localized.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {dish.tags.map((tag, idx) => (
+              {localized.tags.map((tag, idx) => (
                 <span
                   key={idx}
                   className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 bg-white text-slate-600 rounded-xl border border-[#EAE6DF] shadow-2xs"
@@ -262,13 +294,15 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
           {/* Ingredients Checklist */}
           <div>
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center justify-between">
-              <span>Ingredients ({dish.ingredients.length})</span>
+              <span>{t('dishes.ingredientsSection')} ({localized.ingredients.length})</span>
             </h3>
-            {dish.ingredients.length === 0 ? (
-              <p className="text-xs text-slate-400 italic">No ingredients listed.</p>
+            {localized.ingredients.length === 0 ? (
+              <p className="text-xs text-slate-400 italic">
+                {language === 'zh-CN' ? '暂无食材清单。' : 'No ingredients listed.'}
+              </p>
             ) : (
               <div className="bg-white rounded-xl p-3 border border-[#EAE6DF] space-y-2 shadow-2xs">
-                {dish.ingredients.map((ing, idx) => (
+                {localized.ingredients.map((ing, idx) => (
                   <div
                     key={ing.id || idx}
                     className="flex items-center justify-between text-xs py-1 border-b border-[#F4F1EA] last:border-0"
@@ -284,7 +318,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
                         </span>
                       )}
                       <span className="text-[10px] text-slate-500 bg-[#FDFBF7] px-1.5 py-0.5 rounded-md font-medium border border-[#EAE6DF]">
-                        {ing.category}
+                        {formatCategory(ing.category)}
                       </span>
                     </div>
                   </div>
@@ -296,15 +330,15 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
           {/* Cooking Instructions / Notes */}
           <div>
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
-              Recipe Steps & Cooking Notes
+              {t('dishes.instructionsSection')}
             </h3>
-            {dish.instructions ? (
+            {localized.instructions ? (
               <div className="bg-white p-3.5 rounded-xl border border-[#EAE6DF] text-xs text-slate-700 font-normal leading-relaxed whitespace-pre-line shadow-2xs">
-                {dish.instructions}
+                {localized.instructions}
               </div>
             ) : (
               <p className="text-xs text-slate-400 italic bg-white p-3 rounded-xl border border-[#EAE6DF]">
-                No cooking instructions added yet. Tap 'Edit' to add the recipe steps.
+                {language === 'zh-CN' ? '暂未添加烹饪步骤。点击下方“编辑”即可补充！' : "No cooking instructions added yet. Tap 'Edit' to add the recipe steps."}
               </p>
             )}
           </div>

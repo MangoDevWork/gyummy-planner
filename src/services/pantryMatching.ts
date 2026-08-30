@@ -34,7 +34,15 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'salad oil',
       'grapeseed oil',
       'sesame oil',
-      'toasted sesame oil'
+      'toasted sesame oil',
+      '食用油',
+      '植物油',
+      '橄榄油',
+      '香油',
+      '芝麻油',
+      '花生油',
+      '菜籽油',
+      '玉米油'
     ],
     negatives: [
       'oyster sauce',
@@ -43,7 +51,10 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'oil paper',
       'foil',
       'fish oil',
-      'essential oil'
+      'essential oil',
+      '红油',
+      '辣椒油',
+      '蚝油'
     ]
   },
   {
@@ -59,14 +70,21 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'flaky salt',
       'himalayan salt',
       'cooking salt',
-      'rock salt'
+      'rock salt',
+      '食盐',
+      '海盐',
+      '精盐',
+      '盐'
     ],
     negatives: [
       'salted',
       'saltwater',
       'salted butter',
       'salted egg',
-      'salted fish'
+      'salted fish',
+      '咸蛋',
+      '咸鱼',
+      '咸肉'
     ]
   },
   {
@@ -82,7 +100,12 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'pepper powder',
       'black pepper powder',
       'white pepper',
-      'white pepper powder'
+      'white pepper powder',
+      '黑胡椒',
+      '黑胡椒粉',
+      '白胡椒',
+      '白胡椒粉',
+      '胡椒粉'
     ],
     negatives: [
       'bell pepper',
@@ -96,7 +119,12 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'jalapeno',
       'habanero',
       'poblano',
-      'shishito'
+      'shishito',
+      '彩椒',
+      '甜椒',
+      '青椒',
+      '红椒',
+      '辣椒'
     ]
   },
   {
@@ -111,13 +139,22 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'regular soy sauce',
       'shoyu',
       'japanese soy sauce',
-      'seasoning soy sauce'
+      'seasoning soy sauce',
+      '生抽',
+      '老抽',
+      '酱油',
+      '味极鲜',
+      '生抽酱油',
+      '老抽酱油'
     ],
     negatives: [
       'soy milk',
       'soybean',
       'soybeans',
-      'soy paper'
+      'soy paper',
+      '豆浆',
+      '大豆',
+      '黄豆'
     ]
   },
   {
@@ -135,7 +172,13 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'sushi rice',
       'basmati rice',
       'brown rice',
-      'glutinous rice'
+      'glutinous rice',
+      '大米',
+      '白米',
+      '米饭',
+      '香米',
+      '糙米',
+      '糯米'
     ],
     negatives: [
       'rice vinegar',
@@ -147,7 +190,12 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'rice cake',
       'rice cakes',
       'mirin',
-      'licorice'
+      'licorice',
+      '米醋',
+      '米酒',
+      '米粉',
+      '米纸',
+      '年糕'
     ]
   },
   {
@@ -161,13 +209,21 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'cane sugar',
       'brown sugar',
       'powdered sugar',
-      'icing sugar'
+      'icing sugar',
+      '白糖',
+      '白砂糖',
+      '红糖',
+      '黄糖',
+      '冰糖',
+      '糖'
     ],
     negatives: [
       'sugar snap pea',
       'sugar snap peas',
       'snap peas',
-      'brown sugar boba'
+      'brown sugar boba',
+      '甜豆',
+      '荷兰豆'
     ]
   },
   {
@@ -178,14 +234,22 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'garlic cloves',
       'minced garlic',
       'crushed garlic',
-      'garlic powder'
+      'garlic powder',
+      '大蒜',
+      '蒜瓣',
+      '蒜末',
+      '蒜泥',
+      '蒜头'
     ],
     negatives: [
       'garlic bread',
       'garlic chive',
       'garlic chives',
       'garlic shoot',
-      'garlic shoots'
+      'garlic shoots',
+      '蒜苗',
+      '蒜苔',
+      '韭菜'
     ]
   },
   {
@@ -196,13 +260,21 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'fresh ginger',
       'minced ginger',
       'grated ginger',
-      'ginger powder'
+      'ginger powder',
+      '生姜',
+      '鲜姜',
+      '姜末',
+      '姜丝',
+      '姜片',
+      '姜'
     ],
     negatives: [
       'ginger ale',
       'ginger beer',
       'gingerbread',
-      'pickled ginger'
+      'pickled ginger',
+      '红姜',
+      '姜汁汽水'
     ]
   },
   {
@@ -216,7 +288,13 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'all purpose flour',
       'all-purpose flour',
       'plain flour',
-      'wheat flour'
+      'wheat flour',
+      '玉米淀粉',
+      '土豆淀粉',
+      '太白粉',
+      '生粉',
+      '中筋面粉',
+      '面粉'
     ],
     negatives: [
       'flour tortilla',
@@ -236,7 +314,12 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'chinkiang vinegar',
       'distilled vinegar',
       'red wine vinegar',
-      'white wine vinegar'
+      'white wine vinegar',
+      '白醋',
+      '米醋',
+      '香醋',
+      '陈醋',
+      '醋'
     ],
     negatives: [
       'balsamic vinegar glaze'
@@ -249,14 +332,18 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'unsalted butter',
       'salted butter',
       'ghee',
-      'clarified butter'
+      'clarified butter',
+      '黄油',
+      '无盐黄油',
+      '牛油'
     ],
     negatives: [
       'peanut butter',
       'almond butter',
       'butter lettuce',
       'butternut',
-      'butternut squash'
+      'butternut squash',
+      '花生酱'
     ]
   }
 ];

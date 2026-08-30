@@ -23,6 +23,7 @@ import { DishFormModal } from './DishFormModal';
 import { exportToZip, parseUploadedDataFile } from '../../services/zipExportService';
 import { loadMasterSystemRecipes } from '../../services/systemRecipesService';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { getLocalizedDish, searchMatchesLocalizedDish } from '../../services/dataLocalizationService';
 
 interface DishesViewProps {
   familyName: string;
@@ -236,11 +237,10 @@ export const DishesView: React.FC<DishesViewProps> = ({
         if (!isFav) return false;
       }
 
-      // Multi-Token Search: All tokens must match somewhere in the dish
+      // Multi-Token Search: All tokens must match somewhere in the dish (cross-lingually)
       if (queryTokens.length > 0) {
-        const dishSearchString = `${dish.name} ${dish.cuisine || ''} ${dish.category || ''} ${dish.tags?.join(' ') || ''} ${dish.ingredients.map((i) => i.name).join(' ')}`.toLowerCase();
-        const allTokensMatch = queryTokens.every((token) => dishSearchString.includes(token));
-        if (!allTokensMatch) return false;
+        const matches = searchMatchesLocalizedDish(dish, searchQuery, language);
+        if (!matches) return false;
       }
 
       return true;
@@ -255,7 +255,9 @@ export const DishesView: React.FC<DishesViewProps> = ({
         return a.ingredients.length - b.ingredients.length;
       }
       if (sortBy === 'name') {
-        return a.name.localeCompare(b.name);
+        const nameA = getLocalizedDish(a, language).name;
+        const nameB = getLocalizedDish(b, language).name;
+        return nameA.localeCompare(nameB);
       }
       if (sortBy === 'recent') {
         return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
@@ -714,6 +716,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
             const isFavoritedByMe = currentMember && dish.favoritedByMembers?.includes(currentMember);
             const isSelected = selectedDishIds.has(dish.id);
             const isInFamilyCookbook = dish.isFamilyRecipe !== false;
+            const localized = getLocalizedDish(dish, language);
 
             return (
               <div
@@ -754,7 +757,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                     {dish.imageUrl ? (
                       <img
                         src={dish.imageUrl}
-                        alt={dish.name}
+                        alt={localized.name}
                         loading="lazy"
                         className="w-16 h-16 rounded-xl object-cover border border-[#EAE6DF] shadow-2xs"
                       />
@@ -775,10 +778,15 @@ export const DishesView: React.FC<DishesViewProps> = ({
                           {formatCuisine(dish.cuisine)}
                         </span>
                       )}
+                      {localized.fallbackTag && (
+                        <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-md">
+                          {localized.fallbackTag}
+                        </span>
+                      )}
                     </div>
 
                     <h4 className="text-xs font-bold text-slate-900 truncate leading-snug">
-                      {dish.name}
+                      {localized.name}
                     </h4>
                     
                     {/* Star rating, prep time & ingredients count */}

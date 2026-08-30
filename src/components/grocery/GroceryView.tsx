@@ -133,7 +133,8 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
       effectiveStart,
       effectiveEnd,
       items,
-      pantryIngredients
+      pantryIngredients,
+      language
     );
 
     onUpdateGroceryList({

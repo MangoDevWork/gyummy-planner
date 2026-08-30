@@ -4,6 +4,7 @@ import { GROCERY_CATEGORIES } from '../../types';
 import { Search, Edit3, Plus, Trash2, Save, Download, Upload, AlertCircle, CheckCircle2, Home, Check } from 'lucide-react';
 import { exportToZip, parseUploadedDataFile } from '../../services/zipExportService';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { getLocalizedMasterIngredient } from '../../services/dataLocalizationService';
 
 interface IngredientsViewProps {
   familyName: string;
@@ -58,9 +59,11 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
 
   // Filter ingredients
   const filtered = activeList.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const loc = getLocalizedMasterIngredient(item, language);
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch = !q || item.name.toLowerCase().includes(q) || loc.name.toLowerCase().includes(q);
     const matchesCat = selectedCategory === 'All' || item.category === selectedCategory;
-    const isItemInPantry = pantryIngredients.some((p) => p.toLowerCase() === item.name.toLowerCase().trim());
+    const isItemInPantry = pantryIngredients.some((p) => p.toLowerCase() === item.name.toLowerCase().trim() || p.toLowerCase() === loc.name.toLowerCase().trim());
     const matchesPantry = !showOnlyPantry || isItemInPantry;
     return matchesSearch && matchesCat && matchesPantry;
   });
@@ -516,43 +519,55 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                   </div>
                 ) : (
                   /* Read Only Row */
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                      <button
-                        type="button"
-                        onClick={() => handleTogglePantryItem(item.name)}
-                        className={`p-1.5 rounded-lg border transition cursor-pointer shrink-0 ${
-                          isInPantry
-                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-                            : 'bg-white text-slate-400 border-[#EAE6DF] hover:text-emerald-700 hover:border-emerald-300'
-                        }`}
-                        title={isInPantry ? 'In Pantry (Click to remove)' : 'Click to add to Home Pantry'}
-                      >
-                        <Home className="w-3.5 h-3.5" />
-                      </button>
+                  (() => {
+                    const loc = getLocalizedMasterIngredient(item, language);
+                    return (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePantryItem(item.name)}
+                            className={`p-1.5 rounded-lg border transition cursor-pointer shrink-0 ${
+                              isInPantry
+                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                                : 'bg-white text-slate-400 border-[#EAE6DF] hover:text-emerald-700 hover:border-emerald-300'
+                            }`}
+                            title={isInPantry ? 'In Pantry (Click to remove)' : 'Click to add to Home Pantry'}
+                          >
+                            <Home className="w-3.5 h-3.5" />
+                          </button>
 
-                      <div className="min-w-0">
-                        <span className="text-xs font-bold text-slate-800 truncate block">{item.name}</span>
-                        {isInPantry && (
-                          <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-0.5">
-                            <Check className="w-2.5 h-2.5 stroke-[3]" />
-                            In Home Pantry (Auto half-marks on grocery list)
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-slate-800 truncate block">{loc.name}</span>
+                              {loc.isUntranslated && (
+                                <span className="text-[9px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.1 rounded shrink-0">
+                                  {language === 'zh-CN' ? '英文' : 'Chinese'}
+                                </span>
+                              )}
+                            </div>
+                            {isInPantry && (
+                              <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-0.5">
+                                <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                {language === 'zh-CN' ? '常备食材 (清单自动半选标记)' : 'In Home Pantry (Auto half-marks on grocery list)'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {item.defaultValue !== null && (
+                            <span className="text-xs font-bold text-slate-700 bg-[#F4F1EA] border border-[#EAE6DF] px-2 py-0.5 rounded-md">
+                              {item.defaultValue} {item.defaultUnit}
+                            </span>
+                          )}
+                          <span className="text-[10px] text-slate-500 bg-[#FDFBF7] px-2 py-0.5 rounded-md font-medium border border-[#EAE6DF]">
+                            {formatCategory(item.category)}
                           </span>
-                        )}
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      {item.defaultValue !== null && (
-                        <span className="text-xs font-bold text-slate-700 bg-[#F4F1EA] border border-[#EAE6DF] px-2 py-0.5 rounded-md">
-                          {item.defaultValue} {item.defaultUnit}
-                        </span>
-                      )}
-                      <span className="text-[10px] text-slate-500 bg-[#FDFBF7] px-2 py-0.5 rounded-md font-medium border border-[#EAE6DF]">
-                        {item.category}
-                      </span>
-                    </div>
-                  </div>
+                    );
+                  })()
                 )}
               </div>
             );

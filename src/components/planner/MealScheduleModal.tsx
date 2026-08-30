@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { Dish, MealScheduleEntry } from '../../types';
 import { X, Search, Plus, Trash2, Utensils, Check, BookOpen, ArrowRight, Sparkles, Heart } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { getLocalizedDish, searchMatchesLocalizedDish } from '../../services/dataLocalizationService';
 
 interface MealScheduleModalProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const { t, formatScheduleName, formatDate } = useLanguage();
+  const { language, t, formatCategory, formatScheduleName, formatDate } = useLanguage();
 
   const initialSelectedIds = useMemo(() => {
     if (currentEntry?.dishIds && currentEntry.dishIds.length > 0) return currentEntry.dishIds;
@@ -61,18 +62,11 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
   const filteredDishes = useMemo(() => {
     const list = activeTab === 'family' ? familyDishes : systemDishes;
     return list.filter((dish) => {
-      const q = searchQuery.trim().toLowerCase();
-      const matchesSearch =
-        !q ||
-        dish.name.toLowerCase().includes(q) ||
-        dish.category.toLowerCase().includes(q) ||
-        (dish.cuisine && dish.cuisine.toLowerCase().includes(q)) ||
-        dish.ingredients.some((i) => i.name.toLowerCase().includes(q));
-
+      const matchesSearch = searchMatchesLocalizedDish(dish, searchQuery, language);
       const matchesFav = !showOnlyFavorites || Boolean(dish.favoritedByMembers && dish.favoritedByMembers.length > 0);
       return matchesSearch && matchesFav;
     });
-  }, [activeTab, familyDishes, systemDishes, searchQuery, showOnlyFavorites]);
+  }, [activeTab, familyDishes, systemDishes, searchQuery, showOnlyFavorites, language]);
 
   const handleToggleDish = (dish: Dish) => {
     // If selecting a system dish that is not yet in family cookbook, add it to family cookbook
@@ -360,6 +354,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                   {filteredDishes.slice(0, visibleLimit).map((dish) => {
                     const isSelected = selectedDishIds.includes(dish.id);
                     const isInCookbook = dish.isFamilyRecipe !== false;
+                    const localized = getLocalizedDish(dish, language);
 
                     return (
                       <div
@@ -375,7 +370,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                           {dish.imageUrl ? (
                             <img
                               src={dish.imageUrl}
-                              alt={dish.name}
+                              alt={localized.name}
                               className="w-11 h-11 rounded-lg object-cover border border-[#EAE6DF] shrink-0"
                             />
                           ) : (
@@ -386,8 +381,13 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                               <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-[#F4F1EA] px-1.5 py-0.2 rounded-md">
-                                {dish.category}
+                                {formatCategory(dish.category)}
                               </span>
+                              {localized.fallbackTag && (
+                                <span className="text-[9px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-md">
+                                  {localized.fallbackTag}
+                                </span>
+                              )}
                               <span className="text-[9px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-md">
                                 ⏱ {dish.prepTimeMinutes || 20}m
                               </span>
@@ -398,7 +398,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
                                 • {dish.ingredients.length} ingr.
                               </span>
                             </div>
-                            <h4 className="text-xs font-bold text-slate-900 truncate">{dish.name}</h4>
+                            <h4 className="text-xs font-bold text-slate-900 truncate">{localized.name}</h4>
                           </div>
                         </div>
 

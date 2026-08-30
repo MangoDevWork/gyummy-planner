@@ -27,10 +27,12 @@ export interface UserProfile {
 
 export interface MasterIngredient {
   id: string;
+  canonicalId?: string;
   name: string;
   defaultValue: number | null;
   defaultUnit: string;
   category: GroceryCategory;
+  translations?: Partial<Record<'en' | 'zh-CN', string>>;
 }
 
 export interface Ingredient {
@@ -39,10 +41,20 @@ export interface Ingredient {
   amount: number | null;
   unit: string;
   category: GroceryCategory;
+  translations?: Partial<Record<'en' | 'zh-CN', string>>;
+}
+
+export interface LocalizedDishContent {
+  name: string;
+  instructions?: string;
+  tags?: string[];
+  ingredients?: { id: string; name: string }[];
 }
 
 export interface Dish {
   id: string;
+  canonicalId?: string; // Identifier to link translations / variants together
+  language?: 'en' | 'zh-CN'; // The base language this recipe was authored in
   name: string;
   category: string; // e.g., "Dinner", "Lunch", "Breakfast", "Snack", "Dessert"
   cuisine?: string;  // e.g., "Japanese", "Korean", "Cantonese", "Thai", "Western", "Italian", etc.
@@ -57,6 +69,7 @@ export interface Dish {
   isFamilyRecipe?: boolean;     // True if added to this Family's Cookbook
   createdAt: string;
   updatedAt: string;
+  translations?: Partial<Record<'en' | 'zh-CN', LocalizedDishContent>>;
 }
 
 export interface MealScheduleConfig {

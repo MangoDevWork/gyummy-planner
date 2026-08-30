@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { Dish, GroceryCategory, Ingredient, MasterIngredient } from '../../types';
 import { GROCERY_CATEGORIES } from '../../types';
-import { X, Plus, Trash2, BookmarkPlus, Check, Camera, Image as ImageIcon, ArrowDown } from 'lucide-react';
+import { X, Plus, Trash2, BookmarkPlus, Check, Camera, Image as ImageIcon, ArrowDown, Globe, ChevronDown, ChevronUp } from 'lucide-react';
 import { compressImage } from '../../services/imageUtils';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const DISH_EMOJIS = ['🍲', '🧆', '🍝', '🍗', '🥩', '🍣', '🌮', '🥑', '🥗', '🍛', '🍕', '🍤', '🥪', '🥘', '🍳', '🥞', '🥣'];
 const COMMON_UNITS = ['g', 'kg', 'ml', 'L', 'tbsp', 'tsp', 'pcs', 'slices', 'can', 'packet', 'stalks', 'cloves', 'cup', 'pinch'];
@@ -26,6 +27,9 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  const { language, t, formatCategory, formatCuisine } = useLanguage();
+  const targetTranslationLang = language === 'zh-CN' ? 'en' : 'zh-CN';
+
   const [name, setName] = useState(initialDish?.name || '');
   const [category, setCategory] = useState(initialDish?.category || 'Dinner');
   const [cuisine, setCuisine] = useState(initialDish?.cuisine || 'Asian');
@@ -36,6 +40,12 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
   const [instructions, setInstructions] = useState(initialDish?.instructions || '');
   const [tagsInput, setTagsInput] = useState(initialDish?.tags?.join(', ') || '');
   const [isFamilyRecipe, setIsFamilyRecipe] = useState(initialDish?.isFamilyRecipe ?? true);
+
+  // Optional Multilingual Translation State
+  const existingAltTrans = initialDish?.translations?.[targetTranslationLang];
+  const [showTranslationSection, setShowTranslationSection] = useState(Boolean(existingAltTrans?.name));
+  const [altName, setAltName] = useState(existingAltTrans?.name || '');
+  const [altInstructions, setAltInstructions] = useState(existingAltTrans?.instructions || '');
   const [ingredients, setIngredients] = useState<Ingredient[]>(
     initialDish?.ingredients && initialDish.ingredients.length > 0
       ? initialDish.ingredients
@@ -156,8 +166,23 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
 
+    const translations: Dish['translations'] = {
+      ...(initialDish?.translations || {})
+    };
+
+    if (altName.trim()) {
+      translations[targetTranslationLang] = {
+        name: altName.trim(),
+        instructions: altInstructions.trim() || undefined
+      };
+    } else if (translations[targetTranslationLang]) {
+      delete translations[targetTranslationLang];
+    }
+
     const savedDish: Dish = {
       id: initialDish?.id || `dish_${Date.now()}`,
+      canonicalId: initialDish?.canonicalId || initialDish?.id || `dish_${Date.now()}`,
+      language: initialDish?.language || language,
       name: name.trim(),
       category: category.trim() || 'Dinner',
       cuisine: cuisine.trim() || 'Asian',
@@ -170,6 +195,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
       favoritedByMembers: initialDish?.favoritedByMembers || [],
       isFamilyRecipe,
       ingredients: validIngredients,
+      translations: Object.keys(translations).length > 0 ? translations : undefined,
       createdAt: initialDish?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -340,41 +366,35 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
           <div className="grid grid-cols-2 gap-2.5">
             <div>
               <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Category
+                {language === 'zh-CN' ? '分类' : 'Category'}
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full text-xs font-semibold px-2.5 py-2 rounded-xl border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-500 shadow-2xs"
               >
-                <option value="Dinner">Dinner</option>
-                <option value="Lunch">Lunch</option>
-                <option value="Breakfast">Breakfast</option>
-                <option value="Snack">Snack</option>
-                <option value="Dessert">Dessert</option>
+                {['Dinner', 'Lunch', 'Breakfast', 'Snack', 'Dessert'].map((cat) => (
+                  <option key={cat} value={cat}>
+                    {formatCategory(cat)}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
               <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Cuisine
+                {language === 'zh-CN' ? '菜系' : 'Cuisine'}
               </label>
               <select
                 value={cuisine}
                 onChange={(e) => setCuisine(e.target.value)}
                 className="w-full text-xs font-semibold px-2.5 py-2 rounded-xl border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-500 shadow-2xs"
               >
-                <option value="Asian">Asian (General)</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Korean">Korean</option>
-                <option value="Cantonese">Cantonese / Chinese</option>
-                <option value="Thai">Thai</option>
-                <option value="Vietnamese">Vietnamese</option>
-                <option value="Western">Western</option>
-                <option value="Italian">Italian</option>
-                <option value="Mexican">Mexican</option>
-                <option value="Mediterranean">Mediterranean</option>
-                <option value="Other">Other</option>
+                {['Asian', 'Japanese', 'Korean', 'Cantonese', 'Thai', 'Vietnamese', 'Western', 'Italian', 'Mexican', 'Mediterranean', 'Other'].map((c) => (
+                  <option key={c} value={c}>
+                    {formatCuisine(c)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -587,25 +607,82 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
           {/* Cooking Instructions / Notes */}
           <div className="border-t border-[#EAE6DF] pt-3">
             <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Recipe Steps & Cooking Notes
+              {t('dishes.instructionsSection')}
             </label>
             <textarea
               rows={4}
-              placeholder="1. Season chicken...&#10;2. Pan sear in oil for 6 mins...&#10;3. Glaze with sauce..."
+              placeholder={language === 'zh-CN' ? '1. 鸡肉腌制10分钟...&#10;2. 热油下锅煎至金黄...&#10;3. 淋入酱汁大火收汁...' : "1. Season chicken...&#10;2. Pan sear in oil for 6 mins...&#10;3. Glaze with sauce..."}
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
               className="w-full text-xs font-medium p-3 rounded-xl border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-400 shadow-2xs"
             />
           </div>
 
+          {/* Optional Multilingual Translation Accordion */}
+          <div className="border border-dashed border-[#D6CEBF] rounded-xl p-3 bg-[#FAF8F5]">
+            <button
+              type="button"
+              onClick={() => setShowTranslationSection(!showTranslationSection)}
+              className="w-full flex items-center justify-between text-xs font-bold text-slate-700 hover:text-slate-900 transition cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-amber-600" />
+                <span>
+                  {language === 'zh-CN' ? '🌐 提供英文双语翻译 (可选)' : '🌐 Add Chinese Translation (Optional)'}
+                </span>
+              </div>
+              {showTranslationSection ? (
+                <ChevronUp className="w-4 h-4 text-slate-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
+
+            {showTranslationSection && (
+              <div className="mt-3 pt-3 border-t border-[#EAE6DF] space-y-3 animate-in fade-in duration-150">
+                <p className="text-[11px] text-slate-500">
+                  {language === 'zh-CN'
+                    ? '输入英文菜名与步骤后，切换至英文界面时即可自动展示对应英文版本。'
+                    : 'Provide the Chinese dish name and steps so users on Chinese settings see the translated version.'}
+                </p>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    {language === 'zh-CN' ? '英文菜名 (English Name)' : '中文菜名 (Chinese Name)'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={language === 'zh-CN' ? 'e.g. Tomato Meat Ball' : '例如：茄汁牛肉丸'}
+                    value={altName}
+                    onChange={(e) => setAltName(e.target.value)}
+                    className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-400 shadow-2xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    {language === 'zh-CN' ? '英文步骤 (English Instructions)' : '中文步骤 (Chinese Instructions)'}
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder={language === 'zh-CN' ? '1. Season ground beef...' : '1. 牛肉馅加盐调味...'}
+                    value={altInstructions}
+                    onChange={(e) => setAltInstructions(e.target.value)}
+                    className="w-full text-xs font-medium p-3 rounded-xl border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-400 shadow-2xs"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Tags */}
           <div>
             <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-              Tags (comma separated)
+              {language === 'zh-CN' ? '标签 (逗号分隔)' : 'Tags (comma separated)'}
             </label>
             <input
               type="text"
-              placeholder="e.g. Japanese, 20 mins, Kid Friendly"
+              placeholder={language === 'zh-CN' ? '例如：日料, 20分钟, 快手菜' : 'e.g. Japanese, 20 mins, Kid Friendly'}
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-400 shadow-2xs"
@@ -620,14 +697,16 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
             onClick={onClose}
             className="px-4 py-2.5 rounded-xl border border-[#EAE6DF] text-xs font-semibold text-slate-600 hover:bg-slate-50 active:scale-95 transition cursor-pointer"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={handleSubmit}
             className="px-5 py-2.5 rounded-xl bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
           >
-            {initialDish ? 'Save Changes' : 'Create Recipe'}
+            {initialDish
+              ? (language === 'zh-CN' ? '保存修改' : 'Save Changes')
+              : (language === 'zh-CN' ? '创建菜谱' : 'Create Recipe')}
           </button>
         </div>
       </div>

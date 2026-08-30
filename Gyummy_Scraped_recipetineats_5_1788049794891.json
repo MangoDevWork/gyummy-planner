@@ -1,0 +1,452 @@
+{
+  "app": "Gyummy Planner",
+  "version": 2,
+  "exportedAt": "2026-08-30T00:29:54.891Z",
+  "dishes": [
+    {
+      "id": "dish_scraped_1788049792836_vsugg",
+      "name": "Mexican Pork Rolls",
+      "category": "Dinner",
+      "cuisine": "Mexican",
+      "servings": 4,
+      "prepTimeMinutes": 20,
+      "instructions": "1. Melt butter in a fry pan over medium heat. Add onions and cook for 7 minutes, stirring every now and then so they cook evenly. Add remaining Caramelized Onion ingredients and cook for a further 5 minutes, stirring occasionally until sticky and caramelised. Remove onion from pan and set aside.\n2. Brown Pork Carnitas: Wipe pan clean and return to stove. Heat 1/2 tbsp oil over high heat. Add Pork Carnitas and press down lightly with a spatula to help crisp up. When the Pork Carnitas are heated through and the underside is golden brown and crisp (about 1 to 1/2 minutes), remove from pan (do not flip).\n3. Place Pork Carnitas and Enchilada Sauce and mix to combine.\n4. Preheat grill (broiler) on high.\n5. Split rolls in half. Divide the Filling between them and pile onto the bottom half of the roll. Top with cheese then grill (broil) for 3 minutes until melted.\n6. Remove from the grill, top with caramelised onion and sprinkle with parsley (if using).\n7. Sandwich with the other half of the bread roll and serve immediately.",
+      "imageUrl": "https://www.recipetineats.com/tachyon/2014/09/DSC_0170-1.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        [
+          "Mexican"
+        ],
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:29:52.836Z",
+      "updatedAt": "2026-08-30T00:29:52.837Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049792835_0",
+          "name": "s shredded Pork Carnitas ((Mexican Pulled Pork))",
+          "amount": 1.5,
+          "unit": "cup",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049792836_1",
+          "name": "Enchilada Sauce ((preferably homemade - here is my Easy Classic Enchilada Sauce))",
+          "amount": 0.5,
+          "unit": "cup",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792836_2",
+          "name": "butter",
+          "amount": 1.5,
+          "unit": "tbsp",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049792836_3",
+          "name": "brown onions (, halved and finely sliced)",
+          "amount": 2,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049792836_4",
+          "name": "brown sugar",
+          "amount": 1.5,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792836_5",
+          "name": "balsamic vinegar",
+          "amount": 1,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792836_6",
+          "name": "salt",
+          "amount": 0.5,
+          "unit": "tsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792836_7",
+          "name": "Black pepper",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049792836_8",
+          "name": "grated mozzarella cheese ((or any other good melting cheese))",
+          "amount": 0.5,
+          "unit": "cup",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049792836_9",
+          "name": "soft white bread rolls",
+          "amount": 4,
+          "unit": "pcs",
+          "category": "Bakery"
+        },
+        {
+          "id": "ing_scraped_1788049792836_10",
+          "name": "Fresh parsley (, finely chopped, for garnish (optional))",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049792841_yubbk",
+      "name": "Sirloin Steak with Pesto, Bell Peppers (Capsicum) &amp; Flatbread",
+      "category": "Dinner",
+      "cuisine": "Western",
+      "servings": 2,
+      "prepTimeMinutes": 15,
+      "instructions": "1. Preferably bring your steak to room temperature. This will take 30 minutes if the air temperature is warm/hot, or an hour if it's cool.\n2. Season steaks generously with salt and pepper. Do this just before you cook it.\n3. Heat 1 tbsp oil in a heavy based fry pan over high heat until it starts to smoke.\n4. Place steaks in the fry pan. Cook each side for 2 minutes for medium rare. See notes for cooking times.\n5. Remove steaks from the fry pan onto a plate and cover loosely (not tightly) with foil. Allow to rest for 5 minutes, up to 10 minutes.\n6. While the steak is resting, return the fry pan to the stove over medium high heat with 1 tbsp oil.\n7. Add the bell pepper (capsicum) and cook, stirring occasionally, until nicely charred. Remove from heat.\n8. Serve the steaks topped with the bell pepper and with Pesto and Flatbread on the side.",
+      "imageUrl": "https://www.recipetineats.com/tachyon/2014/11/Sirloin-Steak-with-Pesto-Capsicum-and-Flatbread-2.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:29:52.842Z",
+      "updatedAt": "2026-08-30T00:29:52.842Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049792841_0",
+          "name": "x 10oz / 300g sirloin beef steak (, 2.5 cm/ 1 inch thick (the best you can afford))",
+          "amount": 2,
+          "unit": "pcs",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049792841_1",
+          "name": "vegetable oil ((or canola), separated)",
+          "amount": 2,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792841_2",
+          "name": "red bell pepper ((capsicum), deseed, halved and sliced into strips)",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049792841_3",
+          "name": "Salt and pepper",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049792841_4",
+          "name": "Pesto ((preferably homemade - see notes for recipe))",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792841_5",
+          "name": "Flatbreads ((see recipe Easy Soft Flatbread (No Yeast)))",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Bakery"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049792843_tzy9j",
+      "name": "Muffin Tin Breakfast Croque Madame Toastie Cups",
+      "category": "Breakfast",
+      "cuisine": "French",
+      "servings": 6,
+      "prepTimeMinutes": 40,
+      "instructions": "1. Turn the oven on to 180C/350F.\n2. Cut the crusts off the bread, then roll out with a rolling pin until flattened.\n3. Press the bread into Texas muffin tins to form cups. Place into the oven (even if it is still heating up) for 5 minutes, just to dry the bread out a bit (Note 3). Don't let it brown.\n4. Bechamel Cheese Sauce\n5. Assemble Toast Cups",
+      "imageUrl": "https://www.recipetineats.com/tachyon/2014/12/Croque-Madame-2.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        [
+          "French"
+        ],
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:29:52.843Z",
+      "updatedAt": "2026-08-30T00:29:52.843Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049792843_0",
+          "name": "unsalted butter",
+          "amount": 1.5,
+          "unit": "tbsp",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049792843_1",
+          "name": "flour",
+          "amount": 1.5,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792843_2",
+          "name": "s milk ((full fat works best, though low fat does work))",
+          "amount": 1.25,
+          "unit": "cup",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049792843_3",
+          "name": "grated gruyere cheese ((or tasty or cheddar), plus extra for sprinkling)",
+          "amount": 0.33,
+          "unit": "cup",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049792843_4",
+          "name": "Dijon mustard",
+          "amount": 2,
+          "unit": "tsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792843_5",
+          "name": "freshly ground nutmeg",
+          "amount": 0.25,
+          "unit": "tsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792843_6",
+          "name": "salt",
+          "amount": 0.25,
+          "unit": "tsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792843_7",
+          "name": "Black pepper",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049792843_8",
+          "name": "arge slices of fresh white bread ((Notes 1 and 2))",
+          "amount": 6,
+          "unit": "l",
+          "category": "Bakery"
+        },
+        {
+          "id": "ing_scraped_1788049792843_9",
+          "name": "melted butter ((salted or unsalted))",
+          "amount": 2,
+          "unit": "tbsp",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049792843_10",
+          "name": "eggs",
+          "amount": 6,
+          "unit": "pcs",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049792843_11",
+          "name": "/ 3 oz leg ham",
+          "amount": 100,
+          "unit": "g",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792843_12",
+          "name": "Fresh parsley (, finely chopped)",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792843_13",
+          "name": "Freshly ground nutmeg",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049792864_xl2da",
+      "name": "Beef Cheek Ragu Pasta",
+      "category": "Dinner",
+      "cuisine": "Italian",
+      "servings": 4,
+      "prepTimeMinutes": 15,
+      "instructions": "1. Bring a large pot of salted water to boil. Add pasta and cook for 6 minutes or until just before al dente (i.e. slightly undercooked, very firm to touch). The pasta will be cooked more in the pasta sauce.\n2. Meanwhile, heat olive oil in large pan over medium high heat. Add onion and garlic and sauté for 3 minutes.\n3. Add remaining ingredients. Bring to rapid simmer, stirring occasionally. Adjust seasoning with salt and pepper. If the sauce seems too thick, add a splash of the pasta cooking water.\n4. Use tongs and transfer the pasta straight from the pot of boiling water into the pan with the ragu sauce. Add 1/2 cup of pasta cooking water and gently toss the pasta in the sauce for 1 to 2 minutes. The pasta is ready when the spaghetti is al dente (cooked but slightly firm to touch) and the sauce has thickened and is tossed through the pasta.\n5. Serve immediately, sprinkled with freshly grated parmesan cheese and parsley if desired.",
+      "imageUrl": "https://www.recipetineats.com/tachyon/2014/08/Beef-Cheeks-Pasta-2-1.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        [
+          "Italian"
+        ],
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:29:52.864Z",
+      "updatedAt": "2026-08-30T00:29:52.864Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049792864_0",
+          "name": "/ 12 oz dried spaghetti",
+          "amount": 350,
+          "unit": "g",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792864_1",
+          "name": "s leftover beef from Slow Cooked Beef Cheeks in Red Wine (, shredded)",
+          "amount": 2,
+          "unit": "cup",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049792864_2",
+          "name": "Sauce of Slow Cooked Beef Cheeks in Red Wine",
+          "amount": 1,
+          "unit": "cup",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_scraped_1788049792864_3",
+          "name": "onion ((brown, white or yellow), diced)",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049792864_4",
+          "name": "arlic cloves (, minced)",
+          "amount": 2,
+          "unit": "g",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792864_5",
+          "name": "olive oil",
+          "amount": 2,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792864_6",
+          "name": "s crushed tomato ((canned))",
+          "amount": 2,
+          "unit": "cup",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049792864_7",
+          "name": "tomato paste",
+          "amount": 3,
+          "unit": "tbsp",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049792864_8",
+          "name": "water",
+          "amount": 0.5,
+          "unit": "cup",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792864_9",
+          "name": "to 2 tsp salt ((adjust to taste))",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049792864_10",
+          "name": "Black pepper",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049792864_11",
+          "name": "Freshly grated parmesan cheese",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Dairy & Eggs"
+        },
+        {
+          "id": "ing_scraped_1788049792864_12",
+          "name": "Parsley (, finely chopped)",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Pantry & Spices"
+        }
+      ]
+    },
+    {
+      "id": "dish_scraped_1788049794640_67ghu",
+      "name": "Giant Hash Brown",
+      "category": "Breakfast",
+      "cuisine": "Asian",
+      "servings": 4,
+      "prepTimeMinutes": 25,
+      "instructions": "1. Peel and grate the potatoes, placing the grated potato into a large bowl of water (this stops the potato from going brown while you continue grating).\n2. Using a large colander, rinse the potato until the water comes clear (to remove the starch which keeps the potato from going brown as well as making it crispy).\n3. Working a handful at a time, squeeze out the excess water and place into the bowl.\n4. Mix in 1 tbsp of olive oil, salt and pepper.\n5. Heat 2 tbsp olive oil in a 22cm/9 inch non stick pan over medium high heat.\n6. Place shredded potato mixture in pan, spread out and lightly pat down with a spatula. It should be about 1.5cm/0.6\" thick.\n7. Cook for 5 to 8 minutes until golden brown and crispy. Use a spatula to lift a corner to check for doneness.\n8. Get a large plate and slide the hash brown onto it.\n9. Place the pan on top of the plate, then quickly flip upside down. Use a tea towel if you need so you can hold onto the fry pan when flipping. Don't worry if it breaks when you flip it, it's salvageable!\n10. Drizzle the remaining 1 tbsp of oil around the edges of the fry pan. If your hash brown broke when you flipped it, use a spatula to lightly pat it back into shape.\n11. Cook until golden brown and crispy, about 4 to 6 minutes. Use a spatula to lift up to check.\n12. Slide out of the plan onto a serving plate. Season with additional salt if required. To serve, garnish with chopped parsley (optional) and cut into wedges.",
+      "imageUrl": "https://www.recipetineats.com/tachyon/2014/07/Giant-Hash-Brown-1-1.jpg",
+      "imageEmoji": "🍲",
+      "tags": [
+        "Web Import"
+      ],
+      "favoritedByMembers": [],
+      "isFamilyRecipe": false,
+      "createdAt": "2026-08-30T00:29:54.640Z",
+      "updatedAt": "2026-08-30T00:29:54.640Z",
+      "ingredients": [
+        {
+          "id": "ing_scraped_1788049794640_0",
+          "name": "/ 2 lb potatoes ((starchy - see notes))",
+          "amount": 1,
+          "unit": "kg",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049794640_1",
+          "name": "salt ((plus more to taste))",
+          "amount": 1,
+          "unit": "tsp",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_scraped_1788049794640_2",
+          "name": "Black pepper",
+          "amount": 1,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_scraped_1788049794640_3",
+          "name": "extra virgin olive oil (, separated)",
+          "amount": 4,
+          "unit": "tbsp",
+          "category": "Pantry & Spices"
+        }
+      ]
+    }
+  ]
+}

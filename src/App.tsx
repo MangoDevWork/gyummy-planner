@@ -17,6 +17,7 @@ import { FirstTimeOnboardingGuide } from './components/auth/FirstTimeOnboardingG
 
 import { loadMasterSystemRecipes, mergeSystemWithUserDishes, getCachedSystemRecipes } from './services/systemRecipesService';
 import { loadDarkModePreference, applyDarkMode } from './services/darkMode';
+import { loadMemberLanguage } from './services/languageService';
 
 export function App() {
   const [appData, setAppData] = useState<AppData>(() => loadAppData());
@@ -304,13 +305,15 @@ export function App() {
   };
 
   const handleGoToGrocery = (startDate: string, endDate: string) => {
+    const userLang = loadMemberLanguage(appData.currentProfile?.memberName);
     const items = generateGroceryList(
       appData.dishes,
       appData.mealPlan,
       startDate,
       endDate,
       appData.groceryList.items,
-      appData.pantryIngredients || []
+      appData.pantryIngredients || [],
+      userLang
     );
     setAppData((prev) => ({
       ...prev,

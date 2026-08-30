@@ -20,6 +20,7 @@ import { WeekCopyModal } from './WeekCopyModal';
 import { MealScheduleSettingsModal } from '../settings/MealScheduleSettingsModal';
 import { exportToZip, parseUploadedDataFile, copyMealPlanAsMessage } from '../../services/zipExportService';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { getLocalizedDish } from '../../services/dataLocalizationService';
 
 interface PlannerViewProps {
   familyName: string;
@@ -683,22 +684,25 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
 
                             {entryDishes.length > 0 ? (
                               <div className="space-y-1 mt-1">
-                                {entryDishes.map((dish) => (
-                                  <div key={dish.id} className="flex items-center gap-1.5 min-w-0">
-                                    {dish.imageUrl ? (
-                                      <img
-                                        src={dish.imageUrl}
-                                        alt={dish.name}
-                                        className="w-4 h-4 rounded-md object-cover shrink-0"
-                                      />
-                                    ) : (
-                                      <span className="text-sm shrink-0">{dish.imageEmoji || '🍲'}</span>
-                                    )}
-                                    <span className="text-xs font-bold text-slate-800 truncate leading-tight">
-                                      {dish.name}
-                                    </span>
-                                  </div>
-                                ))}
+                                {entryDishes.map((dish) => {
+                                  const loc = getLocalizedDish(dish, language);
+                                  return (
+                                    <div key={dish.id} className="flex items-center gap-1.5 min-w-0">
+                                      {dish.imageUrl ? (
+                                        <img
+                                          src={dish.imageUrl}
+                                          alt={loc.name}
+                                          className="w-4 h-4 rounded-md object-cover shrink-0"
+                                        />
+                                      ) : (
+                                        <span className="text-sm shrink-0">{dish.imageEmoji || '🍲'}</span>
+                                      )}
+                                      <span className="text-xs font-bold text-slate-800 truncate leading-tight">
+                                        {loc.name}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
                                 {entry?.customText && (
                                   <span className="text-[10px] text-slate-500 italic block truncate">
                                     📝 {entry.customText}
@@ -837,14 +841,17 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
 
                       {entryDishes.length > 0 ? (
                         <div className="space-y-1 mt-1">
-                          {entryDishes.map((dish) => (
-                            <div key={dish.id} className="flex items-center gap-1.5 min-w-0">
-                              <span className="text-base shrink-0">{dish.imageEmoji || '🍲'}</span>
-                              <span className="text-xs font-bold text-slate-800 truncate leading-tight">
-                                {dish.name}
-                              </span>
-                            </div>
-                          ))}
+                          {entryDishes.map((dish) => {
+                            const loc = getLocalizedDish(dish, language);
+                            return (
+                              <div key={dish.id} className="flex items-center gap-1.5 min-w-0">
+                                <span className="text-base shrink-0">{dish.imageEmoji || '🍲'}</span>
+                                <span className="text-xs font-bold text-slate-800 truncate leading-tight">
+                                  {loc.name}
+                                </span>
+                              </div>
+                            );
+                          })}
                           {entry?.customText && (
                             <span className="text-[10px] text-slate-500 italic block truncate">
                               📝 {entry.customText}
