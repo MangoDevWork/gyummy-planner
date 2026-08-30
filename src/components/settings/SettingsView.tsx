@@ -14,7 +14,10 @@ import {
   Sliders,
   Camera,
   Trash2,
-  Save
+  Save,
+  UserPlus,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 import { exportToZip, parseUploadedDataFile, mergeImportedData } from '../../services/zipExportService';
 import { MealScheduleSettingsModal } from './MealScheduleSettingsModal';
@@ -25,12 +28,14 @@ interface SettingsViewProps {
   appData: AppData;
   onUpdateAppData: (data: AppData) => void;
   onOpenProfileModal: () => void;
+  onLogout?: () => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   appData,
   onUpdateAppData,
-  onOpenProfileModal
+  onOpenProfileModal,
+  onLogout
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -40,6 +45,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [editFamilyName, setEditFamilyName] = useState(appData.currentProfile?.familyName || 'Family');
   const [editMemberName, setEditMemberName] = useState(appData.currentProfile?.memberName || 'Member');
   const [editAvatarUrl, setEditAvatarUrl] = useState(appData.currentProfile?.avatarUrl || '');
+  const [newMemberNameInput, setNewMemberNameInput] = useState('');
 
   // Easter Egg State
   const [showEasterEgg, setShowEasterEgg] = useState(false);
@@ -56,6 +62,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3500);
   };
+
+  const currentMember = appData.currentProfile?.memberName || '';
 
   // Avatar Upload Handler
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,6 +124,58 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     if (pendingProfileUpdate) {
       applyProfileUpdate(pendingProfileUpdate);
       setPendingProfileUpdate(null);
+    }
+  };
+
+  // Add a new family member
+  const handleAddMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = newMemberNameInput.trim();
+    if (!clean) return;
+
+    if (appData.familyMembers.some((m) => m.toLowerCase() === clean.toLowerCase())) {
+      showToast(`⚠️ "${clean}" is already in this family.`);
+      return;
+    }
+
+    const updatedMembers = [...appData.familyMembers, clean];
+    onUpdateAppData({
+      ...appData,
+      familyMembers: updatedMembers
+    });
+
+    setNewMemberNameInput('');
+    showToast(`✅ Added member "${clean}"!`);
+  };
+
+  // Remove a family member (prevent removing current active member)
+  const handleRemoveMember = (memberToRemove: string) => {
+    if (memberToRemove === currentMember) {
+      showToast('⚠️ You cannot remove the currently active logged-in user.');
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to remove "${memberToRemove}" from this family?`)) {
+      const updatedMembers = appData.familyMembers.filter((m) => m !== memberToRemove);
+      
+      // Clean up favorites
+      const updatedDishes = appData.dishes.map((dish) => {
+        if (dish.favoritedByMembers && dish.favoritedByMembers.includes(memberToRemove)) {
+          return {
+            ...dish,
+            favoritedByMembers: dish.favoritedByMembers.filter((m) => m !== memberToRemove)
+          };
+        }
+        return dish;
+      });
+
+      onUpdateAppData({
+        ...appData,
+        familyMembers: updatedMembers,
+        dishes: updatedDishes
+      });
+
+      showToast(`🗑️ Removed "${memberToRemove}" from family.`);
     }
   };
 
@@ -187,7 +247,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       )}
 
-      {/* Edit Profile & Photo Avatar Card in Pure White #FFFFFF */}
+      {/* Edit Profile & Photo Avatar Card */}
       <form onSubmit={handleSaveProfile} className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#F4F1EA]">
           <div className="flex items-center gap-2">
@@ -302,6 +362,82 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </button>
       </form>
 
+      {/* Family Members Management Card */}
+      <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#F4F1EA]">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-slate-700" />
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Family Members ({appData.familyMembers.length})
+            </h3>
+          </div>
+          <span className="text-[10px] text-slate-400">Manage household</span>
+        </div>
+
+        {/* Member List */}
+        <div className="space-y-2">
+          {appData.familyMembers.map((member) => {
+            const isCurrentUser = member === currentMember;
+            return (
+              <div
+                key={member}
+                className="flex items-center justify-between p-2.5 rounded-xl border border-[#EAE6DF] bg-[#FAF8F5]"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                      isCurrentUser ? 'bg-[#2B2D42] text-white' : 'bg-[#E2D9CC] text-slate-800'
+                    }`}
+                  >
+                    {member.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold text-slate-800 block truncate">{member}</span>
+                    {isCurrentUser ? (
+                      <span className="text-[9px] text-emerald-700 font-bold flex items-center gap-1">
+                        <UserCheck className="w-3 h-3" />
+                        Active Logged-In User
+                      </span>
+                    ) : (
+                      <span className="text-[9px] text-slate-400 block">Family Member</span>
+                    )}
+                  </div>
+                </div>
+
+                {!isCurrentUser && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveMember(member)}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                    title={`Remove ${member}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Add Member Form */}
+        <form onSubmit={handleAddMember} className="pt-1 flex gap-2">
+          <input
+            type="text"
+            placeholder="Add new family member..."
+            value={newMemberNameInput}
+            onChange={(e) => setNewMemberNameInput(e.target.value)}
+            className="flex-1 px-3 py-2 text-xs font-semibold rounded-xl border border-[#EAE6DF] bg-white text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-slate-500 shadow-2xs"
+          />
+          <button
+            type="submit"
+            className="px-3.5 py-2 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1 cursor-pointer"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Add</span>
+          </button>
+        </form>
+      </div>
+
       {/* Meal Schedule Customization Trigger */}
       <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-2">
         <div className="flex items-center justify-between">
@@ -398,7 +534,40 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       </div>
 
-      {/* Reset Data */}
+      {/* Account & Logout Card */}
+      <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <LogOut className="w-4 h-4 text-slate-700" />
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Account & Session
+            </h3>
+          </div>
+          <span className="text-[10px] font-bold text-slate-500 bg-[#F4F1EA] px-2 py-0.5 rounded-md">
+            {editFamilyName}
+          </span>
+        </div>
+        <p className="text-xs text-slate-500">
+          Log out to switch to another family household or member account.
+        </p>
+
+        {onLogout && (
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm(`Log out of ${editFamilyName}?`)) {
+                onLogout();
+              }
+            }}
+            className="w-full py-2.5 rounded-xl border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Log Out of Family</span>
+          </button>
+        )}
+      </div>
+
+      {/* Reset Starter Data */}
       <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-2">
         <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
           Starter Data Reset

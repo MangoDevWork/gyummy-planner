@@ -72,6 +72,37 @@ export function App() {
     }
   };
 
+  const handleLogout = () => {
+    setAppData((prev) => ({
+      ...prev,
+      currentProfile: null
+    }));
+    setIsProfileModalOpen(true);
+  };
+
+  const handleRemoveMember = (memberNameToRemove: string) => {
+    if (memberNameToRemove === appData.currentProfile?.memberName) return;
+
+    setAppData((prev) => {
+      const updatedMembers = prev.familyMembers.filter((m) => m !== memberNameToRemove);
+      const updatedDishes = prev.dishes.map((dish) => {
+        if (dish.favoritedByMembers && dish.favoritedByMembers.includes(memberNameToRemove)) {
+          return {
+            ...dish,
+            favoritedByMembers: dish.favoritedByMembers.filter((m) => m !== memberNameToRemove)
+          };
+        }
+        return dish;
+      });
+
+      return {
+        ...prev,
+        familyMembers: updatedMembers,
+        dishes: updatedDishes
+      };
+    });
+  };
+
   // Dishes state handlers
   const handleSaveDish = (dish: Dish) => {
     setAppData((prev) => {
@@ -360,6 +391,7 @@ export function App() {
               appData={appData}
               onUpdateAppData={setAppData}
               onOpenProfileModal={() => setIsProfileModalOpen(true)}
+              onLogout={handleLogout}
             />
           )}
         </main>
@@ -377,6 +409,8 @@ export function App() {
           currentProfile={appData.currentProfile}
           familyMembers={appData.familyMembers}
           onSelectProfile={handleSelectProfile}
+          onRemoveMember={handleRemoveMember}
+          onLogout={handleLogout}
           onClose={() => setIsProfileModalOpen(false)}
           isMandatory={!appData.currentProfile}
         />
