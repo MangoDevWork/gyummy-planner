@@ -1,0 +1,60 @@
+{
+  "app": "Gyummy Planner",
+  "version": 2,
+  "exportedAt": "2026-08-30T10:00:00.000Z",
+  "dishes": [
+    {
+      "id": "dish_template_honey_soy_chicken",
+      "name": "Honey Soy Garlic Chicken",
+      "category": "Dinner",
+      "cuisine": "Asian",
+      "servings": 4,
+      "prepTimeMinutes": 20,
+      "imageEmoji": "🍗",
+      "imageUrl": "https://images.unsplash.com/photo-1617093727343-374698b1b08d?auto=format&fit=crop&w=800&q=80",
+      "tags": ["Asian", "Quick & Easy", "Kid Friendly"],
+      "instructions": "1. Mix soy sauce, honey, minced garlic, and sesame oil in a bowl.\n2. Sear chicken pieces in a hot skillet for 5 mins per side until golden.\n3. Pour glaze over chicken and simmer for 3 mins until glossy and cooked through.\n4. Garnish with sesame seeds and chopped green onion.",
+      "favoritedByMembers": [],
+      "isFamilyRecipe": true,
+      "createdAt": "2026-08-30T10:00:00.000Z",
+      "updatedAt": "2026-08-30T10:00:00.000Z",
+      "ingredients": [
+        {
+          "id": "ing_tmpl_1",
+          "name": "Chicken Thigh",
+          "amount": 500,
+          "unit": "g",
+          "category": "Meat & Seafood"
+        },
+        {
+          "id": "ing_tmpl_2",
+          "name": "Soy Sauce",
+          "amount": 40,
+          "unit": "ml",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_tmpl_3",
+          "name": "Honey",
+          "amount": 30,
+          "unit": "ml",
+          "category": "Pantry & Spices"
+        },
+        {
+          "id": "ing_tmpl_4",
+          "name": "Garlic Clove",
+          "amount": 3,
+          "unit": "pcs",
+          "category": "Produce"
+        },
+        {
+          "id": "ing_tmpl_5",
+          "name": "Green Onion / Scallion",
+          "amount": 2,
+          "unit": "stalks",
+          "category": "Produce"
+        }
+      ]
+    }
+  ]
+}

@@ -11,7 +11,8 @@ import {
   Upload,
   Plus,
   Edit2,
-  MessageSquareShare
+  MessageSquareShare,
+  Home
 } from 'lucide-react';
 import {
   exportToZip,
@@ -23,6 +24,7 @@ interface GroceryViewProps {
   familyName: string;
   dishes: Dish[];
   mealPlan: MealPlan;
+  pantryIngredients: string[];
   groceryList: AppData['groceryList'];
   onUpdateGroceryList: (newList: AppData['groceryList']) => void;
 }
@@ -33,6 +35,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
   familyName,
   dishes,
   mealPlan,
+  pantryIngredients,
   groceryList,
   onUpdateGroceryList
 }) => {
@@ -64,6 +67,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
 
   const totalCount = items.length;
   const checkedCount = items.filter((i) => i.checked).length;
+  const inPantryCount = items.filter((i) => i.inPantry).length;
   const pendingCount = totalCount - checkedCount;
   const progressPercent = totalCount === 0 ? 0 : Math.round((checkedCount / totalCount) * 100);
 
@@ -89,7 +93,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
       return;
     }
 
-    const newItems = generateGroceryList(dishes, mealPlan, startDate, endDate, items);
+    const newItems = generateGroceryList(dishes, mealPlan, startDate, endDate, items, pantryIngredients);
     onUpdateGroceryList({
       ...groceryList,
       items: newItems
@@ -103,6 +107,10 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
     const cleanName = manualName.trim();
     if (!cleanName) return;
 
+    const isInPantry = pantryIngredients.some(
+      (p) => p.toLowerCase() === cleanName.toLowerCase()
+    );
+
     const newItem: GroceryItem = {
       id: `groc_manual_${Date.now()}`,
       name: cleanName,
@@ -110,6 +118,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
       unit: manualUnit,
       category: manualCategory,
       checked: false,
+      inPantry: isInPantry,
       sourceDishes: ['Manual Add'],
       isManual: true,
       dateRange: { start: startDate, end: endDate }
@@ -315,9 +324,12 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900">Grocery Checklist</h2>
-              <span className="text-[11px] text-slate-500 font-medium">
-                {pendingCount} remaining of {totalCount} items
-              </span>
+              <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                <span>{pendingCount} remaining of {totalCount} items</span>
+                {inPantryCount > 0 && (
+                  <span className="text-emerald-700 font-semibold">• {inPantryCount} in Pantry</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -571,6 +583,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
               <div className="bg-white rounded-2xl p-2 border border-[#EAE6DF] divide-y divide-[#F4F1EA] shadow-sm">
                 {catItems.map((item) => {
                   const isEditing = editingItemId === item.id;
+                  const isInPantry = item.inPantry;
 
                   return (
                     <div
@@ -578,7 +591,9 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
                       onClick={() => !isEditing && handleToggleItem(item.id)}
                       className={`p-3 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
                         item.checked
-                          ? 'bg-[#FDFBF7]/60 opacity-60'
+                          ? 'bg-[#FDFBF7]/60 opacity-50'
+                          : isInPantry
+                          ? 'bg-emerald-50/20 hover:bg-emerald-50/40'
                           : 'hover:bg-[#FDFBF7]'
                       }`}
                     >
@@ -588,20 +603,40 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
                           className={`w-5 h-5 rounded-lg flex items-center justify-center transition-all shrink-0 ${
                             item.checked
                               ? 'bg-[#2B2D42] text-white shadow-xs'
+                              : isInPantry
+                              ? 'border-2 border-emerald-500 bg-emerald-50 text-emerald-700'
                               : 'border border-slate-300 bg-white'
                           }`}
+                          title={isInPantry ? 'Already in Pantry stock' : undefined}
                         >
-                          {item.checked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          {item.checked ? (
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          ) : isInPantry ? (
+                            <Home className="w-3 h-3 text-emerald-700" />
+                          ) : null}
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <span
-                            className={`text-xs font-bold block truncate ${
-                              item.checked ? 'line-through text-slate-400' : 'text-slate-800'
-                            }`}
-                          >
-                            {item.name}
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className={`text-xs font-bold truncate ${
+                                item.checked
+                                  ? 'line-through text-slate-400'
+                                  : isInPantry
+                                  ? 'text-emerald-900 font-semibold'
+                                  : 'text-slate-800'
+                              }`}
+                            >
+                              {item.name}
+                            </span>
+
+                            {/* Pantry Auto Half-Mark Badge */}
+                            {isInPantry && !item.checked && (
+                              <span className="text-[9px] font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-md border border-emerald-200">
+                                🏡 In Pantry (Have at home)
+                              </span>
+                            )}
+                          </div>
                           
                           {item.sourceDishes && item.sourceDishes.length > 0 && (
                             <span className="text-[10px] text-slate-400 truncate block">

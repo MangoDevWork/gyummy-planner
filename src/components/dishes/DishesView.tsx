@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import type { Dish, MasterIngredient, UserProfile } from '../../types';
-import { Search, Plus, Clock, Heart, Download, Upload, CheckSquare, Square, CheckCircle2, Star } from 'lucide-react';
+import { Search, Plus, Clock, Heart, Download, Upload, CheckSquare, Square, CheckCircle2, Star, BookOpen, Globe, ArrowUpDown, Filter, BookmarkCheck, BookmarkPlus } from 'lucide-react';
 import { DishDetailModal } from './DishDetailModal';
 import { DishFormModal } from './DishFormModal';
 import { exportToZip, parseUploadedDataFile } from '../../services/zipExportService';
@@ -13,6 +13,7 @@ interface DishesViewProps {
   onSaveDish: (dish: Dish) => void;
   onDeleteDish: (dishId: string) => void;
   onToggleFavoriteDish: (dishId: string) => void;
+  onToggleFamilyRecipe?: (dishId: string) => void;
   onAddMasterIngredient?: (ing: MasterIngredient) => void;
   onImportDishes?: (dishes: Dish[]) => void;
   onQuickPlanDish?: (dish: Dish) => void;
@@ -29,6 +30,8 @@ const CATEGORY_IMAGES: Record<string, string> = {
   Dessert: 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=200&q=80'
 };
 
+const CUISINES = ['All Cuisines', 'Asian', 'Japanese', 'Korean', 'Cantonese', 'Thai', 'Vietnamese', 'Western', 'Italian', 'Mediterranean', 'Other'];
+
 export const DishesView: React.FC<DishesViewProps> = ({
   familyName,
   currentProfile,
@@ -37,14 +40,19 @@ export const DishesView: React.FC<DishesViewProps> = ({
   onSaveDish,
   onDeleteDish,
   onToggleFavoriteDish,
+  onToggleFamilyRecipe,
   onAddMasterIngredient,
   onImportDishes,
   onQuickPlanDish,
   isCreatorOpen,
   setIsCreatorOpen
 }) => {
+  // Library vs Family Cookbook Scope Switcher
+  const [libraryScope, setLibraryScope] = useState<'family' | 'system'>('family');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedCuisine, setSelectedCuisine] = useState<string>('All Cuisines');
+  const [sortBy, setSortBy] = useState<'quickest' | 'least_ingredients' | 'name' | 'recent'>('quickest');
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [viewingDish, setViewingDish] = useState<Dish | null>(null);
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
@@ -72,30 +80,68 @@ export const DishesView: React.FC<DishesViewProps> = ({
     return Array.from(set);
   }, [dishes]);
 
-  // Count items per category
+  // Count items per category (based on active scope)
   const categoryCounts = useMemo(() => {
-    const map: Record<string, number> = { All: dishes.length };
-    dishes.forEach((d) => {
+    const scopeDishes = libraryScope === 'family'
+      ? dishes.filter((d) => d.isFamilyRecipe !== false)
+      : dishes;
+
+    const map: Record<string, number> = { All: scopeDishes.length };
+    scopeDishes.forEach((d) => {
       const cat = d.category || 'Dinner';
       map[cat] = (map[cat] || 0) + 1;
     });
     return map;
-  }, [dishes]);
+  }, [dishes, libraryScope]);
 
-  // Filtered dishes
+  // Filter & Sort dishes
   const filteredDishes = useMemo(() => {
-    return dishes.filter((dish) => {
+    let result = dishes.filter((dish) => {
+      // Scope Filter: Family Cookbook vs System Library
+      if (libraryScope === 'family' && dish.isFamilyRecipe === false) {
+        return false;
+      }
+
       const matchesSearch =
         dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         dish.ingredients.some((ing) => ing.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        dish.tags?.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
+        dish.tags?.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (dish.cuisine && dish.cuisine.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesCat = selectedCategory === 'All' || dish.category === selectedCategory;
+
+      const matchesCuisine =
+        selectedCuisine === 'All Cuisines' ||
+        (dish.cuisine && dish.cuisine.toLowerCase() === selectedCuisine.toLowerCase()) ||
+        dish.tags?.some((t) => t.toLowerCase() === selectedCuisine.toLowerCase());
+
       const matchesFav = !showOnlyFavorites || (currentMember && dish.favoritedByMembers?.includes(currentMember));
 
-      return matchesSearch && matchesCat && matchesFav;
+      return matchesSearch && matchesCat && matchesCuisine && matchesFav;
     });
-  }, [dishes, searchQuery, selectedCategory, showOnlyFavorites, currentMember]);
+
+    // Sort function
+    result.sort((a, b) => {
+      if (sortBy === 'quickest') {
+        return (a.prepTimeMinutes || 999) - (b.prepTimeMinutes || 999);
+      }
+      if (sortBy === 'least_ingredients') {
+        return a.ingredients.length - b.ingredients.length;
+      }
+      if (sortBy === 'name') {
+        return a.name.localeCompare(b.name);
+      }
+      if (sortBy === 'recent') {
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      }
+      return 0;
+    });
+
+    return result;
+  }, [dishes, libraryScope, searchQuery, selectedCategory, selectedCuisine, sortBy, showOnlyFavorites, currentMember]);
+
+  const familyCookbookCount = dishes.filter((d) => d.isFamilyRecipe !== false).length;
+  const systemLibraryCount = dishes.length;
 
   const toggleSelectDish = (dishId: string) => {
     const next = new Set(selectedDishIds);
@@ -112,6 +158,24 @@ export const DishesView: React.FC<DishesViewProps> = ({
       setSelectedDishIds(new Set());
     } else {
       setSelectedDishIds(new Set(filteredDishes.map((d) => d.id)));
+    }
+  };
+
+  const handleToggleFamilyCookbook = (dish: Dish) => {
+    if (onToggleFamilyRecipe) {
+      onToggleFamilyRecipe(dish.id);
+    } else {
+      const updated = {
+        ...dish,
+        isFamilyRecipe: dish.isFamilyRecipe === false ? true : false
+      };
+      onSaveDish(updated);
+    }
+    const isNowInFamily = dish.isFamilyRecipe === false;
+    if (isNowInFamily) {
+      showToast(`📖 Added "${dish.name}" to Family Cookbook!`);
+    } else {
+      showToast(`Removed "${dish.name}" from Family Cookbook (Still in System Library).`);
     }
   };
 
@@ -191,13 +255,44 @@ export const DishesView: React.FC<DishesViewProps> = ({
         className="hidden"
       />
 
+      {/* Scope Switcher: Family Cookbook vs System Library */}
+      <div className="grid grid-cols-2 bg-[#F4F1EA] p-1 rounded-2xl border border-[#EAE6DF]">
+        <button
+          onClick={() => setLibraryScope('family')}
+          className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            libraryScope === 'family'
+              ? 'bg-white text-slate-900 shadow-xs'
+              : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>Family Cookbook ({familyCookbookCount})</span>
+        </button>
+
+        <button
+          onClick={() => setLibraryScope('system')}
+          className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            libraryScope === 'system'
+              ? 'bg-white text-slate-900 shadow-xs'
+              : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span>System Library ({systemLibraryCount})</span>
+        </button>
+      </div>
+
       {/* Search Bar & Sharing Action Buttons */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search recipes, ingredients, tags..."
+            placeholder={
+              libraryScope === 'family'
+                ? 'Search Family Cookbook...'
+                : 'Search All System Recipes...'
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full text-xs font-medium pl-9 pr-4 py-2.5 bg-white text-slate-900 placeholder:text-slate-400 rounded-xl border border-[#EAE6DF] focus:outline-hidden focus:border-slate-400 shadow-2xs"
@@ -238,6 +333,41 @@ export const DishesView: React.FC<DishesViewProps> = ({
         >
           <Upload className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* Sort By & Cuisine Filter Bar */}
+      <div className="flex items-center justify-between gap-2 text-xs">
+        {/* Sort By Selector */}
+        <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] shadow-2xs">
+          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
+          <span className="text-[10px] font-bold text-slate-500 uppercase">Sort:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="text-xs font-bold text-slate-900 bg-transparent focus:outline-hidden cursor-pointer"
+          >
+            <option value="quickest">Quickest Meals</option>
+            <option value="least_ingredients">Least Ingredients</option>
+            <option value="name">Name (A-Z)</option>
+            <option value="recent">Recently Added</option>
+          </select>
+        </div>
+
+        {/* Cuisine Filter Selector */}
+        <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] shadow-2xs">
+          <Filter className="w-3.5 h-3.5 text-slate-500" />
+          <select
+            value={selectedCuisine}
+            onChange={(e) => setSelectedCuisine(e.target.value)}
+            className="text-xs font-bold text-slate-900 bg-transparent focus:outline-hidden cursor-pointer"
+          >
+            {CUISINES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* "Our Category" Section */}
@@ -330,59 +460,66 @@ export const DishesView: React.FC<DishesViewProps> = ({
 
       {/* Dishes Header & Count */}
       <div className="flex items-center justify-between pt-1">
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-          Best Home Recipes ({filteredDishes.length})
-        </h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            {libraryScope === 'family' ? 'Family Homemade Recipes' : 'All System Recipes'} ({filteredDishes.length})
+          </h3>
+        </div>
         
         {!isSelectMode && (
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleExportSelectedOrAll}
-              className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 cursor-pointer transition"
-              title="Export All Recipes as Zip"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export All</span>
-            </button>
-            <span className="text-slate-300">|</span>
             <button
               onClick={() => setIsCreatorOpen(true)}
               className="text-xs font-bold text-slate-800 flex items-center gap-1 hover:underline cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>New</span>
+              <span>New Recipe</span>
             </button>
           </div>
         )}
       </div>
 
-      {/* Dishes List / Cards in Pure White #FFFFFF with rounded-2xl and shadow-sm */}
+      {/* Dishes List / Cards in Pure White #FFFFFF */}
       {filteredDishes.length === 0 ? (
         <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-[#EAE6DF] space-y-3 shadow-sm">
           <div className="w-12 h-12 rounded-xl bg-[#F4F1EA] text-slate-600 flex items-center justify-center mx-auto text-2xl">
-            🍳
+            {libraryScope === 'family' ? '📖' : '🍳'}
           </div>
           <div className="space-y-1">
-            <h4 className="text-sm font-bold text-slate-900">No recipes found</h4>
+            <h4 className="text-sm font-bold text-slate-900">
+              {libraryScope === 'family' ? 'No family recipes in this view' : 'No recipes found'}
+            </h4>
             <p className="text-xs text-slate-500">
-              {searchQuery || showOnlyFavorites
-                ? 'Try adjusting your search or category filters.'
-                : 'Create your first family recipe!'}
+              {libraryScope === 'family'
+                ? 'Switch to System Library to add recipes to your Family Cookbook, or create a new family recipe!'
+                : 'Try adjusting your search or cuisine filters.'}
             </p>
           </div>
-          <button
-            onClick={() => setIsCreatorOpen(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create Recipe</span>
-          </button>
+          <div className="flex items-center justify-center gap-2 pt-1">
+            {libraryScope === 'family' && (
+              <button
+                onClick={() => setLibraryScope('system')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE6DF] text-slate-800 text-xs font-bold transition cursor-pointer"
+              >
+                <Globe className="w-4 h-4" />
+                <span>Explore System Library</span>
+              </button>
+            )}
+            <button
+              onClick={() => setIsCreatorOpen(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Recipe</span>
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
           {filteredDishes.map((dish) => {
             const isFavoritedByMe = currentMember && dish.favoritedByMembers?.includes(currentMember);
             const isSelected = selectedDishIds.has(dish.id);
+            const isInFamilyCookbook = dish.isFamilyRecipe !== false;
 
             return (
               <div
@@ -434,13 +571,13 @@ export const DishesView: React.FC<DishesViewProps> = ({
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-0.5">
+                    <div className="flex items-center gap-1.5 mb-0.5">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-[#F4F1EA] px-1.5 py-0.2 rounded-md">
                         {dish.category}
                       </span>
-                      {dish.tags && dish.tags[0] && (
-                        <span className="text-[10px] font-medium text-slate-400 truncate max-w-[90px]">
-                          • {dish.tags[0]}
+                      {dish.cuisine && (
+                        <span className="text-[10px] font-semibold text-slate-500 bg-[#FDFBF7] border border-[#EAE6DF] px-1.5 py-0.2 rounded-md">
+                          {dish.cuisine}
                         </span>
                       )}
                     </div>
@@ -449,8 +586,8 @@ export const DishesView: React.FC<DishesViewProps> = ({
                       {dish.name}
                     </h4>
                     
-                    {/* Star rating & time badges */}
-                    <div className="flex items-center gap-2.5 mt-1.5 text-[11px] text-slate-500">
+                    {/* Star rating, prep time & ingredients count */}
+                    <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500">
                       <div className="flex items-center gap-1 text-amber-500 font-bold">
                         <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                         <span>4.8</span>
@@ -459,7 +596,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                       {dish.prepTimeMinutes && (
                         <div className="flex items-center gap-1 text-slate-500">
                           <Clock className="w-3 h-3 text-slate-400" />
-                          <span>{dish.prepTimeMinutes}m</span>
+                          <span className="font-semibold text-slate-700">{dish.prepTimeMinutes}m</span>
                         </div>
                       )}
 
@@ -481,7 +618,28 @@ export const DishesView: React.FC<DishesViewProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pl-2 shrink-0">
+                <div className="flex items-center gap-1.5 pl-2 shrink-0">
+                  {/* Family Cookbook Toggle Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleFamilyCookbook(dish);
+                    }}
+                    className={`p-1.5 rounded-lg transition active:scale-110 cursor-pointer ${
+                      isInFamilyCookbook
+                        ? 'text-slate-900 hover:text-slate-600'
+                        : 'text-slate-300 hover:text-slate-600'
+                    }`}
+                    title={isInFamilyCookbook ? 'In Family Cookbook (Click to remove)' : 'Add to Family Cookbook'}
+                  >
+                    {isInFamilyCookbook ? (
+                      <BookmarkCheck className="w-4 h-4 fill-slate-800 text-white" />
+                    ) : (
+                      <BookmarkPlus className="w-4 h-4" />
+                    )}
+                  </button>
+
                   {/* Quick Favorite Heart */}
                   <button
                     type="button"
@@ -510,7 +668,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                         setViewingDish(dish);
                       }
                     }}
-                    className="px-3 py-1.5 bg-[#EDF2F4] hover:bg-[#E2E8F0] text-slate-800 text-[11px] font-bold rounded-xl border border-[#E2E8F0] active:scale-95 transition-all cursor-pointer"
+                    className="px-2.5 py-1.5 bg-[#EDF2F4] hover:bg-[#E2E8F0] text-slate-800 text-[11px] font-bold rounded-xl border border-[#E2E8F0] active:scale-95 transition-all cursor-pointer"
                   >
                     ADD
                   </button>
@@ -536,6 +694,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
           setViewingDish(null);
         }}
         onToggleFavorite={onToggleFavoriteDish}
+        onToggleFamilyCookbook={(dish) => handleToggleFamilyCookbook(dish)}
         onQuickPlan={onQuickPlanDish}
         onShowToast={showToast}
       />

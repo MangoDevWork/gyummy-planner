@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react';
 import type { MasterIngredient, GroceryCategory } from '../../types';
 import { GROCERY_CATEGORIES } from '../../types';
-import { Search, Edit3, Plus, Trash2, Save, Download, Upload, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Search, Edit3, Plus, Trash2, Save, Download, Upload, AlertCircle, CheckCircle2, Home, Check } from 'lucide-react';
 import { exportToZip, parseUploadedDataFile } from '../../services/zipExportService';
 
 interface IngredientsViewProps {
   familyName: string;
   ingredients: MasterIngredient[];
+  pantryIngredients: string[];
   onSaveIngredients: (updated: MasterIngredient[]) => void;
+  onUpdatePantryIngredients: (updatedPantry: string[]) => void;
 }
 
 const COMMON_UNITS = ['g', 'kg', 'ml', 'L', 'tbsp', 'tsp', 'pcs', 'slices', 'can', 'packet', 'stalks', 'cloves', 'cup', 'pinch'];
@@ -15,10 +17,13 @@ const COMMON_UNITS = ['g', 'kg', 'ml', 'L', 'tbsp', 'tsp', 'pcs', 'slices', 'can
 export const IngredientsView: React.FC<IngredientsViewProps> = ({
   familyName,
   ingredients,
-  onSaveIngredients
+  pantryIngredients,
+  onSaveIngredients,
+  onUpdatePantryIngredients
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [showOnlyPantry, setShowOnlyPantry] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editableList, setEditableList] = useState<MasterIngredient[]>(ingredients);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -32,11 +37,30 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
 
   const activeList = isEditMode ? editableList : ingredients;
 
+  // Toggle ingredient in pantry stock
+  const handleTogglePantryItem = (ingName: string) => {
+    const clean = ingName.trim();
+    if (!clean) return;
+
+    const exists = pantryIngredients.some((p) => p.toLowerCase() === clean.toLowerCase());
+    let next: string[];
+    if (exists) {
+      next = pantryIngredients.filter((p) => p.toLowerCase() !== clean.toLowerCase());
+      showToast(`Removed "${clean}" from Home Pantry.`);
+    } else {
+      next = [...pantryIngredients, clean];
+      showToast(`🏡 Added "${clean}" to Home Pantry!`);
+    }
+    onUpdatePantryIngredients(next);
+  };
+
   // Filter ingredients
   const filtered = activeList.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCat = selectedCategory === 'All' || item.category === selectedCategory;
-    return matchesSearch && matchesCat;
+    const isItemInPantry = pantryIngredients.some((p) => p.toLowerCase() === item.name.toLowerCase().trim());
+    const matchesPantry = !showOnlyPantry || isItemInPantry;
+    return matchesSearch && matchesCat && matchesPantry;
   });
 
   const handleEnterEditMode = () => {
@@ -110,7 +134,8 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
   const handleExportZip = async () => {
     try {
       const filename = await exportToZip(familyName, 'Ingredients', {
-        masterIngredients: ingredients
+        masterIngredients: ingredients,
+        pantryIngredients
       });
       showToast(`📦 Exported ${filename}`);
     } catch (err: any) {
@@ -216,6 +241,25 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
         </button>
       </div>
 
+      {/* Pantry Stock Bar & Category Filter */}
+      <div className="flex items-center justify-between gap-2">
+        <button
+          onClick={() => setShowOnlyPantry(!showOnlyPantry)}
+          className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+            showOnlyPantry
+              ? 'bg-[#2B2D42] border-[#2B2D42] text-white shadow-xs'
+              : 'bg-white border-[#EAE6DF] text-slate-700 hover:bg-slate-50'
+          }`}
+        >
+          <Home className="w-3.5 h-3.5" />
+          <span>🏡 In My Pantry ({pantryIngredients.length})</span>
+        </button>
+
+        <span className="text-[11px] text-slate-500 font-medium">
+          {showOnlyPantry ? 'Showing pantry stock' : 'Tap 🏡 to toggle pantry items'}
+        </span>
+      </div>
+
       {/* Category Filter Pills */}
       <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
         <button
@@ -304,12 +348,17 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
       <div className="space-y-2">
         {filtered.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-[#EAE6DF] text-xs text-slate-400 shadow-sm">
-            No ingredients found matching your search.
+            {showOnlyPantry
+              ? 'No pantry items found matching this filter.'
+              : 'No ingredients found matching your search.'}
           </div>
         ) : (
           filtered.map((item) => {
             const originalIndex = activeList.findIndex((i) => i.id === item.id);
             const isNameEmpty = !item.name || !item.name.trim();
+            const isInPantry = pantryIngredients.some(
+              (p) => p.toLowerCase() === item.name.toLowerCase().trim()
+            );
 
             return (
               <div
@@ -317,6 +366,8 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                 className={`bg-white rounded-xl p-3 border transition-all shadow-2xs ${
                   isNameEmpty && isEditMode
                     ? 'border-rose-500 bg-rose-50/50'
+                    : isInPantry
+                    ? 'border-emerald-300/80 bg-emerald-50/20'
                     : 'border-[#EAE6DF] hover:border-slate-300'
                 }`}
               >
@@ -404,8 +455,28 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                   /* Read Only Row */
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-700 shrink-0" />
-                      <span className="text-xs font-bold text-slate-800 truncate">{item.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePantryItem(item.name)}
+                        className={`p-1.5 rounded-lg border transition cursor-pointer shrink-0 ${
+                          isInPantry
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                            : 'bg-white text-slate-400 border-[#EAE6DF] hover:text-emerald-700 hover:border-emerald-300'
+                        }`}
+                        title={isInPantry ? 'In Pantry (Click to remove)' : 'Click to add to Home Pantry'}
+                      >
+                        <Home className="w-3.5 h-3.5" />
+                      </button>
+
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-slate-800 truncate block">{item.name}</span>
+                        {isInPantry && (
+                          <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-0.5">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                            In Home Pantry (Auto half-marks on grocery list)
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">

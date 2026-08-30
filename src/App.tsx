@@ -10,26 +10,39 @@ import { IngredientsView } from './components/ingredients/IngredientsView';
 import { GroceryView } from './components/grocery/GroceryView';
 import { SettingsView } from './components/settings/SettingsView';
 import { AuthModal } from './components/auth/AuthModal';
+import { MealScheduleSettingsModal } from './components/settings/MealScheduleSettingsModal';
 
 export function App() {
   const [appData, setAppData] = useState<AppData>(() => loadAppData());
   const [activeTab, setActiveTab] = useState<TabType>('planner');
   const [isDishCreatorOpen, setIsDishCreatorOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isOnboardingScheduleOpen, setIsOnboardingScheduleOpen] = useState(false);
 
   // Sync to local storage whenever appData changes
   useEffect(() => {
     saveAppData(appData);
   }, [appData]);
 
+  // Check if first-time onboarding schedule setup should be presented
+  useEffect(() => {
+    if (appData.currentProfile && !appData.settings?.hasCompletedScheduleOnboarding) {
+      setIsOnboardingScheduleOpen(true);
+    }
+  }, [appData.currentProfile, appData.settings?.hasCompletedScheduleOnboarding]);
+
   // Auth Profile handler
   const handleSelectProfile = (profile: UserProfile, updatedMembers: string[]) => {
+    const isFirstTime = !appData.settings?.hasCompletedScheduleOnboarding;
     setAppData((prev) => ({
       ...prev,
       currentProfile: profile,
       familyMembers: updatedMembers
     }));
     setIsProfileModalOpen(false);
+    if (isFirstTime) {
+      setIsOnboardingScheduleOpen(true);
+    }
   };
 
   // Dishes state handlers
@@ -102,11 +115,35 @@ export function App() {
     });
   };
 
+  // Toggle Family Cookbook inclusion
+  const handleToggleFamilyRecipe = (dishId: string) => {
+    setAppData((prev) => {
+      const updatedDishes = prev.dishes.map((dish) => {
+        if (dish.id !== dishId) return dish;
+        return {
+          ...dish,
+          isFamilyRecipe: dish.isFamilyRecipe === false ? true : false
+        };
+      });
+      return {
+        ...prev,
+        dishes: updatedDishes
+      };
+    });
+  };
+
   // Master Ingredient handlers
   const handleSaveIngredients = (updatedIngredients: MasterIngredient[]) => {
     setAppData((prev) => ({
       ...prev,
       masterIngredients: updatedIngredients
+    }));
+  };
+
+  const handleUpdatePantryIngredients = (updatedPantry: string[]) => {
+    setAppData((prev) => ({
+      ...prev,
+      pantryIngredients: updatedPantry
     }));
   };
 
@@ -153,8 +190,13 @@ export function App() {
   const handleSaveMealSchedules = (schedules: MealScheduleConfig[]) => {
     setAppData((prev) => ({
       ...prev,
-      mealSchedules: schedules
+      mealSchedules: schedules,
+      settings: {
+        ...prev.settings,
+        hasCompletedScheduleOnboarding: true
+      }
     }));
+    setIsOnboardingScheduleOpen(false);
   };
 
   // Grocery state handlers
@@ -171,7 +213,8 @@ export function App() {
       appData.mealPlan,
       startDate,
       endDate,
-      appData.groceryList.items
+      appData.groceryList.items,
+      appData.pantryIngredients || []
     );
     setAppData((prev) => ({
       ...prev,
@@ -251,6 +294,7 @@ export function App() {
               onSaveDish={handleSaveDish}
               onDeleteDish={handleDeleteDish}
               onToggleFavoriteDish={handleToggleFavoriteDish}
+              onToggleFamilyRecipe={handleToggleFamilyRecipe}
               onAddMasterIngredient={handleAddSingleMasterIngredient}
               onImportDishes={handleImportDishes}
               onQuickPlanDish={(dish) => {
@@ -267,7 +311,9 @@ export function App() {
             <IngredientsView
               familyName={familyName}
               ingredients={appData.masterIngredients}
+              pantryIngredients={appData.pantryIngredients || []}
               onSaveIngredients={handleSaveIngredients}
+              onUpdatePantryIngredients={handleUpdatePantryIngredients}
             />
           )}
 
@@ -276,6 +322,7 @@ export function App() {
               familyName={familyName}
               dishes={appData.dishes}
               mealPlan={appData.mealPlan}
+              pantryIngredients={appData.pantryIngredients || []}
               groceryList={appData.groceryList}
               onUpdateGroceryList={handleUpdateGroceryList}
             />
@@ -305,6 +352,20 @@ export function App() {
           onSelectProfile={handleSelectProfile}
           onClose={() => setIsProfileModalOpen(false)}
           isMandatory={!appData.currentProfile}
+        />
+
+        {/* First Launch Onboarding Meal Schedule Setup Modal */}
+        <MealScheduleSettingsModal
+          isOpen={isOnboardingScheduleOpen}
+          onClose={() => {
+            setIsOnboardingScheduleOpen(false);
+            setAppData((prev) => ({
+              ...prev,
+              settings: { ...prev.settings, hasCompletedScheduleOnboarding: true }
+            }));
+          }}
+          mealSchedules={appData.mealSchedules}
+          onSaveMealSchedules={handleSaveMealSchedules}
         />
       </div>
     </div>

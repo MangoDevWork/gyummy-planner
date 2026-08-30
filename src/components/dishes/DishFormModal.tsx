@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { Dish, GroceryCategory, Ingredient, MasterIngredient } from '../../types';
 import { GROCERY_CATEGORIES } from '../../types';
-import { X, Plus, Trash2, BookmarkPlus, Check, Camera, Image as ImageIcon } from 'lucide-react';
+import { X, Plus, Trash2, BookmarkPlus, Check, Camera, Image as ImageIcon, ArrowDown } from 'lucide-react';
 import { compressImage } from '../../services/imageUtils';
 
 const DISH_EMOJIS = ['🍲', '🧆', '🍝', '🍗', '🥩', '🍣', '🌮', '🥑', '🥗', '🍛', '🍕', '🍤', '🥪', '🥘', '🍳', '🥞', '🥣'];
@@ -28,12 +28,14 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
 
   const [name, setName] = useState(initialDish?.name || '');
   const [category, setCategory] = useState(initialDish?.category || 'Dinner');
+  const [cuisine, setCuisine] = useState(initialDish?.cuisine || 'Asian');
   const [servings, setServings] = useState(initialDish?.servings || 4);
   const [prepTimeMinutes, setPrepTimeMinutes] = useState<number | undefined>(initialDish?.prepTimeMinutes || 20);
   const [imageEmoji, setImageEmoji] = useState(initialDish?.imageEmoji || '🍲');
   const [imageUrl, setImageUrl] = useState(initialDish?.imageUrl || '');
   const [instructions, setInstructions] = useState(initialDish?.instructions || '');
   const [tagsInput, setTagsInput] = useState(initialDish?.tags?.join(', ') || '');
+  const [isFamilyRecipe, setIsFamilyRecipe] = useState(initialDish?.isFamilyRecipe ?? true);
   const [ingredients, setIngredients] = useState<Ingredient[]>(
     initialDish?.ingredients && initialDish.ingredients.length > 0
       ? initialDish.ingredients
@@ -44,8 +46,23 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
   const [activeSuggestionRow, setActiveSuggestionRow] = useState<number | null>(null);
   const [addedToLibraryMap, setAddedToLibraryMap] = useState<Record<number, boolean>>({});
   const [errorMsg, setErrorMsg] = useState('');
+  const [ingredientAddedToast, setIngredientAddedToast] = useState(false);
 
   const recipePhotoInputRef = useRef<HTMLInputElement>(null);
+  const ingredientsEndRef = useRef<HTMLDivElement>(null);
+  const newlyAddedInputRef = useRef<HTMLInputElement>(null);
+  const [focusNewIndex, setFocusNewIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (focusNewIndex !== null) {
+      // Scroll into view and focus
+      ingredientsEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      setIngredientAddedToast(true);
+      const timer = setTimeout(() => setIngredientAddedToast(false), 2500);
+      setFocusNewIndex(null);
+      return () => clearTimeout(timer);
+    }
+  }, [focusNewIndex]);
 
   const handleRecipePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,6 +77,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
   };
 
   const handleAddIngredient = () => {
+    const newIdx = ingredients.length;
     setIngredients([
       ...ingredients,
       {
@@ -70,6 +88,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
         category: 'Produce'
       }
     ]);
+    setFocusNewIndex(newIdx);
   };
 
   const handleRemoveIngredient = (index: number) => {
@@ -141,6 +160,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
       id: initialDish?.id || `dish_${Date.now()}`,
       name: name.trim(),
       category: category.trim() || 'Dinner',
+      cuisine: cuisine.trim() || 'Asian',
       servings: Number(servings) || 4,
       prepTimeMinutes: prepTimeMinutes ? Number(prepTimeMinutes) : undefined,
       imageEmoji,
@@ -148,6 +168,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
       instructions: instructions.trim(),
       tags,
       favoritedByMembers: initialDish?.favoritedByMembers || [],
+      isFamilyRecipe,
       ingredients: validIngredients,
       createdAt: initialDish?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -159,8 +180,16 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-md max-h-[92vh] sm:rounded-2xl rounded-t-2xl shadow-xl flex flex-col overflow-hidden border border-[#EAE6DF] animate-in slide-in-from-bottom-4 duration-300">
+      <div className="bg-white w-full max-w-md max-h-[92vh] sm:rounded-2xl rounded-t-2xl shadow-xl flex flex-col overflow-hidden border border-[#EAE6DF] animate-in slide-in-from-bottom-4 duration-300 relative">
         
+        {/* Ingredient Added Feedback Toast Indicator */}
+        {ingredientAddedToast && (
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 bg-[#2B2D42] text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 animate-bounce">
+            <ArrowDown className="w-3.5 h-3.5 text-amber-300" />
+            <span>New ingredient line added below ↓</span>
+          </div>
+        )}
+
         {/* Modal Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#F4F1EA] bg-[#FDFBF7]">
           <div className="flex items-center gap-2.5">
@@ -187,6 +216,31 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
               {errorMsg}
             </div>
           )}
+
+          {/* Family Cookbook Inclusion Toggle */}
+          <div className="bg-white p-3.5 rounded-xl border border-[#EAE6DF] flex items-center justify-between shadow-2xs">
+            <div>
+              <span className="text-xs font-bold text-slate-900 block">Include in Family Cookbook</span>
+              <span className="text-[11px] text-slate-500 block">
+                {isFamilyRecipe
+                  ? 'Visible in Family Homemade Cookbook'
+                  : 'Saved to System Library only'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsFamilyRecipe(!isFamilyRecipe)}
+              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                isFamilyRecipe ? 'bg-[#2B2D42]' : 'bg-slate-200'
+              }`}
+            >
+              <div
+                className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
+                  isFamilyRecipe ? 'left-6' : 'left-1'
+                }`}
+              />
+            </button>
+          </div>
 
           {/* Recipe Photo Attachment Section */}
           <div className="bg-white p-3.5 rounded-xl border border-[#EAE6DF] space-y-2 shadow-2xs">
@@ -282,8 +336,8 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
             />
           </div>
 
-          {/* Category, Servings & Prep Time */}
-          <div className="grid grid-cols-3 gap-2.5">
+          {/* Category, Cuisine, Servings & Prep Time */}
+          <div className="grid grid-cols-2 gap-2.5">
             <div>
               <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                 Category
@@ -301,6 +355,31 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
               </select>
             </div>
 
+            <div>
+              <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Cuisine
+              </label>
+              <select
+                value={cuisine}
+                onChange={(e) => setCuisine(e.target.value)}
+                className="w-full text-xs font-semibold px-2.5 py-2 rounded-xl border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-500 shadow-2xs"
+              >
+                <option value="Asian">Asian (General)</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Korean">Korean</option>
+                <option value="Cantonese">Cantonese / Chinese</option>
+                <option value="Thai">Thai</option>
+                <option value="Vietnamese">Vietnamese</option>
+                <option value="Western">Western</option>
+                <option value="Italian">Italian</option>
+                <option value="Mexican">Mexican</option>
+                <option value="Mediterranean">Mediterranean</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5">
             <div>
               <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                 Servings
@@ -336,17 +415,17 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
             <div className="flex items-center justify-between mb-2">
               <div>
                 <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Ingredients List
+                  Ingredients List ({ingredients.length})
                 </label>
                 <p className="text-[10px] text-slate-500">Search Master Library or type custom</p>
               </div>
               <button
                 type="button"
                 onClick={handleAddIngredient}
-                className="flex items-center gap-1 text-xs font-semibold text-slate-800 bg-[#F4F1EA] hover:bg-[#EAE6DF] px-2.5 py-1.5 rounded-xl transition cursor-pointer"
+                className="flex items-center gap-1 text-xs font-semibold text-slate-800 bg-[#EDF2F4] hover:bg-[#E2E8F0] px-3 py-1.5 rounded-xl border border-[#E2E8F0] transition active:scale-95 cursor-pointer shadow-2xs"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Item</span>
+                <Plus className="w-3.5 h-3.5 text-slate-600" />
+                <span>+ Add Item</span>
               </button>
             </div>
 
@@ -365,12 +444,13 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                 return (
                   <div
                     key={ing.id || idx}
-                    className="bg-white p-3 rounded-xl border border-[#EAE6DF] space-y-2 relative shadow-2xs"
+                    className="bg-white p-3 rounded-xl border border-[#EAE6DF] space-y-2 relative shadow-2xs animate-in fade-in"
                   >
                     <div className="relative">
                       <div className="flex items-center gap-2">
                         <input
                           type="text"
+                          ref={idx === ingredients.length - 1 ? newlyAddedInputRef : null}
                           placeholder="Search ingredient..."
                           value={ing.name}
                           onFocus={() => setActiveSuggestionRow(idx)}
@@ -490,7 +570,18 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                   </div>
                 );
               })}
+              <div ref={ingredientsEndRef} />
             </div>
+
+            {/* Bottom Add Button for convenience */}
+            <button
+              type="button"
+              onClick={handleAddIngredient}
+              className="w-full py-2.5 mt-2 rounded-xl border border-dashed border-slate-300 hover:border-slate-500 bg-white text-slate-600 hover:text-slate-900 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Add Another Ingredient Line</span>
+            </button>
           </div>
 
           {/* Cooking Instructions / Notes */}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Dish, UserProfile } from '../../types';
-import { ArrowLeft, Clock, Users, Edit3, Trash2, CalendarPlus, Tag, Heart, Download, Star, Plus, Minus, FileText } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Edit3, Trash2, CalendarPlus, Tag, Heart, Download, Star, Plus, Minus, FileText, BookmarkCheck, BookmarkPlus } from 'lucide-react';
 import { exportToZip } from '../../services/zipExportService';
 
 interface DishDetailModalProps {
@@ -11,6 +11,7 @@ interface DishDetailModalProps {
   onEdit: (dish: Dish) => void;
   onDelete: (dishId: string) => void;
   onToggleFavorite: (dishId: string) => void;
+  onToggleFamilyCookbook?: (dish: Dish) => void;
   onQuickPlan?: (dish: Dish) => void;
   onShowToast?: (msg: string) => void;
 }
@@ -23,6 +24,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
   onEdit,
   onDelete,
   onToggleFavorite,
+  onToggleFamilyCookbook,
   onQuickPlan,
   onShowToast
 }) => {
@@ -35,6 +37,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
   const currentMember = currentProfile?.memberName || '';
   const favoritedBy = dish.favoritedByMembers || [];
   const isFavoritedByMe = currentMember ? favoritedBy.includes(currentMember) : false;
+  const isInFamilyCookbook = dish.isFamilyRecipe !== false;
 
   const handleExportSingle = async () => {
     try {
@@ -81,6 +84,23 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
             </button>
 
             <div className="flex items-center gap-2">
+              {/* Family Cookbook Toggle Button */}
+              {onToggleFamilyCookbook && (
+                <button
+                  onClick={() => onToggleFamilyCookbook(dish)}
+                  className={`w-9 h-9 rounded-full bg-white/90 hover:bg-white flex items-center justify-center backdrop-blur-md transition shadow-sm active:scale-95 cursor-pointer ${
+                    isInFamilyCookbook ? 'text-slate-900' : 'text-slate-400 hover:text-slate-700'
+                  }`}
+                  title={isInFamilyCookbook ? 'In Family Cookbook' : 'Add to Family Cookbook'}
+                >
+                  {isInFamilyCookbook ? (
+                    <BookmarkCheck className="w-4 h-4 fill-slate-800 text-white" />
+                  ) : (
+                    <BookmarkPlus className="w-4 h-4" />
+                  )}
+                </button>
+              )}
+
               <button
                 onClick={handleExportSingle}
                 className="w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center backdrop-blur-md transition shadow-sm active:scale-95 cursor-pointer"
@@ -112,6 +132,12 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
               <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#2B2D42] text-white shadow-xs">
                 {dish.category}
               </span>
+
+              {dish.cuisine && (
+                <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-md">
+                  {dish.cuisine}
+                </span>
+              )}
             </div>
 
             <h2 className="text-xl font-bold text-white leading-tight drop-shadow-sm">
@@ -124,7 +150,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FDFBF7]">
           
           {/* Quick Metrics (Servings & Prep Time) */}
-          <div className="flex items-center gap-2 text-xs text-slate-700">
+          <div className="flex items-center gap-2 text-xs text-slate-700 flex-wrap">
             <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-[#EAE6DF] shadow-2xs">
               <Users className="w-3.5 h-3.5 text-slate-500" />
               <span className="font-semibold">{dish.servings * servingMultiplier} Servings</span>
@@ -134,6 +160,17 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
               <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-[#EAE6DF] shadow-2xs">
                 <Clock className="w-3.5 h-3.5 text-slate-500" />
                 <span className="font-semibold">{dish.prepTimeMinutes} mins</span>
+              </div>
+            )}
+
+            {isInFamilyCookbook ? (
+              <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-200 text-[11px] font-semibold">
+                <BookmarkCheck className="w-3.5 h-3.5 text-emerald-700" />
+                <span>In Family Cookbook</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-semibold">
+                <span>System Library Only</span>
               </div>
             )}
 

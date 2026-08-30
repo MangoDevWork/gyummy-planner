@@ -44,7 +44,8 @@ export interface Ingredient {
 export interface Dish {
   id: string;
   name: string;
-  category: string; // e.g., "Dinner", "Lunch", "Quick & Easy", "Pasta", "Soup"
+  category: string; // e.g., "Dinner", "Lunch", "Breakfast", "Snack", "Dessert"
+  cuisine?: string;  // e.g., "Japanese", "Korean", "Cantonese", "Thai", "Western", "Italian", etc.
   servings: number;
   ingredients: Ingredient[];
   prepTimeMinutes?: number;
@@ -53,6 +54,7 @@ export interface Dish {
   imageUrl?: string; // Base64 compressed image URL for recipe photo
   tags?: string[];
   favoritedByMembers: string[]; // List of member names in the family who marked this dish as favorite
+  isFamilyRecipe?: boolean;     // True if added to this Family's Cookbook
   createdAt: string;
   updatedAt: string;
 }
@@ -85,6 +87,7 @@ export interface GroceryItem {
   unit: string;
   category: GroceryCategory;
   checked: boolean;
+  inPantry?: boolean;     // True if user declared this ingredient as in stock at home
   sourceDishes: string[]; // List of dish names that contributed this ingredient
   isManual?: boolean;     // True if user manually added it
   dateRange?: {
@@ -104,6 +107,27 @@ export interface AppSettings {
   weekStartsOn: 'Monday' | 'Sunday';
   defaultServings: number;
   theme: 'warm' | 'fresh' | 'lavender';
+  hasCompletedScheduleOnboarding?: boolean;
+}
+
+// AI Recipe Generation Background Preparation Types
+export interface AiDiscoveredRecipe {
+  id: string;
+  name: string;
+  cuisine: string;
+  category: string;
+  servings: number;
+  prepTimeMinutes: number;
+  instructions: string;
+  tags: string[];
+  ingredients: Ingredient[];
+  status: 'pending_review' | 'added' | 'dismissed';
+  suggestedAt: string;
+}
+
+export interface AiPromptUsageTracker {
+  date: string; // YYYY-MM-DD
+  promptsUsed: number; // Max 5 per day
 }
 
 export interface AppData {
@@ -112,6 +136,7 @@ export interface AppData {
   familyMembers: string[];
   dishes: Dish[];
   masterIngredients: MasterIngredient[];
+  pantryIngredients: string[]; // List of ingredient names the family has in stock at home
   mealSchedules: MealScheduleConfig[];
   mealPlan: MealPlan;
   groceryList: {
@@ -120,6 +145,8 @@ export interface AppData {
     items: GroceryItem[];
     undoStack: GroceryHistorySnapshot[];
   };
+  aiStagingRecipes?: AiDiscoveredRecipe[];
+  aiPromptUsage?: AiPromptUsageTracker;
   settings: AppSettings;
 }
 

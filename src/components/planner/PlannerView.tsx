@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import type { Dish, MealPlan, MealScheduleConfig, MealScheduleEntry } from '../../types';
-import { ChevronLeft, ChevronRight, Plus, ShoppingCart, Copy, Download, Upload, Sliders, CheckCircle2, Move } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, ShoppingCart, Copy, Download, Upload, Sliders, CheckCircle2, Move, Sparkles, Calendar } from 'lucide-react';
 import { MealScheduleModal } from './MealScheduleModal';
 import { WeekCopyModal } from './WeekCopyModal';
 import { MealScheduleSettingsModal } from '../settings/MealScheduleSettingsModal';
@@ -34,10 +34,6 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   const [selectedMonthDate, setSelectedMonthDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
-
-  // Touch Swipe Gesture State
-  const touchStartXRef = useRef<number | null>(null);
-  const touchEndXRef = useRef<number | null>(null);
   
   // Modals
   const [selectedModalSchedule, setSelectedModalSchedule] = useState<{
@@ -90,26 +86,43 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
 
   const todayISO = formatDateISO(new Date());
 
-  // Week calculation (Monday - Sunday)
+  /**
+   * Rolling 7-Day View:
+   * Starts from currentBaseDate (which defaults to Today), and spans the next 6 days (7 days total).
+   * This ensures users only see what is planned ahead or hasn't been planned yet.
+   */
   const currentWeekDays = useMemo(() => {
-    const curr = new Date(currentBaseDate);
-    const dayOfWeek = curr.getDay(); // 0 is Sunday, 1 is Monday
-    const distanceToMonday = (dayOfWeek + 6) % 7;
-    const monday = new Date(curr);
-    monday.setDate(curr.getDate() - distanceToMonday);
+    const start = new Date(currentBaseDate);
+    const days: Array<{
+      dateStr: string;
+      dateObj: Date;
+      isToday: boolean;
+      dayName: string;
+      dayNum: number;
+      isNextWeekCutover: boolean; // True if this day is a Monday starting the new calendar week
+    }> = [];
 
-    const days: Array<{ dateStr: string; dateObj: Date; isToday: boolean; dayName: string; dayNum: number }> = [];
+    let previousDayNum: number | null = null;
+
     for (let i = 0; i < 7; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
       const dateStr = formatDateISO(d);
+      const dayNum = d.getDay(); // 0 is Sunday, 1 is Monday
+
+      // Sunday is considered the last day of the week, so if transition from Sunday(0) to Monday(1), or if dayNum is 1 and not day 0
+      const isNextWeekCutover = previousDayNum === 0 && dayNum === 1;
+
       days.push({
         dateStr,
         dateObj: d,
         isToday: dateStr === todayISO,
         dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
-        dayNum: d.getDay()
+        dayNum,
+        isNextWeekCutover
       });
+
+      previousDayNum = dayNum;
     }
     return days;
   }, [currentBaseDate, todayISO]);
@@ -151,30 +164,6 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   const handleJumpToday = () => {
     setCurrentBaseDate(new Date());
     setSelectedMonthDate(todayISO);
-  };
-
-  // Touch Swipe Handlers (Swipe Left = Next, Swipe Right = Prev)
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartXRef.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndXRef.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStartXRef.current || !touchEndXRef.current) return;
-    const distance = touchStartXRef.current - touchEndXRef.current;
-    const minSwipeDistance = 50;
-
-    if (distance > minSwipeDistance) {
-      handleNextPeriod();
-    } else if (distance < -minSwipeDistance) {
-      handlePrevPeriod();
-    }
-
-    touchStartXRef.current = null;
-    touchEndXRef.current = null;
   };
 
   // Monthly calendar calculations
@@ -396,7 +385,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                 viewMode === 'week' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              Weekly Schedule
+              7-Day Rolling Plan
             </button>
             <button
               onClick={() => setViewMode('month')}
@@ -446,7 +435,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
           <button
             onClick={handlePrevPeriod}
             className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition cursor-pointer"
-            title="Previous"
+            title="Previous 7 Days"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -466,7 +455,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
           <button
             onClick={handleNextPeriod}
             className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition cursor-pointer"
-            title="Next"
+            title="Next 7 Days"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -490,15 +479,10 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         </button>
       </div>
 
-      {/* Touch Swipeable Calendar View Container */}
-      <div
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className="touch-pan-y"
-      >
+      {/* Calendar View Container (Swipe Gestures Removed as Requested) */}
+      <div>
         {viewMode === 'week' ? (
-          /* Weekly Schedule Days - Individual Pure White #FFFFFF Day Cards with rounded-2xl & shadow-sm */
+          /* Weekly Schedule Days - 7-Day Rolling from Today to +6 Days */
           <div className="space-y-3.5">
             {currentWeekDays.map((day) => {
               const dayPlan = mealPlan[day.dateStr] || {};
@@ -521,134 +505,142 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
               );
 
               return (
-                <div
-                  key={day.dateStr}
-                  className={`bg-white rounded-2xl p-4 border transition-all shadow-sm ${
-                    day.isToday
-                      ? 'border-slate-400/80 ring-2 ring-slate-200'
-                      : 'border-[#EAE6DF]'
-                  }`}
-                >
-                  {/* Day Header */}
-                  <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-[#F4F1EA]">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-xs font-bold px-2.5 py-0.5 rounded-lg ${
-                          day.isToday
-                            ? 'bg-[#2B2D42] text-white'
-                            : 'bg-[#F4F1EA] text-slate-700'
-                        }`}
-                      >
-                        {day.dayName}
-                      </span>
-                      <span className="text-xs font-semibold text-slate-800">
-                        {day.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </span>
+                <React.Fragment key={day.dateStr}>
+                  {/* Visual Cut-over divider into the next week when transition from Sunday to Monday */}
+                  {day.isNextWeekCutover && (
+                    <div className="flex items-center gap-2 py-1 px-1 my-1">
+                      <div className="h-[1px] bg-slate-300 flex-1" />
+                      <div className="flex items-center gap-1 bg-[#F4F1EA] text-slate-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-[#EAE6DF]">
+                        <Calendar className="w-3 h-3 text-slate-500" />
+                        <span>NEXT WEEK (STARTS MON)</span>
+                      </div>
+                      <div className="h-[1px] bg-slate-300 flex-1" />
                     </div>
+                  )}
 
-                    <div className="flex items-center gap-2">
-                      {day.isToday && (
-                        <span className="text-[10px] font-bold text-slate-600 bg-[#F4F1EA] px-2 py-0.5 rounded-md">
-                          Today
+                  <div
+                    className={`rounded-2xl p-4 border transition-all shadow-sm ${
+                      day.isToday
+                        ? 'bg-white border-slate-900 ring-2 ring-slate-900/20 shadow-md'
+                        : 'bg-white border-[#EAE6DF]'
+                    }`}
+                  >
+                    {/* Day Header */}
+                    <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-[#F4F1EA]">
+                      <div className="flex items-center gap-2">
+                        {day.isToday ? (
+                          <span className="flex items-center gap-1 text-xs font-extrabold px-3 py-1 rounded-xl bg-[#2B2D42] text-white shadow-xs tracking-wide">
+                            <Sparkles className="w-3 h-3 text-amber-300 fill-amber-300" />
+                            <span>TODAY • {day.dayName}</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg bg-[#F4F1EA] text-slate-700">
+                            {day.dayName}
+                          </span>
+                        )}
+                        <span className={`text-xs font-semibold ${day.isToday ? 'text-slate-900 font-bold' : 'text-slate-800'}`}>
+                          {day.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
-                      )}
-                      
-                      {/* '+ Add Schedule' Button in Clean Neutral Slate Gray (#EDF2F4) */}
-                      <button
-                        onClick={() => handleAddManualScheduleToDay(day.dateStr)}
-                        className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-[#EDF2F4] hover:bg-[#E2E8F0] px-2.5 py-1 rounded-lg transition cursor-pointer border border-[#E2E8F0]"
-                        title="Add extra meal schedule to this day"
-                      >
-                        <Plus className="w-3 h-3 text-slate-600" />
-                        <span>+ Add Schedule</span>
-                      </button>
-                    </div>
-                  </div>
+                      </div>
 
-                  {/* Meal Schedules Grid for this Day */}
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {allScheduleIds.map((scheduleId) => {
-                      const configuredSchedule = mealSchedules.find((s) => s.id === scheduleId);
-                      const scheduleLabel = configuredSchedule?.name || scheduleId.replace('extra_', 'Extra ').replace('schedule_', '');
-                      const entry = dayPlan[scheduleId];
-                      const dish = entry?.dishId ? dishMap.get(entry.dishId) : null;
-                      const hasPlan = Boolean(dish || entry?.customText);
-
-                      const isDropTarget =
-                        dragOverTarget?.toDate === day.dateStr && dragOverTarget?.toScheduleId === scheduleId;
-
-                      return (
-                        <div
-                          key={scheduleId}
-                          draggable={Boolean(hasPlan)}
-                          onDragStart={(e) => {
-                            if (hasPlan && entry) {
-                              handleDragStart(e, day.dateStr, scheduleId, entry);
-                            }
-                          }}
-                          onDragOver={(e) => handleDragOver(e, day.dateStr, scheduleId)}
-                          onDrop={(e) => handleDrop(e, day.dateStr, scheduleId)}
-                          onClick={() =>
-                            setSelectedModalSchedule({
-                              date: day.dateStr,
-                              scheduleId,
-                              scheduleName: scheduleLabel,
-                              entry
-                            })
-                          }
-                          className={`rounded-xl p-2.5 border transition-all cursor-pointer active:scale-[0.98] ${
-                            isDropTarget
-                              ? 'border-slate-500 bg-[#F4F1EA] ring-2 ring-slate-300 scale-102 shadow-md'
-                              : hasPlan
-                              ? 'bg-[#FAF8F5] border-[#EAE6DF] hover:border-slate-300 shadow-2xs'
-                              : 'bg-[#FDFBF7]/60 border-dashed border-[#EAE6DF] hover:border-slate-300 hover:bg-[#FAF8F5]'
-                          }`}
+                      <div className="flex items-center gap-2">
+                        {/* '+ Add Schedule' Button in Clean Neutral Slate Gray (#EDF2F4) */}
+                        <button
+                          onClick={() => handleAddManualScheduleToDay(day.dateStr)}
+                          className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-[#EDF2F4] hover:bg-[#E2E8F0] px-2.5 py-1 rounded-lg transition cursor-pointer border border-[#E2E8F0]"
+                          title="Add extra meal schedule to this day"
                         >
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                              <span>🍲</span>
-                              <span className="truncate max-w-[80px]">{scheduleLabel}</span>
+                          <Plus className="w-3 h-3 text-slate-600" />
+                          <span>+ Add Schedule</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Meal Schedules Grid for this Day */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {allScheduleIds.map((scheduleId) => {
+                        const configuredSchedule = mealSchedules.find((s) => s.id === scheduleId);
+                        const scheduleLabel = configuredSchedule?.name || scheduleId.replace('extra_', 'Extra ').replace('schedule_', '');
+                        const entry = dayPlan[scheduleId];
+                        const dish = entry?.dishId ? dishMap.get(entry.dishId) : null;
+                        const hasPlan = Boolean(dish || entry?.customText);
+
+                        const isDropTarget =
+                          dragOverTarget?.toDate === day.dateStr && dragOverTarget?.toScheduleId === scheduleId;
+
+                        return (
+                          <div
+                            key={scheduleId}
+                            draggable={Boolean(hasPlan)}
+                            onDragStart={(e) => {
+                              if (hasPlan && entry) {
+                                handleDragStart(e, day.dateStr, scheduleId, entry);
+                              }
+                            }}
+                            onDragOver={(e) => handleDragOver(e, day.dateStr, scheduleId)}
+                            onDrop={(e) => handleDrop(e, day.dateStr, scheduleId)}
+                            onClick={() =>
+                              setSelectedModalSchedule({
+                                date: day.dateStr,
+                                scheduleId,
+                                scheduleName: scheduleLabel,
+                                entry
+                              })
+                            }
+                            className={`rounded-xl p-2.5 border transition-all cursor-pointer active:scale-[0.98] ${
+                              isDropTarget
+                                ? 'border-slate-500 bg-[#F4F1EA] ring-2 ring-slate-300 scale-102 shadow-md'
+                                : hasPlan
+                                ? 'bg-[#FAF8F5] border-[#EAE6DF] hover:border-slate-300 shadow-2xs'
+                                : 'bg-[#FDFBF7]/60 border-dashed border-[#EAE6DF] hover:border-slate-300 hover:bg-[#FAF8F5]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                <span>🍲</span>
+                                <span className="truncate max-w-[80px]">{scheduleLabel}</span>
+                              </div>
+                              {hasPlan ? (
+                                <span title="Drag to reschedule">
+                                  <Move className="w-3 h-3 text-slate-400 opacity-60" />
+                                </span>
+                              ) : (
+                                <Plus className="w-3 h-3 text-slate-400" />
+                              )}
                             </div>
-                            {hasPlan ? (
-                              <span title="Drag to reschedule">
-                                <Move className="w-3 h-3 text-slate-400 opacity-60" />
-                              </span>
+
+                            {dish ? (
+                              <div className="flex items-center gap-1.5 mt-1">
+                                {dish.imageUrl ? (
+                                  <img
+                                    src={dish.imageUrl}
+                                    alt={dish.name}
+                                    className="w-5 h-5 rounded-md object-cover shrink-0"
+                                  />
+                                ) : (
+                                  <span className="text-base shrink-0">{dish.imageEmoji || '🍲'}</span>
+                                )}
+                                <span className="text-xs font-bold text-slate-800 truncate leading-tight">
+                                  {dish.name}
+                                </span>
+                              </div>
+                            ) : entry?.customText ? (
+                              <div className="mt-1">
+                                <span className="text-xs font-medium text-slate-700 italic truncate block">
+                                  📝 {entry.customText}
+                                </span>
+                              </div>
                             ) : (
-                              <Plus className="w-3 h-3 text-slate-400" />
+                              <div className="mt-1">
+                                <span className="text-[11px] text-slate-400 font-medium">+ Add Meal</span>
+                              </div>
                             )}
                           </div>
-
-                          {dish ? (
-                            <div className="flex items-center gap-1.5 mt-1">
-                              {dish.imageUrl ? (
-                                <img
-                                  src={dish.imageUrl}
-                                  alt={dish.name}
-                                  className="w-5 h-5 rounded-md object-cover shrink-0"
-                                />
-                              ) : (
-                                <span className="text-base shrink-0">{dish.imageEmoji || '🍲'}</span>
-                              )}
-                              <span className="text-xs font-bold text-slate-800 truncate leading-tight">
-                                {dish.name}
-                              </span>
-                            </div>
-                          ) : entry?.customText ? (
-                            <div className="mt-1">
-                              <span className="text-xs font-medium text-slate-700 italic truncate block">
-                                📝 {entry.customText}
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="mt-1">
-                              <span className="text-[11px] text-slate-400 font-medium">+ Add Meal</span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                </React.Fragment>
               );
             })}
           </div>
@@ -675,7 +667,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                         isSelected
                           ? 'bg-[#2B2D42] text-white font-bold shadow-sm'
                           : cell.isToday
-                          ? 'border border-slate-400 bg-[#F4F1EA] text-slate-900 font-bold'
+                          ? 'border-2 border-slate-900 bg-[#F4F1EA] text-slate-900 font-bold'
                           : cell.isCurrentMonth
                           ? 'hover:bg-slate-50 text-slate-700'
                           : 'text-slate-300'
@@ -712,7 +704,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                 </h3>
                 <div className="flex items-center gap-1.5">
                   {selectedMonthDate === todayISO && (
-                    <span className="text-[10px] font-bold text-slate-600 bg-[#F4F1EA] px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-white bg-slate-900 px-2 py-0.5 rounded-md">
                       Today
                     </span>
                   )}
@@ -779,7 +771,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         )}
       </div>
 
-      {/* Sticky Bottom Date Navigation Arrows for scrolled-down state */}
+      {/* Sticky Bottom Date Navigation Controls */}
       <div className="sticky bottom-16 left-0 right-0 z-20 pt-2 pointer-events-none">
         <div className="max-w-md mx-auto pointer-events-auto bg-white/95 backdrop-blur-md rounded-2xl p-2.5 border border-[#EAE6DF] shadow-md flex items-center justify-between">
           <button
@@ -787,7 +779,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
             className="flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-slate-900 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4 text-slate-600" />
-            <span>Prev {viewMode === 'week' ? 'Week' : 'Month'}</span>
+            <span>Prev 7 Days</span>
           </button>
 
           <span className="text-xs font-bold text-slate-800 truncate max-w-[150px]">
@@ -798,7 +790,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
             onClick={handleNextPeriod}
             className="flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-slate-900 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition cursor-pointer"
           >
-            <span>Next {viewMode === 'week' ? 'Week' : 'Month'}</span>
+            <span>Next 7 Days</span>
             <ChevronRight className="w-4 h-4 text-slate-600" />
           </button>
         </div>

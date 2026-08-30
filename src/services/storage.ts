@@ -1,5 +1,5 @@
 import type { AppData, Dish, GroceryCategory, GroceryItem, MealPlan, UserProfile } from '../types';
-import { getInitialAppData, DEFAULT_MEAL_SCHEDULES } from './seedData';
+import { getInitialAppData, DEFAULT_MEAL_SCHEDULES, DEFAULT_PANTRY_INGREDIENTS } from './seedData';
 import { DEFAULT_MASTER_INGREDIENTS } from './masterIngredients';
 
 const ACTIVE_PROFILE_KEY = 'gyummy_active_profile_v2';
@@ -52,6 +52,7 @@ export function loadAppData(): AppData {
             ...legacyData,
             version: 2,
             masterIngredients: legacyData.masterIngredients || DEFAULT_MASTER_INGREDIENTS,
+            pantryIngredients: legacyData.pantryIngredients || DEFAULT_PANTRY_INGREDIENTS,
             mealSchedules: legacyData.mealSchedules || legacyData.mealSlots || DEFAULT_MEAL_SCHEDULES,
             currentProfile: null,
             familyMembers: []
@@ -82,6 +83,10 @@ export function loadAppData(): AppData {
     // Ensure all new schema properties exist
     if (!parsed.masterIngredients || parsed.masterIngredients.length === 0) {
       parsed.masterIngredients = DEFAULT_MASTER_INGREDIENTS;
+    }
+
+    if (!parsed.pantryIngredients) {
+      parsed.pantryIngredients = DEFAULT_PANTRY_INGREDIENTS;
     }
 
     // Migration for mealSchedules / legacy mealSlots
@@ -136,17 +141,29 @@ function normalizeName(name: string): string {
 /**
  * Smart Grocery List Aggregation
  * Case-insensitive name matching.
- * Sums quantities if units match; keeps separate lines if units differ or are unmeasured.
+ * Auto marks inPantry if user has declared the ingredient in pantry stock.
  */
 export function generateGroceryList(
   dishes: Dish[],
   mealPlan: MealPlan,
   startDate: string,
   endDate: string,
-  existingItems: GroceryItem[] = []
+  existingItems: GroceryItem[] = [],
+  pantryIngredients: string[] = []
 ): GroceryItem[] {
   const dishMap = new Map<string, Dish>();
   dishes.forEach((d) => dishMap.set(d.id, d));
+
+  const pantrySet = new Set(pantryIngredients.map((p) => normalizeName(p)));
+
+  const isIngredientInPantry = (name: string): boolean => {
+    const norm = normalizeName(name);
+    if (pantrySet.has(norm)) return true;
+    for (const p of pantrySet) {
+      if (norm.includes(p) || p.includes(norm)) return true;
+    }
+    return false;
+  };
 
   const aggregatedMap = new Map<
     string,
@@ -155,6 +172,7 @@ export function generateGroceryList(
       amount: number | null;
       unit: string;
       category: GroceryCategory;
+      inPantry: boolean;
       sourceDishes: Set<string>;
     }
   >();
@@ -198,6 +216,7 @@ export function generateGroceryList(
             amount: ingAmount !== null ? Math.round(ingAmount * 100) / 100 : null,
             unit: ing.unit ? ing.unit.trim() : '',
             category: ing.category || 'Other',
+            inPantry: isIngredientInPantry(ing.name),
             sourceDishes: new Set([dish.name])
           });
         }
@@ -205,7 +224,8 @@ export function generateGroceryList(
     });
   });
 
-  const checkedMap = new Map<string, boolean>();
+  // Preserve checked states and manual additions from previous list
+  const existingCheckedMap = new Map<string, boolean>();
   const manualItems: GroceryItem[] = [];
 
   existingItems.forEach((item) => {
@@ -213,23 +233,22 @@ export function generateGroceryList(
       manualItems.push(item);
     } else {
       const key = `${normalizeName(item.name)}|${(item.unit || '').trim().toLowerCase()}|${item.category}`;
-      if (item.checked) {
-        checkedMap.set(key, true);
-      }
+      existingCheckedMap.set(key, item.checked);
     }
   });
 
-  const aggregatedList: GroceryItem[] = Array.from(aggregatedMap.entries()).map(([key, val], index) => ({
-    id: `groc_gen_${Date.now()}_${index}_${Math.random().toString(36).substring(2, 6)}`,
-    name: val.name,
-    amount: val.amount,
-    unit: val.unit,
-    category: val.category,
-    checked: checkedMap.get(key) || false,
-    sourceDishes: Array.from(val.sourceDishes),
+  const generatedItems: GroceryItem[] = Array.from(aggregatedMap.entries()).map(([key, value], index) => ({
+    id: `groc_auto_${Date.now()}_${index}`,
+    name: value.name,
+    amount: value.amount,
+    unit: value.unit,
+    category: value.category,
+    checked: existingCheckedMap.get(key) || false,
+    inPantry: value.inPantry,
+    sourceDishes: Array.from(value.sourceDishes),
     isManual: false,
     dateRange: { start: startDate, end: endDate }
   }));
 
-  return [...aggregatedList, ...manualItems];
+  return [...generatedItems, ...manualItems];
 }
