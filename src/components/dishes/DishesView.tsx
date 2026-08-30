@@ -54,6 +54,40 @@ const CATEGORY_IMAGES: Record<string, string> = {
 
 const CUISINES = ['All Cuisines', 'Asian', 'Japanese', 'Korean', 'Cantonese', 'Thai', 'Vietnamese', 'Western', 'Italian', 'Mexican', 'Mediterranean', 'Other'];
 
+function matchesCuisineFilter(dish: Dish, selectedCuisine: string): boolean {
+  if (!selectedCuisine || selectedCuisine === 'All Cuisines') return true;
+  const target = selectedCuisine.toLowerCase().trim();
+
+  const cuisineAliases: Record<string, string[]> = {
+    'asian': ['asian', '亚洲', '亚洲菜', '东亚'],
+    'cantonese': ['cantonese', 'chinese', '粤菜', '中餐', '广府', '港式', '中华料理', '中国'],
+    'japanese': ['japanese', 'japan', '日料', '日式', '和风', '日本'],
+    'korean': ['korean', 'korea', '韩料', '韩式', '韩国'],
+    'thai': ['thai', 'thailand', '泰式', '泰国', '泰餐'],
+    'vietnamese': ['vietnamese', 'vietnam', '越式', '越南'],
+    'western': ['western', 'american', 'european', '西餐', '欧美', '美式'],
+    'italian': ['italian', 'italy', '意式', '意大利', '意餐', 'pasta', 'pizza'],
+    'mexican': ['mexican', 'mexico', '墨西哥', 'taco'],
+    'mediterranean': ['mediterranean', '地中海', '希腊', 'greek'],
+    'other': ['other', '其他']
+  };
+
+  const aliases = cuisineAliases[target] || [target];
+
+  const check = (val?: any): boolean => {
+    if (!val || typeof val !== 'string') return false;
+    const lower = val.toLowerCase().trim();
+    return aliases.some((a) => lower.includes(a) || a.includes(lower));
+  };
+
+  if (check(dish.cuisine)) return true;
+  if (Array.isArray(dish.tags)) {
+    if (dish.tags.some((t) => check(t))) return true;
+  }
+  if (check(dish.name)) return true;
+  return false;
+}
+
 // 1-Tap Quick Filter Chips
 const QUICK_FILTERS = [
   { id: 'under_20m', label: '⚡ Under 20 Mins', labelZh: '⚡ 20分钟快手菜', type: 'time', maxTime: 20 },
@@ -212,7 +246,8 @@ export const DishesView: React.FC<DishesViewProps> = ({
           if ((dish.prepTimeMinutes || 999) > activeQuick.maxTime) return false;
         } else if (activeQuick.type === 'keyword' && activeQuick.keyword) {
           const keywords = activeQuick.keyword.split(' ');
-          const dishString = `${dish.name} ${dish.category} ${dish.cuisine || ''} ${dish.tags?.join(' ') || ''} ${dish.ingredients.map((i) => i.name).join(' ')}`.toLowerCase();
+          const safeTags = Array.isArray(dish.tags) ? dish.tags.filter((t) => typeof t === 'string').join(' ') : '';
+          const dishString = `${dish.name || ''} ${dish.category || ''} ${dish.cuisine || ''} ${safeTags} ${dish.ingredients.map((i) => i.name || '').join(' ')}`.toLowerCase();
           const matchesAnyKeyword = keywords.some((k) => dishString.includes(k));
           if (!matchesAnyKeyword) return false;
         }
@@ -223,12 +258,9 @@ export const DishesView: React.FC<DishesViewProps> = ({
         return false;
       }
 
-      // Cuisine filter
+      // Cuisine filter (Safe, Null-Protected & Cross-Lingual)
       if (selectedCuisine !== 'All Cuisines') {
-        const matchesCuisine =
-          (dish.cuisine && dish.cuisine.toLowerCase() === selectedCuisine.toLowerCase()) ||
-          dish.tags?.some((t) => t.toLowerCase() === selectedCuisine.toLowerCase());
-        if (!matchesCuisine) return false;
+        if (!matchesCuisineFilter(dish, selectedCuisine)) return false;
       }
 
       // Favorites only
@@ -601,21 +633,23 @@ export const DishesView: React.FC<DishesViewProps> = ({
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`flex items-center gap-2 p-1.5 pr-3 rounded-2xl transition-all whitespace-nowrap cursor-pointer ${
+                className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-2xl transition-all whitespace-nowrap cursor-pointer border shadow-2xs ${
                   isSelected
-                    ? 'bg-[#2B2D42] text-white shadow-xs'
-                    : 'bg-white text-slate-700 border border-[#EAE6DF] hover:bg-slate-50'
+                    ? 'bg-[#2B2D42] text-white border-[#2B2D42] shadow-xs'
+                    : 'bg-white text-slate-700 border-[#EAE6DF] hover:bg-slate-50'
                 }`}
               >
                 <img
                   src={CATEGORY_IMAGES[cat] || CATEGORY_IMAGES.All}
                   alt={cat}
-                  className="w-6 h-6 rounded-xl object-cover"
+                  className="w-6 h-6 rounded-xl object-cover shrink-0"
                 />
-                <span className="text-xs font-bold">{formatCategory(cat)}</span>
+                <span className="text-xs font-bold shrink-0">{formatCategory(cat)}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
-                    isSelected ? 'bg-white/20 text-white' : 'bg-[#F4F1EA] text-slate-500'
+                  className={`inline-flex items-center justify-center text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] shrink-0 transition-colors ${
+                    isSelected
+                      ? 'bg-white/25 text-white'
+                      : 'bg-[#F4F1EA] dark:bg-[#1F2430] text-slate-600 dark:text-slate-300'
                   }`}
                 >
                   {count}
