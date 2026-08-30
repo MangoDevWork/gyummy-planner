@@ -10,7 +10,8 @@ import { IngredientsView } from './components/ingredients/IngredientsView';
 import { GroceryView } from './components/grocery/GroceryView';
 import { SettingsView } from './components/settings/SettingsView';
 import { AuthModal } from './components/auth/AuthModal';
-import { MealScheduleSettingsModal } from './components/settings/MealScheduleSettingsModal';
+import { LandingLoginPage } from './components/auth/LandingLoginPage';
+import { FirstTimeOnboardingGuide } from './components/auth/FirstTimeOnboardingGuide';
 
 import { loadMasterSystemRecipes } from './services/systemRecipesService';
 
@@ -19,7 +20,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<TabType>('planner');
   const [isDishCreatorOpen, setIsDishCreatorOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isOnboardingScheduleOpen, setIsOnboardingScheduleOpen] = useState(false);
+  const [isOnboardingGuideOpen, setIsOnboardingGuideOpen] = useState(false);
 
   // Load master system recipes (3,000+ recipes) from static asset / IndexedDB on launch
   useEffect(() => {
@@ -54,7 +55,7 @@ export function App() {
   // Check if first-time onboarding schedule setup should be presented
   useEffect(() => {
     if (appData.currentProfile && !appData.settings?.hasCompletedScheduleOnboarding) {
-      setIsOnboardingScheduleOpen(true);
+      setIsOnboardingGuideOpen(true);
     }
   }, [appData.currentProfile, appData.settings?.hasCompletedScheduleOnboarding]);
 
@@ -68,7 +69,7 @@ export function App() {
     }));
     setIsProfileModalOpen(false);
     if (isFirstTime) {
-      setIsOnboardingScheduleOpen(true);
+      setIsOnboardingGuideOpen(true);
     }
   };
 
@@ -77,7 +78,7 @@ export function App() {
       ...prev,
       currentProfile: null
     }));
-    setIsProfileModalOpen(true);
+    setIsProfileModalOpen(false);
   };
 
   const handleRemoveMember = (memberNameToRemove: string) => {
@@ -254,7 +255,6 @@ export function App() {
         hasCompletedScheduleOnboarding: true
       }
     }));
-    setIsOnboardingScheduleOpen(false);
   };
 
   // Grocery state handlers
@@ -308,12 +308,23 @@ export function App() {
     });
   };
 
+  // If no user profile logged in, render the sleek Landing & Login Page!
+  if (!appData.currentProfile) {
+    return (
+      <LandingLoginPage
+        currentProfile={appData.currentProfile}
+        familyMembers={appData.familyMembers}
+        onLogin={handleSelectProfile}
+      />
+    );
+  }
+
   const pendingGroceryCount = appData.groceryList.items.filter((i) => !i.checked).length;
   const familyName = appData.currentProfile?.familyName || 'Family';
 
   return (
     <div className="min-h-screen bg-[#F4F1EA] flex flex-col items-center justify-start text-slate-800">
-      {/* Mobile Shell Constraints (Pixel 9 Pro XL & iPhone 17 Viewports) */}
+      {/* Mobile Shell Constraints */}
       <div className="w-full max-w-md min-h-screen bg-[#FDFBF7] flex flex-col relative shadow-xl border-x border-[#EAE6DF]/80">
         
         {/* Top Navbar */}
@@ -405,28 +416,31 @@ export function App() {
 
         {/* Auth / Register / Profile Switcher Modal */}
         <AuthModal
-          isOpen={isProfileModalOpen || !appData.currentProfile}
+          isOpen={isProfileModalOpen}
           currentProfile={appData.currentProfile}
           familyMembers={appData.familyMembers}
           onSelectProfile={handleSelectProfile}
           onRemoveMember={handleRemoveMember}
           onLogout={handleLogout}
           onClose={() => setIsProfileModalOpen(false)}
-          isMandatory={!appData.currentProfile}
+          isMandatory={false}
         />
 
-        {/* First Launch Onboarding Meal Schedule Setup Modal */}
-        <MealScheduleSettingsModal
-          isOpen={isOnboardingScheduleOpen}
-          onClose={() => {
-            setIsOnboardingScheduleOpen(false);
+        {/* First Launch Guided Onboarding Modal (Meal Schedule Setup & Recipe Library Walkthrough) */}
+        <FirstTimeOnboardingGuide
+          isOpen={isOnboardingGuideOpen}
+          mealSchedules={appData.mealSchedules}
+          onSaveMealSchedules={handleSaveMealSchedules}
+          onCompleteOnboarding={() => {
+            setIsOnboardingGuideOpen(false);
             setAppData((prev) => ({
               ...prev,
               settings: { ...prev.settings, hasCompletedScheduleOnboarding: true }
             }));
           }}
-          mealSchedules={appData.mealSchedules}
-          onSaveMealSchedules={handleSaveMealSchedules}
+          onGoToRecipeLibrary={() => {
+            setActiveTab('dishes');
+          }}
         />
       </div>
     </div>

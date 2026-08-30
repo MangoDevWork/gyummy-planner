@@ -40,7 +40,15 @@ export const MealScheduleSettingsModal: React.FC<MealScheduleSettingsModalProps>
 
   const handleToggleEnabled = (id: string) => {
     setEditableSchedules((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, defaultEnabled: !s.defaultEnabled } : s))
+      prev.map((s) => {
+        if (s.id !== id) return s;
+        const nextEnabled = !s.defaultEnabled;
+        return {
+          ...s,
+          defaultEnabled: nextEnabled,
+          applicableDays: nextEnabled ? [1, 2, 3, 4, 5, 6, 0] : []
+        };
+      })
     );
   };
 
@@ -57,11 +65,11 @@ export const MealScheduleSettingsModal: React.FC<MealScheduleSettingsModalProps>
     } else if (preset === 'weekends') {
       days = [0, 6];
     } else {
-      days = undefined;
+      days = [1, 2, 3, 4, 5, 6, 0];
     }
 
     setEditableSchedules((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, applicableDays: days } : s))
+      prev.map((s) => (s.id === id ? { ...s, defaultEnabled: true, applicableDays: days } : s))
     );
   };
 
@@ -69,16 +77,18 @@ export const MealScheduleSettingsModal: React.FC<MealScheduleSettingsModalProps>
     setEditableSchedules((prev) =>
       prev.map((s) => {
         if (s.id !== id) return s;
-        const currentDays = s.applicableDays || [0, 1, 2, 3, 4, 5, 6];
+        const currentDays = s.defaultEnabled ? (s.applicableDays || [0, 1, 2, 3, 4, 5, 6]) : [];
         let updated: number[];
         if (currentDays.includes(dayNum)) {
           updated = currentDays.filter((d) => d !== dayNum);
         } else {
           updated = [...currentDays, dayNum];
         }
+        const hasDays = updated.length > 0;
         return {
           ...s,
-          applicableDays: updated.length === 7 ? undefined : updated
+          defaultEnabled: hasDays,
+          applicableDays: hasDays ? (updated.length === 7 ? undefined : updated) : []
         };
       })
     );
@@ -155,7 +165,7 @@ export const MealScheduleSettingsModal: React.FC<MealScheduleSettingsModalProps>
             <div className="space-y-2.5 pt-1">
               {editableSchedules.map((schedule) => {
                 const isDefaultFixed = ['breakfast', 'lunch', 'dinner', 'snack'].includes(schedule.id);
-                const activeDays = schedule.applicableDays || [0, 1, 2, 3, 4, 5, 6];
+                const activeDays = schedule.defaultEnabled ? (schedule.applicableDays || [0, 1, 2, 3, 4, 5, 6]) : [];
 
                 const isWeekdaysOnly = activeDays.length === 5 && [1, 2, 3, 4, 5].every((d) => activeDays.includes(d));
                 const isWeekendsOnly = activeDays.length === 2 && [0, 6].every((d) => activeDays.includes(d));
