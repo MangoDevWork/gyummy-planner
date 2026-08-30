@@ -52,23 +52,44 @@ const CATEGORY_IMAGES: Record<string, string> = {
   Dessert: 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=200&q=80'
 };
 
-const CUISINES = ['All Cuisines', 'Asian', 'Japanese', 'Korean', 'Cantonese', 'Thai', 'Vietnamese', 'Western', 'Italian', 'Mexican', 'Mediterranean', 'Other'];
+const CUISINES = [
+  'All Cuisines',
+  'Chinese',
+  'Cantonese',
+  'Japanese',
+  'Korean',
+  'Asian',
+  'Western',
+  'Italian',
+  'American',
+  'French',
+  'Thai',
+  'Vietnamese',
+  'Mexican',
+  'Mediterranean',
+  'Indian',
+  'Other'
+];
 
 function matchesCuisineFilter(dish: Dish, selectedCuisine: string): boolean {
   if (!selectedCuisine || selectedCuisine === 'All Cuisines') return true;
   const target = selectedCuisine.toLowerCase().trim();
 
   const cuisineAliases: Record<string, string[]> = {
-    'asian': ['asian', '亚洲', '亚洲菜', '东亚'],
+    'chinese': ['chinese', 'cantonese', 'sichuan', 'taiwanese', '中餐', '粤菜', '川菜', '鲁菜', '中国', '中华料理', '港式', '广府', '华裔', 'asian/chinese'],
     'cantonese': ['cantonese', 'chinese', '粤菜', '中餐', '广府', '港式', '中华料理', '中国'],
-    'japanese': ['japanese', 'japan', '日料', '日式', '和风', '日本'],
-    'korean': ['korean', 'korea', '韩料', '韩式', '韩国'],
-    'thai': ['thai', 'thailand', '泰式', '泰国', '泰餐'],
-    'vietnamese': ['vietnamese', 'vietnam', '越式', '越南'],
-    'western': ['western', 'american', 'european', '西餐', '欧美', '美式'],
-    'italian': ['italian', 'italy', '意式', '意大利', '意餐', 'pasta', 'pizza'],
-    'mexican': ['mexican', 'mexico', '墨西哥', 'taco'],
-    'mediterranean': ['mediterranean', '地中海', '希腊', 'greek'],
+    'japanese': ['japanese', 'japan', '日料', '日式', '和风', '日本', 'teriyaki', 'ramen', 'udon', 'sushi', 'miso', 'yakitori'],
+    'korean': ['korean', 'korea', '韩料', '韩式', '韩国', 'bulgogi', 'kimchi', 'bibimbap'],
+    'asian': ['asian', 'chinese', 'cantonese', 'japanese', 'korean', 'thai', 'vietnamese', 'malaysian', 'indonesian', 'filipino', 'singapore', '亚洲', '中餐', '日料', '韩料', '泰式', '越式', '东南亚'],
+    'western': ['western', 'american', 'european', 'italian', 'french', 'british', 'australian', 'spanish', 'german', '西餐', '欧美', '美式', '意式', '法餐', 'pasta', 'burger', 'steak'],
+    'italian': ['italian', 'italy', 'italia', '意式', '意大利', '意餐', 'pasta', 'pizza', 'risotto', 'lasagna', 'bolognese'],
+    'american': ['american', 'usa', 'us', 'burger', 'bbq', '美式', '美国', 'cajun', 'tex-mex', 'fried chicken'],
+    'french': ['french', 'france', '法餐', '法式', '法国', 'butter', 'wine', 'quiche'],
+    'thai': ['thai', 'thailand', '泰式', '泰国', '泰餐', 'curry', 'pad thai', 'tom yum'],
+    'vietnamese': ['vietnamese', 'vietnam', '越式', '越南', 'pho', 'lemongrass', 'banh mi'],
+    'mexican': ['mexican', 'mexico', 'tex-mex', '墨西哥', 'taco', 'burrito', 'quesadilla', 'salsa', 'enchilada'],
+    'mediterranean': ['mediterranean', 'greek', 'greece', '地中海', '希腊', 'tzatziki'],
+    'indian': ['indian', 'india', 'curry', '印度', '咖喱', 'tikka', 'masala', 'naan'],
     'other': ['other', '其他']
   };
 
@@ -726,13 +747,24 @@ export const DishesView: React.FC<DishesViewProps> = ({
 
           <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
             {libraryScope === 'family' ? (
-              <button
-                onClick={() => setLibraryScope('system')}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] text-white text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
-              >
-                <Search className="w-3.5 h-3.5" />
-                <span>{t('dishes.exploreRecipesBtn')}</span>
-              </button>
+              <>
+                <button
+                  onClick={() => setLibraryScope('system')}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] text-white text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>{t('dishes.exploreRecipesBtn')}</span>
+                </button>
+                {(selectedCuisine !== 'All Cuisines' || selectedCategory !== 'All' || searchQuery || selectedQuickFilter || showOnlyFavorites) && (
+                  <button
+                    onClick={handleResetFilters}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE6DF] text-slate-800 text-xs font-bold transition cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>{t('common.clear')}</span>
+                  </button>
+                )}
+              </>
             ) : (
               <button
                 onClick={handleResetFilters}

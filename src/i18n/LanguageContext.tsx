@@ -122,9 +122,13 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
       'Vietnamese': '越式',
       'Western': '西餐',
       'Italian': '意式',
+      'American': '美式',
+      'French': '法餐',
       'Mexican': '墨西哥风味',
       'Mediterranean': '地中海风味',
-      'American': '美式',
+      'Indian': '印度菜',
+      'Spanish': '西班牙风味',
+      'Middle Eastern': '中东风味',
       'Other': '其他'
     };
     return cuisineMap[cuisine] || cuisine;
