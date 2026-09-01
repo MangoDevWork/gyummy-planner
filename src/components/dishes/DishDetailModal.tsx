@@ -44,6 +44,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
   dish,
   isOpen,
   currentProfile,
+  familyMembers = [],
   memberProfiles,
   onClose,
   onEdit,
@@ -95,7 +96,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
 
   // Allergen risk detection for family members
   const allergenRisk = memberProfiles
-    ? checkDishAllergenRisk(dish, memberProfiles)
+    ? checkDishAllergenRisk(dish, memberProfiles, familyMembers)
     : { hasRisk: false, dishAllergens: [], affectedMembers: [] };
 
   const instructionSteps = typeof localized.instructions === 'string'

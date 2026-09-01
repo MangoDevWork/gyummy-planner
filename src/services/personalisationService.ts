@@ -488,13 +488,14 @@ export function checkDishAllergenRisk(
   affectedMembers: { memberName: string; allergens: string[] }[];
 } {
   const dishAllergens = detectDishAllergens(dish);
-  if (dishAllergens.length === 0 || !memberProfiles || familyMembers.length === 0) {
+  const membersToCheck = familyMembers.length > 0 ? familyMembers : Object.keys(memberProfiles || {});
+  if (dishAllergens.length === 0 || !memberProfiles || membersToCheck.length === 0) {
     return { hasRisk: false, dishAllergens, affectedMembers: [] };
   }
 
   const affectedMembers: { memberName: string; allergens: string[] }[] = [];
 
-  familyMembers.forEach((member) => {
+  membersToCheck.forEach((member) => {
     const prefs = memberProfiles[member];
     if (prefs?.allergies && prefs.allergies.length > 0) {
       const triggered = prefs.allergies.filter((alg) => dishAllergens.includes(alg));

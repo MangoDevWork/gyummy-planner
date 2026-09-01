@@ -48,7 +48,7 @@ function ToolbarButton({
       type="button"
       onClick={onClick}
       title={title}
-      className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#EDE8DF] bg-white text-[#9A8A7E] transition-colors hover:text-[#2D2640] dark:border-[#3A332C] dark:bg-[#28231E] dark:hover:text-[#F0EDE8] cursor-pointer"
+      className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#EDE8DF] bg-white text-[#786F66] transition-colors hover:text-[#1E1B2E] dark:border-[#3D362E] dark:bg-[#2A2520] dark:text-[#A39C90] dark:hover:text-[#F5F2EB] cursor-pointer shadow-2xs"
     >
       {children}
     </button>
@@ -229,64 +229,37 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
 
   return (
     <div className="relative">
-      <div className="px-4 pb-32 pt-4 max-w-md mx-auto">
+      <div className="px-4 pb-44 pt-3 max-w-md mx-auto space-y-3">
         {/* Toast */}
         {toastMsg && (
-          <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
-            <CheckCircle2 className="w-4 h-4 text-[#FFD13B] dark:text-[#2D2640]" />
+          <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#1E1B2E] dark:bg-[#F5F2EB] text-white dark:text-[#1E1B2E] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
+            <CheckCircle2 className="w-4 h-4 text-[#FFD13B] dark:text-[#1E1B2E]" />
             <span>{toastMsg}</span>
           </div>
         )}
 
-        {/* Week Header */}
-        <div className="mb-3 flex items-center justify-between">
+        {/* Top Minimal Toolbar Row */}
+        <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handlePrevPeriod}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EDE8DF] bg-white text-[#8A7A70] dark:border-[#3A332C] dark:bg-[#28231E] cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-
-            <div className="text-center min-w-[120px]">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#B8AFA4]">
-                {language === 'zh-CN' ? '当前排餐' : 'This Week'}
-              </p>
-              <p className="text-[14px] font-bold text-[#2D2640] dark:text-[#F0EDE8]">
-                {weekRangeLabel}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleNextPeriod}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EDE8DF] bg-white text-[#8A7A70] dark:border-[#3A332C] dark:bg-[#28231E] cursor-pointer"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
+            <span className="text-[13px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB]">
+              {language === 'zh-CN' ? '周食谱排餐' : 'Weekly Plan'}
+            </span>
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#FAF8F5] dark:bg-[#2A2520] text-[#786F66] dark:text-[#A39C90] border border-[#EDE8DF] dark:border-[#3D362E]">
+              {weekRangeLabel}
+            </span>
           </div>
 
-          <button
-            type="button"
-            onClick={handleJumpToday}
-            className="rounded-full bg-[#FFD13B] px-3 py-1.5 text-[11px] font-bold text-[#2D2640] transition-transform active:scale-95 cursor-pointer shadow-xs"
-          >
-            {t('common.today')}
-          </button>
-        </div>
-
-        {/* Toolbar */}
-        <div className="mb-4 flex items-center justify-end gap-2">
-          <ToolbarButton onClick={handleShareMealPlan} title="Share week as message">
-            <Share2 className="h-4 w-4" />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => setIsWeekCopyOpen(true)} title="Copy week schedule">
-            <Copy className="h-4 w-4" />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => setIsScheduleSettingsOpen(true)} title="Configure meal slots">
-            <SlidersHorizontal className="h-4 w-4" />
-          </ToolbarButton>
+          <div className="flex items-center gap-1.5">
+            <ToolbarButton onClick={handleShareMealPlan} title="Share week as message">
+              <Share2 className="h-3.5 w-3.5" />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => setIsWeekCopyOpen(true)} title="Copy week schedule">
+              <Copy className="h-3.5 w-3.5" />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => setIsScheduleSettingsOpen(true)} title="Configure meal slots">
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+            </ToolbarButton>
+          </div>
         </div>
 
         {/* Day Cards Stack */}
@@ -314,33 +287,33 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
             return (
               <div
                 key={day.dateStr}
-                className={`rounded-2xl border bg-white shadow-sm dark:bg-[#28231E] ${
+                className={`rounded-2xl border bg-white shadow-xs dark:bg-[#2A2520] transition-all ${
                   day.isToday
-                    ? 'border-l-4 border-l-[#FFD13B] border-y-[#EDE8DF] border-r-[#EDE8DF] dark:border-y-[#3A332C] dark:border-r-[#3A332C]'
-                    : 'border-[#EDE8DF] dark:border-[#3A332C]'
+                    ? 'border-l-4 border-l-[#FFD13B] border-y-[#EDE8DF] border-r-[#EDE8DF] dark:border-y-[#3D362E] dark:border-r-[#3D362E] ring-1 ring-[#FFD13B]/30'
+                    : 'border-[#EDE8DF] dark:border-[#3D362E]'
                 }`}
               >
                 {/* Day Header Row */}
                 <div className="flex items-center justify-between px-4 pb-2 pt-3">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-[15px] font-bold text-[#2D2640] dark:text-[#F0EDE8]">
+                    <span className="text-[15px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB]">
                       {day.dayOfWeek}
                     </span>
-                    <span className="text-[12px] text-[#8A7A70] dark:text-[#9A8A7E]">
+                    <span className="text-[12px] font-medium text-[#786F66] dark:text-[#A39C90]">
                       {formatDate(day.dateStr, { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     {day.isToday && (
-                      <span className="rounded-full bg-[#FFD13B] px-2 py-0.5 text-[10px] font-bold text-[#2D2640]">
+                      <span className="rounded-full bg-[#FFD13B] px-2.5 py-0.5 text-[10px] font-extrabold text-[#1E1B2E] shadow-2xs">
                         {t('common.today')}
                       </span>
                     )}
                     <button
                       type="button"
                       onClick={() => handleAddManualScheduleToDay(day.dateStr)}
-                      className="p-1 text-[#C4B0A5] hover:text-[#2D2640] rounded-lg transition cursor-pointer"
+                      className="p-1 text-[#A89F95] hover:text-[#1E1B2E] dark:hover:text-[#F5F2EB] rounded-lg transition cursor-pointer"
                       title={t('planner.addSchedule')}
                     >
                       <Plus className="h-3.5 w-3.5" />
@@ -349,7 +322,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                 </div>
 
                 {/* Slots Stack */}
-                <div className="space-y-1.5 px-3 pb-3">
+                <div className="space-y-2 px-3 pb-3">
                   {allScheduleIds.map((scheduleId) => {
                     const configuredSchedule = mealSchedules.find((s) => s.id === scheduleId);
                     const scheduleLabel = configuredSchedule?.name || scheduleId.replace('extra_', 'Extra ').replace('schedule_', '');
@@ -363,12 +336,6 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                     const hasPlan = Boolean(entryDishes.length > 0 || entry?.customText);
 
                     if (hasPlan) {
-                      const firstDish = entryDishes[0];
-                      const localizedFirst = firstDish ? getLocalizedDish(firstDish, language) : null;
-                      const title = localizedFirst ? localizedFirst.name : (entry?.customText || 'Planned Meal');
-                      const emoji = firstDish?.imageEmoji || '🍲';
-                      const extraCount = entryDishes.length > 1 ? entryDishes.length - 1 : 0;
-
                       return (
                         <div
                           key={scheduleId}
@@ -380,24 +347,49 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                               entry
                             })
                           }
-                          className="flex items-center gap-3 rounded-xl bg-[#FAF7F2] px-3 py-2.5 dark:bg-[#201C18] cursor-pointer hover:bg-[#F5F0E8] dark:hover:bg-[#2A2420] transition-colors"
+                          className="rounded-xl bg-[#FAF8F5] p-2.5 dark:bg-[#221E1A] cursor-pointer hover:bg-[#F5F3EF] dark:hover:bg-[#28231E] transition-colors border border-[#F0ECE1] dark:border-[#383129] space-y-1.5"
                         >
-                          <span className="text-lg leading-none" aria-hidden="true">
-                            {emoji}
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#B8AFA4]">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#A89F95] dark:text-[#786F66]">
                               {displayScheduleName}
-                            </p>
-                            <p className="truncate text-[13.5px] font-medium text-[#4A3F35] dark:text-[#F0EDE8]">
-                              {title}
-                              {extraCount > 0 && (
-                                <span className="ml-1 text-[11px] text-[#8A7A70] font-normal">
-                                  +{extraCount}
-                                </span>
-                              )}
-                            </p>
+                            </span>
+                            <span className="text-[10px] text-[#786F66] dark:text-[#A39C90] font-medium">
+                              {entryDishes.length > 0 ? `${entryDishes.length} ${language === 'zh-CN' ? '道菜' : 'dishes'}` : ''}
+                            </span>
                           </div>
+
+                          {/* All planned dishes displayed cleanly */}
+                          {entryDishes.length > 0 ? (
+                            <div className="space-y-1">
+                              {entryDishes.map((dish) => {
+                                const loc = getLocalizedDish(dish, language);
+                                return (
+                                  <div key={dish.id} className="flex items-center gap-2 min-w-0">
+                                    {dish.imageUrl ? (
+                                      <img
+                                        src={dish.imageUrl}
+                                        alt={dish.name}
+                                        className="w-6 h-6 rounded-md object-cover shrink-0 border border-[#EDE8DF] dark:border-[#3D362E]"
+                                      />
+                                    ) : (
+                                      <span className="w-6 h-6 rounded-md bg-white dark:bg-[#2A2520] flex items-center justify-center text-xs shrink-0 border border-[#EDE8DF] dark:border-[#3D362E]">
+                                        {dish.imageEmoji || '🍲'}
+                                      </span>
+                                    )}
+                                    <span className="text-[13px] font-semibold text-[#1E1B2E] dark:text-[#F5F2EB] truncate">
+                                      {loc.name}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : null}
+
+                          {entry?.customText && (
+                            <p className="text-xs text-[#786F66] dark:text-[#A39C90] italic truncate">
+                              📝 {entry.customText}
+                            </p>
+                          )}
                         </div>
                       );
                     }
@@ -414,17 +406,17 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
                             entry
                           })
                         }
-                        className="flex w-full items-center justify-between rounded-xl border border-dashed border-[#E0D6CB] px-3 py-2.5 text-left transition-colors hover:border-[#FFD13B] dark:border-[#3A332C] cursor-pointer"
+                        className="flex w-full items-center justify-between rounded-xl border border-dashed border-[#E0D8CB] dark:border-[#3D362E] px-3 py-2 text-left transition-colors hover:border-[#FFD13B] cursor-pointer bg-white/60 dark:bg-[#2A2520]/40"
                       >
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#C4B0A5]">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A89F95]">
                             {displayScheduleName}
                           </p>
-                          <p className="text-[13px] text-[#C4B0A5]">
-                            {language === 'zh-CN' ? `今天${displayScheduleName}吃什么？` : `What's for ${displayScheduleName.toLowerCase()}?`}
+                          <p className="text-[12.5px] text-[#A89F95]">
+                            {language === 'zh-CN' ? `添加${displayScheduleName}菜谱...` : `What's for ${displayScheduleName.toLowerCase()}?`}
                           </p>
                         </div>
-                        <span className="flex items-center gap-1 rounded-lg bg-[#F5F0E8] px-2 py-1 text-[11px] font-semibold text-[#8A7A70] dark:bg-[#201C18] dark:text-[#9A8A7E]">
+                        <span className="flex items-center gap-1 rounded-lg bg-[#FAF8F5] dark:bg-[#221E1A] px-2 py-1 text-[11px] font-semibold text-[#786F66] dark:text-[#A39C90] border border-[#EDE8DF] dark:border-[#3D362E]">
                           <Plus className="h-3.5 w-3.5" strokeWidth={2.6} />
                           <span>{language === 'zh-CN' ? '排餐' : 'Add'}</span>
                         </span>
@@ -438,26 +430,66 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         </div>
       </div>
 
-      {/* Floating Action Bar Sticky at Bottom */}
-      <div className="fixed bottom-16 left-0 right-0 z-30 px-4 pointer-events-none">
+      {/* ─── Integrated Bottom Navigation & Summary Bar (Thumb-Friendly) ─── */}
+      <div className="fixed bottom-16 left-0 right-0 z-30 px-3 pointer-events-none">
         <div className="max-w-md mx-auto pointer-events-auto">
-          <div className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[#2D2640]/10 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-md dark:border-[#3A332C] dark:bg-[#28231E]/95">
-            <div className="leading-tight">
-              <p className="text-[13px] font-semibold text-[#2D2640] dark:text-[#F0EDE8]">
-                {totalMealsPlannedThisWeek} {language === 'zh-CN' ? '餐已排定' : 'meals planned'}
-              </p>
-              <p className="text-[11px] text-[#8A7A70] dark:text-[#9A8A7E]">
-                {weekRangeLabel}
-              </p>
+          <div className="rounded-2xl border border-[#EDE8DF] bg-white/95 p-2.5 shadow-xl backdrop-blur-md dark:border-[#3D362E] dark:bg-[#2A2520]/95 space-y-2">
+            
+            {/* Top Row: Week Navigator + Today Shortcut */}
+            <div className="flex items-center justify-between gap-1.5 px-1 pb-1 border-b border-[#F0ECE1] dark:border-[#383129]">
+              <button
+                type="button"
+                onClick={handlePrevPeriod}
+                className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#EDE8DF] bg-[#FAF8F5] text-[#786F66] dark:border-[#3D362E] dark:bg-[#221E1A] dark:text-[#A39C90] cursor-pointer hover:bg-white"
+                title="Previous Week"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              <div className="text-center flex items-center gap-1.5">
+                <span className="text-[12.5px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB]">
+                  {weekRangeLabel}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleJumpToday}
+                  className="rounded-full bg-[#FFD13B] px-2 py-0.5 text-[10px] font-extrabold text-[#1E1B2E] transition-transform active:scale-95 cursor-pointer shadow-2xs"
+                >
+                  {t('common.today')}
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleNextPeriod}
+                className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#EDE8DF] bg-[#FAF8F5] text-[#786F66] dark:border-[#3D362E] dark:bg-[#221E1A] dark:text-[#A39C90] cursor-pointer hover:bg-white"
+                title="Next Week"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => onGoToGrocery(weekStartISO, weekEndISO)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[#2D2640]/10 bg-[#FFD13B] px-4 py-2.5 text-[13px] font-semibold text-[#2D2640] transition-transform active:scale-95 cursor-pointer shadow-xs"
-            >
-              <ShoppingCart className="h-4 w-4" strokeWidth={2.4} />
-              <span>{language === 'zh-CN' ? '采购清单' : 'Grocery List'}</span>
-            </button>
+
+            {/* Bottom Row: Meals Planned Count + Grocery Shortcut */}
+            <div className="flex items-center justify-between gap-2 px-1">
+              <div className="leading-tight">
+                <p className="text-[12.5px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB]">
+                  {totalMealsPlannedThisWeek} {language === 'zh-CN' ? '餐已排定' : 'meals planned'}
+                </p>
+                <p className="text-[10.5px] text-[#786F66] dark:text-[#A39C90]">
+                  {language === 'zh-CN' ? '点击右侧快速生成采购' : 'Ready to generate groceries'}
+                </p>
+              </div>
+              
+              <button
+                type="button"
+                onClick={() => onGoToGrocery(weekStartISO, weekEndISO)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#1E1B2E]/10 bg-[#FFD13B] px-3.5 py-2 text-[12.5px] font-bold text-[#1E1B2E] transition-transform active:scale-95 cursor-pointer shadow-xs"
+              >
+                <ShoppingCart className="h-3.5 w-3.5" strokeWidth={2.4} />
+                <span>{language === 'zh-CN' ? '采购清单' : 'Grocery List'}</span>
+              </button>
+            </div>
+
           </div>
         </div>
       </div>

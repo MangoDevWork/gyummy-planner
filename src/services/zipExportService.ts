@@ -338,7 +338,11 @@ export async function copyGroceryListAsMessage(
     message += `\n${emoji} *${catLabel}*\n`;
     items.forEach((item) => {
       const amountStr = item.amount !== null && item.amount !== undefined ? ` (${item.amount} ${item.unit || ''})`.trim() : (item.unit ? ` (${item.unit})` : '');
-      message += `  [ ] ${item.name}${amountStr}\n`;
+      const isCheckedOrPantry = item.checked || item.inPantry;
+      const box = isCheckedOrPantry ? '[x]' : '[ ]';
+      const pantryTag = item.inPantry ? (lang === 'zh-CN' ? ' (🏠 家中已有)' : ' (🏠 In Pantry)') : '';
+      const subNote = item.pantrySubstituteNote ? ` [${item.pantrySubstituteNote}]` : '';
+      message += `  ${box} ${item.name}${amountStr}${pantryTag}${subNote}\n`;
     });
   });
 

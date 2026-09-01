@@ -48,9 +48,9 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-[#EDE8DF] bg-white p-4 shadow-sm dark:border-[#3A332C] dark:bg-[#28231E]">
+    <section className="rounded-2xl border border-[#EDE8DF] bg-white p-4 shadow-xs dark:border-[#3D362E] dark:bg-[#2A2520]">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-[11px] font-semibold uppercase tracking-widest text-[#8A7A70] dark:text-[#9A8A7E]">
+        <h2 className="text-[11px] font-semibold uppercase tracking-widest text-[#786F66] dark:text-[#A39C90]">
           {title}
         </h2>
         {action}
@@ -72,6 +72,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isScheduleSettingsOpen, setIsScheduleSettingsOpen] = useState(false);
   const [isPersonalisationOpen, setIsPersonalisationOpen] = useState(false);
+  const [activePersonalisationMember, setActivePersonalisationMember] = useState<string>('');
 
   // Profile Edit State — family name is read-only, only member name is editable
   const [editMemberName, setEditMemberName] = useState(appData.currentProfile?.memberName || 'Member');
@@ -174,7 +175,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   // Remove a family member
-  const handleRemoveMember = (memberToRemove: string) => {
+  const handleRemoveMember = (memberToRemove: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (memberToRemove === currentMember) {
       showToast('⚠️ Cannot remove current user');
       return;
@@ -240,8 +242,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     <div className="flex-1 pb-32 pt-4 px-4 space-y-4 max-w-md mx-auto w-full">
       {/* Toast */}
       {toastMsg && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
-          <CheckCircle2 className="w-4 h-4 text-[#FFD13B] dark:text-[#2D2640]" />
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#1E1B2E] dark:bg-[#F5F2EB] text-white dark:text-[#1E1B2E] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
+          <CheckCircle2 className="w-4 h-4 text-[#FFD13B] dark:text-[#1E1B2E]" />
           <span>{toastMsg}</span>
         </div>
       )}
@@ -253,7 +255,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <button
             type="button"
             onClick={onOpenProfileModal}
-            className="inline-flex items-center gap-0.5 rounded-lg bg-[#F5F0E8] px-2.5 py-1 text-[11px] font-semibold text-[#2D2640] dark:bg-[#201C18] dark:text-[#F0EDE8] transition cursor-pointer"
+            className="inline-flex items-center gap-0.5 rounded-lg bg-[#FAF8F5] dark:bg-[#221E1A] border border-[#EDE8DF] dark:border-[#3D362E] px-2.5 py-1 text-[11px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB] transition cursor-pointer"
           >
             <span>{t('settings.switchMemberBtn')}</span>
             <ChevronRight className="h-3.5 w-3.5" />
@@ -268,17 +270,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <img
                   src={editAvatarUrl}
                   alt="Member Avatar"
-                  className="h-12 w-12 rounded-full object-cover border border-[#EDE8DF] dark:border-[#3A332C]"
+                  className="h-12 w-12 rounded-full object-cover border border-[#EDE8DF] dark:border-[#3D362E]"
                 />
               ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFD13B] text-lg font-bold text-[#2D2640]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFD13B] text-lg font-bold text-[#1E1B2E]">
                   {editMemberName.charAt(0).toUpperCase()}
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="absolute -bottom-0.5 -right-0.5 p-1 bg-[#2D2640] text-white rounded-full shadow-xs hover:opacity-90 transition cursor-pointer"
+                className="absolute -bottom-0.5 -right-0.5 p-1 bg-[#1E1B2E] text-white rounded-full shadow-xs hover:opacity-90 transition cursor-pointer"
                 title={language === 'zh-CN' ? '上传头像' : 'Upload Photo'}
               >
                 <Camera className="w-3 h-3" />
@@ -292,10 +294,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 value={editMemberName}
                 onChange={(e) => setEditMemberName(e.target.value)}
                 placeholder="Member name"
-                className="w-full text-[14px] font-bold px-3 py-1.5 rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] text-[#2D2640] placeholder:text-[#C4B0A5] focus:outline-none focus:border-[#A0867A] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
+                className="w-full text-[14px] font-bold px-3 py-1.5 rounded-xl border border-[#E8E4DC] bg-[#FAF8F5] text-[#1E1B2E] placeholder:text-[#A89F95] focus:outline-none focus:border-[#FFD13B] dark:border-[#3D362E] dark:bg-[#221E1A] dark:text-[#F5F2EB]"
               />
               <div className="mt-1 flex items-center gap-2">
-                <span className="inline-block rounded-full bg-[#FAF7F2] px-2 py-0.5 text-[11px] font-medium text-[#8A7A70] dark:bg-[#201C18] dark:text-[#9A8A7E]">
+                <span className="inline-block rounded-full bg-[#FAF8F5] px-2 py-0.5 text-[11px] font-semibold text-[#786F66] dark:bg-[#221E1A] dark:text-[#A39C90] border border-[#EDE8DF] dark:border-[#3D362E]">
                   {familyName}
                 </span>
                 {editAvatarUrl && (
@@ -313,7 +315,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#2D2640]/10 bg-[#FFD13B] py-2 text-[12.5px] font-semibold text-[#2D2640] transition-transform active:scale-95 cursor-pointer shadow-xs"
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#1E1B2E]/10 bg-[#FFD13B] py-2 text-[12.5px] font-bold text-[#1E1B2E] transition-transform active:scale-95 cursor-pointer shadow-xs"
           >
             <Save className="w-3.5 h-3.5" />
             <span>{t('common.save')}</span>
@@ -321,20 +323,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </form>
       </SectionCard>
 
-      {/* ─── Family & Allergies (Merged) ─── */}
+      {/* ─── Family & Allergies (Click card opens Configure) ─── */}
       <SectionCard
         title={language === 'zh-CN' ? `家庭成员与过敏保护 (${appData.familyMembers.length})` : `Family & Allergies (${appData.familyMembers.length} members)`}
-        action={
-          <button
-            type="button"
-            onClick={() => setIsPersonalisationOpen(true)}
-            className="inline-flex items-center gap-0.5 rounded-lg bg-[#F5F0E8] px-2.5 py-1 text-[11px] font-semibold text-[#2D2640] dark:bg-[#201C18] dark:text-[#F0EDE8] transition cursor-pointer"
-          >
-            <span>{language === 'zh-CN' ? '偏好设置' : 'Configure'}</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
-        }
       >
+        <p className="text-[11px] text-[#A89F95] mb-2">
+          {language === 'zh-CN' ? '点击任意成员卡片即可配置其口味偏好与食物忌口：' : 'Tap any member to configure tastes, diets & allergies:'}
+        </p>
+
         <div className="space-y-2">
           {appData.familyMembers.map((m) => {
             const isUser = m === currentMember;
@@ -345,30 +341,38 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             return (
               <div
                 key={m}
-                className="flex items-center justify-between rounded-xl bg-[#FAF7F2] px-3 py-2.5 dark:bg-[#201C18]"
+                onClick={() => {
+                  setActivePersonalisationMember(m);
+                  setIsPersonalisationOpen(true);
+                }}
+                className="flex items-center justify-between rounded-xl bg-[#FAF8F5] p-3 dark:bg-[#221E1A] border border-[#F0ECE1] dark:border-[#383129] cursor-pointer hover:border-[#FFD13B]/60 transition-all group active:scale-99"
               >
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[13px] font-bold text-[#2D2640] dark:bg-[#28231E] dark:text-[#F0EDE8] shrink-0 border border-[#EDE8DF] dark:border-[#3A332C]">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[13px] font-bold text-[#1E1B2E] dark:bg-[#2A2520] dark:text-[#F5F2EB] shrink-0 border border-[#EDE8DF] dark:border-[#3D362E]">
                     {m.charAt(0).toUpperCase()}
                   </span>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[13.5px] font-medium text-[#4A3F35] dark:text-[#F0EDE8] truncate">
+                      <span className="text-[13.5px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB] truncate">
                         {m}
                       </span>
                       {isUser && (
-                        <span className="rounded-full bg-[#FFD13B] px-1.5 py-0.2 text-[10px] font-bold text-[#2D2640]">
+                        <span className="rounded-full bg-[#FFD13B] px-1.5 py-0.2 text-[10px] font-extrabold text-[#1E1B2E]">
                           {language === 'zh-CN' ? '当前' : 'You'}
                         </span>
                       )}
                     </div>
-                    {allergies.length > 0 && (
-                      <p className="text-[10px] text-[#8A7A70] dark:text-[#9A8A7E] truncate mt-0.5">
+                    {allergies.length > 0 ? (
+                      <p className="text-[10.5px] text-[#786F66] dark:text-[#A39C90] truncate mt-0.5">
                         {allergies.slice(0, 3).map((id) => {
                           const def = getAllergenById(id);
                           return language === 'zh-CN' ? def?.nameZh || id : def?.nameEn || id;
                         }).join(', ')}
                         {allergies.length > 3 && ` +${allergies.length - 3}`}
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-[#A89F95] mt-0.5">
+                        {language === 'zh-CN' ? '点击配置偏好' : 'Tap to customize'}
                       </p>
                     )}
                   </div>
@@ -376,12 +380,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
                 <div className="flex items-center gap-1.5 shrink-0">
                   {allergyCount > 0 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-[#E05050] dark:bg-rose-500/10">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-[#E05050] dark:bg-rose-950/40">
                       <AlertTriangle className="h-3 w-3" />
                       {allergyCount} {language === 'zh-CN' ? '项忌口' : allergyCount === 1 ? 'allergy' : 'allergies'}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[#EBF5EE] px-2 py-0.5 text-[11px] font-semibold text-[#4E9E72]">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#E8F5ED] px-2 py-0.5 text-[11px] font-bold text-[#2D6A4A] dark:bg-[#1E2E24] dark:text-[#5ECB8D]">
                       <Check className="h-3 w-3" strokeWidth={3} />
                       {language === 'zh-CN' ? '无过敏' : 'No allergies'}
                     </span>
@@ -390,13 +394,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   {!isUser && (
                     <button
                       type="button"
-                      onClick={() => handleRemoveMember(m)}
-                      className="p-1 text-[#C4B0A5] hover:text-rose-600 rounded-lg transition cursor-pointer"
+                      onClick={(e) => handleRemoveMember(m, e)}
+                      className="p-1 text-[#A89F95] hover:text-rose-600 rounded-lg transition cursor-pointer"
                       title={`Remove ${m}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
+
+                  <ChevronRight className="w-4 h-4 text-[#A89F95] group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </div>
             );
@@ -409,12 +415,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             placeholder={language === 'zh-CN' ? '添加家庭成员...' : 'Add family member...'}
             value={newMemberNameInput}
             onChange={(e) => setNewMemberNameInput(e.target.value)}
-            className="flex-1 rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] px-3 py-2 text-[13px] text-[#2D2640] placeholder:text-[#C4B0A5] focus:border-[#A0867A] focus:outline-none dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
+            className="flex-1 rounded-xl border border-[#E8E4DC] bg-[#FAF8F5] px-3 py-2 text-[13px] text-[#1E1B2E] placeholder:text-[#A89F95] focus:border-[#FFD13B] focus:outline-none dark:border-[#3D362E] dark:bg-[#221E1A] dark:text-[#F5F2EB]"
           />
           <button
             type="submit"
             disabled={!newMemberNameInput.trim()}
-            className="flex items-center gap-1 rounded-xl border border-[#2D2640]/10 bg-[#FFD13B] px-3 py-2 text-[12px] font-semibold text-[#2D2640] transition-transform active:scale-95 disabled:opacity-40 cursor-pointer shadow-xs"
+            className="flex items-center gap-1 rounded-xl border border-[#1E1B2E]/10 bg-[#FFD13B] px-3.5 py-2 text-[12px] font-bold text-[#1E1B2E] transition-transform active:scale-95 disabled:opacity-40 cursor-pointer shadow-xs"
           >
             <Plus className="h-4 w-4" strokeWidth={2.6} />
             <span>{language === 'zh-CN' ? '添加' : 'Add'}</span>
@@ -422,9 +428,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </form>
 
         {/* Safety Mode Banner */}
-        <div className="mt-3 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-[#EBF5EE] px-3 py-2.5 dark:from-amber-500/10 dark:to-[#4E9E72]/10">
-          <ShieldCheck className="h-4 w-4 shrink-0 text-[#4E9E72]" />
-          <p className="text-[12px] font-medium text-[#4A3F35] dark:text-[#F0EDE8] flex-1">
+        <div className="mt-3 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-[#E8F5ED] p-3 dark:from-amber-950/20 dark:to-[#1E2E24] border border-[#EDE8DF] dark:border-[#3D362E]">
+          <ShieldCheck className="h-4 w-4 shrink-0 text-[#2D6A4A] dark:text-[#5ECB8D]" />
+          <p className="text-[12px] font-medium text-[#1E1B2E] dark:text-[#F5F2EB] flex-1">
             {appData.familyPersonalisation?.strictAllergyFilter !== false
               ? (language === 'zh-CN' ? '全家安全模式已开启 — 菜谱将自动排除过敏原。' : 'Family Safety Mode is on — allergens are filtered from recipes.')
               : (language === 'zh-CN' ? '安全模式已关闭' : 'Safety Mode Off')}
@@ -439,21 +445,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <button
             type="button"
             onClick={() => setIsScheduleSettingsOpen(true)}
-            className="inline-flex items-center gap-0.5 rounded-lg bg-[#F5F0E8] px-2.5 py-1 text-[11px] font-semibold text-[#2D2640] dark:bg-[#201C18] dark:text-[#F0EDE8] transition cursor-pointer"
+            className="inline-flex items-center gap-0.5 rounded-lg bg-[#FAF8F5] dark:bg-[#221E1A] border border-[#EDE8DF] dark:border-[#3D362E] px-2.5 py-1 text-[11px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB] transition cursor-pointer"
           >
             <span>{language === 'zh-CN' ? '配置餐段' : 'Configure'}</span>
             <ChevronRight className="h-3.5 w-3.5" />
           </button>
         }
       >
-        <p className="text-[13px] text-[#8A7A70] dark:text-[#9A8A7E]">
+        <p className="text-[13px] text-[#786F66] dark:text-[#A39C90]">
           {language === 'zh-CN' ? '自定义每日餐饮餐段 (如早/午/晚/加餐) 及生效星期。' : 'Choose which meal slots appear on your planner each day.'}
         </p>
       </SectionCard>
 
       {/* ─── Family PIN & Cloud Sync ─── */}
       <SectionCard title={language === 'zh-CN' ? '家庭 PIN 码与云同步' : 'Family PIN & Cloud Sync'}>
-        <p className="mb-3 text-[13px] text-[#8A7A70] dark:text-[#9A8A7E]">
+        <p className="mb-3 text-[13px] text-[#786F66] dark:text-[#A39C90]">
           {language === 'zh-CN' ? '所有家庭成员使用相同的 4 位数字 PIN 码同步菜谱和计划。' : 'Protect your family plan with a PIN and keep everything synced across devices.'}
         </p>
 
@@ -467,20 +473,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <form onSubmit={handleUpdateFamilyPin} className="space-y-2.5 mb-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[10px] font-semibold text-[#8A7A70] uppercase mb-1">{language === 'zh-CN' ? '当前 PIN' : 'Current PIN'}</label>
+                <label className="block text-[10px] font-semibold text-[#786F66] uppercase mb-1">{language === 'zh-CN' ? '当前 PIN' : 'Current PIN'}</label>
                 <input type="password" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} required placeholder="1234"
                   value={currentPinInput} onChange={(e) => setCurrentPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] tracking-widest text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]" />
+                  className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-[#E8E4DC] bg-[#FAF8F5] tracking-widest text-[#1E1B2E] dark:border-[#3D362E] dark:bg-[#221E1A] dark:text-[#F5F2EB]" />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold text-[#8A7A70] uppercase mb-1">{language === 'zh-CN' ? '新 PIN' : 'New PIN'}</label>
+                <label className="block text-[10px] font-semibold text-[#786F66] uppercase mb-1">{language === 'zh-CN' ? '新 PIN' : 'New PIN'}</label>
                 <input type="password" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} required placeholder="5678"
                   value={newPinInput} onChange={(e) => setNewPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] tracking-widest text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]" />
+                  className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-[#E8E4DC] bg-[#FAF8F5] tracking-widest text-[#1E1B2E] dark:border-[#3D362E] dark:bg-[#221E1A] dark:text-[#F5F2EB]" />
               </div>
             </div>
             <button type="submit" disabled={!currentPinInput || !newPinInput}
-              className="w-full py-2 bg-[#FFD13B] border border-[#2D2640]/10 disabled:opacity-40 text-[#2D2640] font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer">
+              className="w-full py-2 bg-[#FFD13B] border border-[#1E1B2E]/10 disabled:opacity-40 text-[#1E1B2E] font-bold text-xs rounded-xl shadow-xs transition cursor-pointer">
               <span>{language === 'zh-CN' ? '保存新 PIN 码' : 'Update Family PIN'}</span>
             </button>
           </form>
@@ -490,7 +496,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <button
             type="button"
             onClick={() => { setIsChangingPin(!isChangingPin); setPinChangeMsg(null); }}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#E8DDD5] bg-[#F5F0E8] py-2.5 text-[12.5px] font-semibold text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8] transition cursor-pointer"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#EDE8DF] bg-[#FAF8F5] py-2.5 text-[12.5px] font-bold text-[#1E1B2E] dark:border-[#3D362E] dark:bg-[#221E1A] dark:text-[#F5F2EB] transition cursor-pointer"
           >
             <Lock className="h-4 w-4" />
             <span>{isChangingPin ? (language === 'zh-CN' ? '取消' : 'Cancel') : (language === 'zh-CN' ? '修改 PIN' : 'Change PIN')}</span>
@@ -514,7 +520,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }
               }
             }}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#2D2640]/10 bg-[#FFD13B] py-2.5 text-[12.5px] font-semibold text-[#2D2640] transition-transform active:scale-95 cursor-pointer shadow-xs"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#1E1B2E]/10 bg-[#FFD13B] py-2.5 text-[12.5px] font-bold text-[#1E1B2E] transition-transform active:scale-95 cursor-pointer shadow-xs"
           >
             <RefreshCw className="h-4 w-4" />
             <span>{language === 'zh-CN' ? '立即同步' : 'Force Sync'}</span>
@@ -524,7 +530,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* ─── Language ─── */}
       <SectionCard title={t('settings.languageTitle')}>
-        <div className="flex rounded-full border border-[#EDE8DF] bg-[#FAF7F2] p-1 dark:border-[#3A332C] dark:bg-[#201C18]">
+        <div className="flex rounded-full border border-[#EDE8DF] bg-[#FAF8F5] p-1 dark:border-[#3D362E] dark:bg-[#221E1A]">
           {[
             { id: 'en', label: 'English' },
             { id: 'zh-CN', label: '中文' }
@@ -536,10 +542,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 setLanguage(lang.id as any);
                 showToast(lang.id === 'en' ? 'Language switched to English' : '语言已切换为简体中文');
               }}
-              className={`flex-1 rounded-full py-1.5 text-[12.5px] font-semibold transition-colors cursor-pointer ${
+              className={`flex-1 rounded-full py-1.5 text-[12.5px] font-bold transition-all cursor-pointer ${
                 language === lang.id
-                  ? 'bg-[#FFD13B] text-[#2D2640]'
-                  : 'text-[#8A7A70] dark:text-[#9A8A7E]'
+                  ? 'bg-[#FFD13B] text-[#1E1B2E] shadow-xs'
+                  : 'text-[#786F66] dark:text-[#A39C90]'
               }`}
             >
               {lang.label}
@@ -548,33 +554,42 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       </SectionCard>
 
-      {/* ─── Display ─── */}
+      {/* ─── Display / Dark Mode with fixed switch alignment ─── */}
       <SectionCard title={t('settings.displayTitle')}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             {isDarkMode ? (
-              <Moon className="h-4 w-4 text-[#8A7A70] dark:text-[#9A8A7E]" />
+              <Moon className="h-4 w-4 text-amber-400" />
             ) : (
-              <Sun className="h-4 w-4 text-[#8A7A70]" />
+              <Sun className="h-4 w-4 text-amber-500" />
             )}
-            <span className="text-[13.5px] font-medium text-[#4A3F35] dark:text-[#F0EDE8]">
-              {isDarkMode ? t('settings.darkModeTitle') : t('settings.lightModeTitle')}
-            </span>
+            <div>
+              <p className="text-[13.5px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB]">
+                {isDarkMode ? t('settings.darkModeTitle') : t('settings.lightModeTitle')}
+              </p>
+              <p className="text-[11px] text-[#A89F95]">
+                {isDarkMode ? (language === 'zh-CN' ? '已开启温馨暗色模式' : 'Warm evening dark mode') : (language === 'zh-CN' ? '已开启清爽明亮模式' : 'Crisp bright light mode')}
+              </p>
+            </div>
           </div>
+          
+          {/* Fixed switch knob alignment */}
           <button
             type="button"
             role="switch"
             aria-checked={isDarkMode}
             onClick={handleToggleDarkMode}
-            className={`relative h-7 w-12 rounded-full transition-colors cursor-pointer ${
-              isDarkMode ? 'bg-[#FFD13B]' : 'bg-[#E0D6CB]'
+            className={`relative inline-flex items-center h-7 w-12 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors duration-200 ${
+              isDarkMode ? 'bg-[#FFD13B]' : 'bg-[#E0D8CB] dark:bg-[#3D362E]'
             }`}
           >
             <span
-              className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${
-                isDarkMode ? 'translate-x-[22px]' : 'translate-x-0.5'
+              className={`pointer-events-none flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${
+                isDarkMode ? 'translate-x-5' : 'translate-x-0'
               }`}
-            />
+            >
+              {isDarkMode ? <Moon className="w-3.5 h-3.5 text-[#1E1B2E]" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
+            </span>
           </button>
         </div>
       </SectionCard>
@@ -589,7 +604,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onLogout();
               }
             }}
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 py-2.5 text-[13px] font-semibold text-rose-600 dark:border-rose-500/25 dark:bg-rose-500/10 hover:bg-rose-100 transition cursor-pointer"
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 py-2.5 text-[13px] font-bold text-rose-600 dark:border-rose-950 dark:bg-rose-950/30 hover:bg-rose-100 transition cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
             <span>{language === 'zh-CN' ? `退出登录 (${familyName})` : `Log Out (${familyName})`}</span>
@@ -597,12 +612,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         )}
       </SectionCard>
 
-      {/* ─── Reset Defaults (Preserves auth & 3000 recipes) ─── */}
+      {/* ─── Reset Defaults ─── */}
       <div className="pt-2 text-center">
         <button
           type="button"
           onClick={handleResetSampleData}
-          className="inline-flex items-center gap-1 text-[11px] text-[#B8AFA4] hover:text-rose-500 transition cursor-pointer"
+          className="inline-flex items-center gap-1 text-[11px] text-[#A89F95] hover:text-rose-500 transition cursor-pointer"
         >
           <RotateCcw className="w-3 h-3" />
           <span>{t('settings.resetBtn')}</span>
@@ -620,7 +635,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       <PersonalisationModal
         isOpen={isPersonalisationOpen}
         onClose={() => setIsPersonalisationOpen(false)}
-        currentMember={currentMember}
+        currentMember={activePersonalisationMember || currentMember}
         familyMembers={appData.familyMembers}
         memberProfiles={appData.memberProfiles || {}}
         familyPersonalisation={appData.familyPersonalisation ?? { strictAllergyFilter: true }}

@@ -477,9 +477,9 @@ export function App() {
 
   return (
     <LanguageProvider activeMemberName={appData.currentProfile?.memberName}>
-      <div className="min-h-screen bg-[#F0EBE1] dark:bg-[#12100E] flex flex-col items-center justify-start text-[#4A3F35] dark:text-[#F0EDE8]">
+      <div className="min-h-screen bg-[#F4F3EF] dark:bg-[#181512] flex flex-col items-center justify-start text-[#1E1B2E] dark:text-[#F5F2EB]">
         {/* Mobile Shell Constraints */}
-        <div className="w-full max-w-md min-h-screen bg-[#F8F5F0] dark:bg-[#1C1917] flex flex-col relative shadow-xl border-x border-[#EDE8DF]/80 dark:border-[#3A332C]/80">
+        <div className="w-full max-w-md min-h-screen bg-[#FAFAF8] dark:bg-[#201C18] flex flex-col relative shadow-xl border-x border-[#EDE8DF]/80 dark:border-[#3D362E]/80">
           
           {/* Top Navbar */}
           <Navbar

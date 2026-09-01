@@ -103,16 +103,18 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
 
   const formattedDate = formatDate(date);
 
-  // Split dishes into Family Cookbook vs System Library
+  // Split dishes into Family Cookbook vs System Library (non-cookbook dishes)
   const familyDishes = useMemo(() => {
     return dishes.filter((d) => d.isFamilyRecipe !== false);
   }, [dishes]);
 
-  const systemDishes = dishes;
+  const libraryOnlyDishes = useMemo(() => {
+    return dishes.filter((d) => d.isFamilyRecipe === false);
+  }, [dishes]);
 
   // Filtered dishes
   const filteredDishes = useMemo(() => {
-    const list = activeTab === 'family' ? familyDishes : systemDishes;
+    const list = activeTab === 'family' ? familyDishes : libraryOnlyDishes;
     return list.filter((dish) => {
       // Family Safe Exclusions
       if (isFamilySafeOnly) {
@@ -126,7 +128,7 @@ export const MealScheduleModal: React.FC<MealScheduleModalProps> = ({
       const matchesTaste = !selectedTasteFilter || matchesQuickFilter(dish, selectedTasteFilter);
       return matchesSearch && matchesFav && matchesCat && matchesTaste;
     });
-  }, [activeTab, familyDishes, systemDishes, isFamilySafeOnly, memberProfiles, familyMembers, searchQuery, showOnlyFavorites, selectedCategory, selectedTasteFilter, language]);
+  }, [activeTab, familyDishes, libraryOnlyDishes, isFamilySafeOnly, memberProfiles, familyMembers, searchQuery, showOnlyFavorites, selectedCategory, selectedTasteFilter, language]);
 
   const handleToggleDish = (dish: Dish) => {
     // If selecting a system dish that is not yet in family cookbook, add it to family cookbook
