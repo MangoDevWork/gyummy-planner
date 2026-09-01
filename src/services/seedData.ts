@@ -271,6 +271,19 @@ export function getInitialAppData(currentProfile: AppData['currentProfile'] | nu
     version: 2,
     currentProfile: currentProfile,
     familyMembers: currentProfile ? [currentProfile.memberName] : [],
+    memberProfiles: currentProfile ? {
+      [currentProfile.memberName]: {
+        allergies: [],
+        favoriteCuisines: ['Chinese', 'Japanese', 'Italian'],
+        favoriteCategories: ['Dinner', 'Lunch']
+      }
+    } : {},
+    familyPersonalisation: {
+      strictAllergyFilter: true,
+      householdAllergies: [],
+      householdCuisines: [],
+      householdCategories: []
+    },
     dishes: INITIAL_DISHES,
     masterIngredients: DEFAULT_MASTER_INGREDIENTS,
     pantryIngredients: DEFAULT_PANTRY_INGREDIENTS,
@@ -286,7 +299,8 @@ export function getInitialAppData(currentProfile: AppData['currentProfile'] | nu
       weekStartsOn: 'Monday',
       defaultServings: 4,
       theme: 'warm',
-      hasCompletedScheduleOnboarding: false
+      hasCompletedScheduleOnboarding: false,
+      hasCompletedPersonalisationOnboarding: false
     }
   };
 }

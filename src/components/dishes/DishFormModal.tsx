@@ -25,8 +25,6 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
   masterIngredients,
   onAddMasterIngredient
 }) => {
-  if (!isOpen) return null;
-
   const { language, t, formatCategory, formatCuisine } = useLanguage();
   const targetTranslationLang = language === 'zh-CN' ? 'en' : 'zh-CN';
 
@@ -203,6 +201,8 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
     onSave(savedDish);
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">

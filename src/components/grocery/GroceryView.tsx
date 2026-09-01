@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { AppData, Dish, GroceryCategory, GroceryItem, MealPlan } from '../../types';
 import { GROCERY_CATEGORIES } from '../../types';
 import { generateGroceryList } from '../../services/storage';
@@ -7,8 +7,6 @@ import {
   RotateCcw,
   ShoppingBag,
   CheckCircle2,
-  Download,
-  Upload,
   Plus,
   Edit2,
   MessageSquareShare,
@@ -18,8 +16,6 @@ import {
   ChevronDown
 } from 'lucide-react';
 import {
-  exportToZip,
-  parseUploadedDataFile,
   copyGroceryListAsMessage
 } from '../../services/zipExportService';
 import { matchPantryIngredient } from '../../services/pantryMatching';
@@ -32,17 +28,18 @@ interface GroceryViewProps {
   pantryIngredients: string[];
   groceryList: AppData['groceryList'];
   onUpdateGroceryList: (newList: AppData['groceryList']) => void;
+  onTogglePantryItem?: (ingName: string) => void;
 }
 
 const COMMON_UNITS = ['g', 'kg', 'ml', 'L', 'tbsp', 'tsp', 'pcs', 'slices', 'can', 'packet', 'stalks', 'cloves', 'cup', 'pinch'];
 
 export const GroceryView: React.FC<GroceryViewProps> = ({
-  familyName,
   dishes,
   mealPlan,
   pantryIngredients,
   groceryList,
-  onUpdateGroceryList
+  onUpdateGroceryList,
+  onTogglePantryItem
 }) => {
   const { language, t, formatCategory } = useLanguage();
   const [activeTab, setActiveTab] = useState<'pending' | 'checked' | 'all'>('pending');
@@ -75,8 +72,6 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingAmount, setEditingAmount] = useState<number | ''>('');
   const [editingUnit, setEditingUnit] = useState('');
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -288,57 +283,6 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
     }
   };
 
-  // Export Zip
-  const handleExportZip = async () => {
-    try {
-      const filename = await exportToZip(familyName, 'GroceryList', { groceryList });
-      showToast(`📦 Exported ${filename}`);
-    } catch (err: any) {
-      showToast(`❌ Export failed: ${err.message}`);
-    }
-  };
-
-  // Import Zip / JSON
-  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const res = await parseUploadedDataFile(file);
-    if (!res.success || !res.data) {
-      showToast(`❌ ${res.message}`);
-      return;
-    }
-
-    if (res.type !== 'groceryList' && res.type !== 'full') {
-      showToast('⚠️ Please choose a Grocery List Zip/JSON file.');
-      return;
-    }
-
-    const incomingItems: GroceryItem[] =
-      res.type === 'groceryList' ? (res.data.items || res.data) : (res.data.groceryList?.items || []);
-
-    const existingNames = new Set(items.map((i) => i.name.toLowerCase().trim()));
-    const merged = [...items];
-    let newCount = 0;
-
-    incomingItems.forEach((it) => {
-      const norm = it.name.toLowerCase().trim();
-      if (!existingNames.has(norm)) {
-        merged.push(it);
-        existingNames.add(norm);
-        newCount++;
-      }
-    });
-
-    onUpdateGroceryList({
-      ...groceryList,
-      items: merged
-    });
-
-    showToast(`✅ Imported ${newCount} grocery items!`);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
   // Filter items for display
   const displayItems = items.filter((item) => {
     const matchTab =
@@ -360,11 +304,11 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
   }, {} as Record<string, GroceryItem[]>);
 
   return (
-    <div className="flex-1 pb-28 pt-3 px-4 space-y-4 max-w-md mx-auto w-full">
+    <div className="flex-1 pb-28 pt-3 px-4 space-y-4 max-w-md mx-auto w-full bg-[#F7F4EF] dark:bg-[#1A1714]">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
+          <CheckCircle2 className="w-4 h-4 text-[#A8D8BC] dark:text-[#4CAF82]" />
           <span>{toastMsg}</span>
         </div>
       )}
@@ -372,33 +316,24 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
       {/* Celebration Overlay Banner */}
       {showCelebration && (
         <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center animate-in fade-in zoom-in-95 duration-300">
-          <div className="bg-white/95 backdrop-blur-md border border-[#EAE6DF] p-6 rounded-2xl text-center shadow-2xl space-y-2">
+          <div className="bg-white/95 dark:bg-[#252220]/95 backdrop-blur-md border border-[#EDE8DF] dark:border-[#38332E] p-6 rounded-2xl text-center shadow-2xl space-y-2">
             <div className="text-4xl animate-bounce">🎉 🛒 🌟</div>
-            <h3 className="text-base font-bold text-slate-900">All Done Shopping!</h3>
-            <p className="text-xs text-slate-600">Items purchased and cleared cleanly</p>
+            <h3 className="text-base font-bold text-[#2D2640] dark:text-[#F0EDE8]">All Done Shopping!</h3>
+            <p className="text-xs text-[#7A6E64] dark:text-[#9A9088]">Items purchased and cleared cleanly</p>
           </div>
         </div>
       )}
 
-      {/* Hidden File Input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleImportFile}
-        accept=".zip,.json"
-        className="hidden"
-      />
-
       {/* Date Range Generator Bar */}
-      <div className="bg-white rounded-2xl p-3.5 border border-[#EAE6DF] shadow-sm space-y-2.5">
+      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl shadow-sm p-3.5 space-y-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-slate-700" />
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <Calendar className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
+            <h3 className="text-[11px] font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider">
               {t('grocery.planPeriodTitle')}
             </h3>
           </div>
-          <span className="text-[10px] font-bold text-slate-600 bg-[#F4F1EA] px-2 py-0.5 rounded-md">
+          <span className="text-[10px] font-bold text-[#7A6E64] dark:text-[#9A9088] bg-[#F5F0E8] dark:bg-[#2E2A26] px-2 py-0.5 rounded-md">
             {t('planner.scheduledMealsCount', { count: plannedMealsInRange })}
           </span>
         </div>
@@ -408,46 +343,46 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
           <button
             type="button"
             onClick={() => handleApplyPreset('this_week')}
-            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE6DF] text-slate-800 border border-[#EAE6DF] transition active:scale-95 cursor-pointer"
+            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition active:scale-95 cursor-pointer"
           >
             {t('planner.thisWeek')}
           </button>
           <button
             type="button"
             onClick={() => handleApplyPreset('next_week')}
-            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#F4F1EA] hover:bg-[#EAE6DF] text-slate-800 border border-[#EAE6DF] transition active:scale-95 cursor-pointer"
+            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition active:scale-95 cursor-pointer"
           >
             {t('planner.nextWeek')}
           </button>
           <button
             type="button"
             onClick={() => setIsDateEditorOpen(!isDateEditorOpen)}
-            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-white hover:bg-slate-50 text-slate-600 border border-[#EAE6DF] transition active:scale-95 cursor-pointer flex items-center gap-1"
+            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition active:scale-95 cursor-pointer flex items-center gap-1"
           >
             <span>{rangeStart} → {rangeEnd}</span>
-            <ChevronDown className="w-3 h-3 text-slate-400" />
+            <ChevronDown className="w-3 h-3 text-[#B8AFA4] dark:text-[#5A5450]" />
           </button>
         </div>
 
         {/* Custom Date Inputs if opened */}
         {isDateEditorOpen && (
-          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#F4F1EA] animate-in fade-in">
+          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#EDE8DF] dark:border-[#38332E] animate-in fade-in">
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase">{language === 'zh-CN' ? '开始日期' : 'Start Date'}</label>
+              <label className="block text-[10px] font-bold text-[#9A8A7E] dark:text-[#7A6E64] uppercase">{language === 'zh-CN' ? '开始日期' : 'Start Date'}</label>
               <input
                 type="date"
                 value={rangeStart}
                 onChange={(e) => setRangeStart(e.target.value)}
-                className="w-full text-xs font-bold px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] bg-[#FDFBF7] text-slate-900 shadow-2xs"
+                className="w-full text-xs font-bold px-2.5 py-1.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] shadow-sm"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase">{language === 'zh-CN' ? '结束日期' : 'End Date'}</label>
+              <label className="block text-[10px] font-bold text-[#9A8A7E] dark:text-[#7A6E64] uppercase">{language === 'zh-CN' ? '结束日期' : 'End Date'}</label>
               <input
                 type="date"
                 value={rangeEnd}
                 onChange={(e) => setRangeEnd(e.target.value)}
-                className="w-full text-xs font-bold px-2.5 py-1.5 rounded-xl border border-[#EAE6DF] bg-[#FDFBF7] text-slate-900 shadow-2xs"
+                className="w-full text-xs font-bold px-2.5 py-1.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] shadow-sm"
               />
             </div>
           </div>
@@ -456,30 +391,30 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
         <button
           type="button"
           onClick={() => handleGenerate()}
-          className="w-full py-2 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+          className="w-full py-2 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
+          <Sparkles className="w-3.5 h-3.5 text-[#2D2640] fill-[#2D2640]" />
           <span>{t('grocery.generateBtn')}</span>
         </button>
       </div>
 
       {/* Progress & Overview Card */}
-      <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
+      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl shadow-sm p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-[#2B2D42] text-white flex items-center justify-center shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#FFD13B] text-[#2D2640] flex items-center justify-center shadow-sm">
               <ShoppingBag className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">{t('nav.grocery')}</h2>
-              <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+              <h2 className="text-sm font-bold text-[#2D2640] dark:text-[#F0EDE8]">{t('nav.grocery')}</h2>
+              <div className="flex items-center gap-2 text-[11px] text-[#9A8A7E] dark:text-[#7A6E64] font-medium">
                 <span>
                   {language === 'zh-CN'
                     ? `剩余 ${pendingCount} 项 (共 ${totalCount} 项)`
                     : `${pendingCount} remaining of ${totalCount} items`}
                 </span>
                 {inPantryCount > 0 && (
-                  <span className="text-emerald-700 font-semibold">
+                  <span className="text-[#2D6A4A] dark:text-[#4CAF82] font-semibold">
                     • {language === 'zh-CN' ? `家中常备 ${inPantryCount} 种` : `${inPantryCount} in Pantry`}
                   </span>
                 )}
@@ -487,41 +422,27 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
             </div>
           </div>
 
-          {/* Quick Actions (Copy As Message, Zip Export/Import) */}
+          {/* Quick Actions (Copy As Message) */}
           <div className="flex items-center gap-1">
             <button
               onClick={handleCopyAsMessage}
-              className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
+              className="p-2 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer"
               title="Copy formatted list to clipboard for messaging"
             >
               <MessageSquareShare className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleExportZip}
-              className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
-              title="Export Grocery Zip"
-            >
-              <Download className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition border border-[#EAE6DF] cursor-pointer"
-              title="Import Grocery Zip/JSON"
-            >
-              <Upload className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Progress Bar */}
         <div className="space-y-1">
-          <div className="flex justify-between text-[11px] font-bold text-slate-500">
+          <div className="flex justify-between text-[11px] font-bold text-[#9A8A7E] dark:text-[#7A6E64]">
             <span>{language === 'zh-CN' ? '采购进度' : 'Shopping Progress'}</span>
-            <span className="text-slate-800">{progressPercent}%</span>
+            <span className="text-[#2D2640] dark:text-[#F0EDE8]">{progressPercent}%</span>
           </div>
-          <div className="w-full h-2 bg-[#F4F1EA] rounded-full overflow-hidden border border-[#EAE6DF]">
+          <div className="w-full h-2 bg-[#F5F0E8] dark:bg-[#2E2A26] border border-[#EDE8DF] dark:border-[#38332E] rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#2B2D42] transition-all duration-300 rounded-full"
+              className="h-full bg-[#FFD13B] transition-all duration-300 rounded-full"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -531,9 +452,9 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
         <div className="flex items-center justify-between pt-1 gap-2">
           <button
             onClick={() => setIsManualAddOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#EDF2F4] hover:bg-[#E2E8F0] border border-[#E2E8F0] text-slate-800 text-xs font-semibold transition active:scale-95 cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer text-xs font-semibold active:scale-95 shadow-sm"
           >
-            <Plus className="w-3.5 h-3.5 text-slate-600" />
+            <Plus className="w-3.5 h-3.5 text-current" />
             <span>{t('grocery.addBtn')}</span>
           </button>
 
@@ -541,7 +462,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
             {undoStack.length > 0 && (
               <button
                 onClick={handleUndo}
-                className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800 px-2.5 py-1.5 rounded-xl hover:bg-slate-50 transition cursor-pointer"
+                className="flex items-center gap-1 text-xs font-semibold text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8] hover:bg-[#F7F4EF] dark:hover:bg-[#2E2A26] px-2.5 py-1.5 rounded-xl transition cursor-pointer"
                 title="Undo last done clearing"
               >
                 <RotateCcw className="w-3 h-3" />
@@ -552,7 +473,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
             <button
               onClick={handleDoneShopping}
               disabled={checkedCount === 0}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#2B2D42] hover:bg-[#1E1F2E] disabled:opacity-40 text-white text-xs font-bold shadow-xs transition active:scale-95 cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm disabled:opacity-40 transition active:scale-95 cursor-pointer text-xs"
             >
               <Check className="w-3.5 h-3.5 stroke-[3]" />
               <span>{language === 'zh-CN' ? `完成结算 (${checkedCount})` : `Done (${checkedCount})`}</span>
@@ -565,16 +486,16 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
       {isManualAddOpen && (
         <form
           onSubmit={handleAddManualItem}
-          className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-md space-y-3 animate-in fade-in"
+          className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl shadow-sm p-4 space-y-3 animate-in fade-in"
         >
-          <div className="flex items-center justify-between pb-1 border-b border-[#F4F1EA]">
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+          <div className="flex items-center justify-between pb-1 border-b border-[#EDE8DF] dark:border-[#38332E]">
+            <h3 className="text-[11px] font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider">
               {t('grocery.addBtn')}
             </h3>
             <button
               type="button"
               onClick={() => setIsManualAddOpen(false)}
-              className="text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
+              className="text-xs text-[#B8AFA4] dark:text-[#5A5450] hover:text-[#3D3530] dark:hover:text-[#D0C8C0] cursor-pointer"
             >
               {t('common.cancel')}
             </button>
@@ -588,7 +509,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
               value={manualName}
               onChange={(e) => setManualName(e.target.value)}
               autoFocus
-              className="w-full text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-[#EAE6DF] bg-white text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-slate-500 shadow-2xs"
+              className="w-full text-xs font-semibold px-3.5 py-2.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-sm"
             />
           </div>
 
@@ -599,13 +520,13 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
               placeholder={language === 'zh-CN' ? '数量 (如 2)' : 'Qty (e.g. 2)'}
               value={manualAmount}
               onChange={(e) => setManualAmount(e.target.value === '' ? '' : Number(e.target.value))}
-              className="text-xs font-medium px-2 py-1.5 rounded-lg border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-400 text-center shadow-2xs"
+              className="text-xs font-medium px-2 py-1.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] text-center shadow-sm"
             />
 
             <select
               value={manualUnit}
               onChange={(e) => setManualUnit(e.target.value)}
-              className="text-xs font-medium px-2 py-1.5 rounded-lg border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-400 shadow-2xs"
+              className="text-xs font-medium px-2 py-1.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-sm"
             >
               {COMMON_UNITS.map((u) => (
                 <option key={u} value={u}>
@@ -617,7 +538,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
             <select
               value={manualCategory}
               onChange={(e) => setManualCategory(e.target.value as GroceryCategory)}
-              className="text-xs font-medium px-1.5 py-1.5 rounded-lg border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-400 shadow-2xs"
+              className="text-xs font-medium px-1.5 py-1.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-sm"
             >
               {GROCERY_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -629,7 +550,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
 
           <button
             type="submit"
-            className="w-full py-2.5 bg-[#2B2D42] hover:bg-[#1E1F2E] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+            className="w-full py-2.5 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all cursor-pointer text-xs"
           >
             {t('common.add')}
           </button>
@@ -638,13 +559,13 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
 
       {/* Filter Tabs & Category Selector */}
       <div className="flex items-center justify-between gap-2">
-        <div className="grid grid-cols-3 bg-[#F4F1EA] p-1 rounded-xl flex-1 border border-[#EAE6DF]">
+        <div className="grid grid-cols-3 bg-[#F5F0E8] dark:bg-[#2E2A26] border border-[#EDE8DF] dark:border-[#38332E] p-1 rounded-xl flex-1">
           <button
             onClick={() => setActiveTab('pending')}
             className={`py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
               activeTab === 'pending'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-white dark:bg-[#252220] text-[#2D2640] dark:text-[#F0EDE8] shadow-sm'
+                : 'text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8]'
             }`}
           >
             {language === 'zh-CN' ? `待买 (${pendingCount})` : `To Buy (${pendingCount})`}
@@ -653,8 +574,8 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
             onClick={() => setActiveTab('checked')}
             className={`py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
               activeTab === 'checked'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-white dark:bg-[#252220] text-[#2D2640] dark:text-[#F0EDE8] shadow-sm'
+                : 'text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8]'
             }`}
           >
             {language === 'zh-CN' ? `已买 (${checkedCount})` : `In Cart (${checkedCount})`}
@@ -663,8 +584,8 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
             onClick={() => setActiveTab('all')}
             className={`py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
               activeTab === 'all'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-white dark:bg-[#252220] text-[#2D2640] dark:text-[#F0EDE8] shadow-sm'
+                : 'text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8]'
             }`}
           >
             {language === 'zh-CN' ? `全部 (${totalCount})` : `All (${totalCount})`}
@@ -673,7 +594,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
 
         <button
           onClick={handleRegenerate}
-          className="p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-[#EAE6DF] text-slate-600 hover:text-slate-900 transition cursor-pointer shadow-2xs"
+          className="p-2.5 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer shadow-sm"
           title="Refresh items from Meal Plan"
         >
           <RotateCcw className="w-4 h-4" />
@@ -684,10 +605,10 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
       <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
         <button
           onClick={() => setSelectedCategory('All')}
-          className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
+          className={`text-xs px-3 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
             selectedCategory === 'All'
-              ? 'bg-[#2B2D42] text-white shadow-xs'
-              : 'bg-white text-slate-600 border border-[#EAE6DF] hover:bg-slate-50'
+              ? 'bg-[#FFD13B] text-[#2D2640] font-bold shadow-sm'
+              : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] font-bold'
           }`}
         >
           {formatCategory('All')}
@@ -701,10 +622,10 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
+              className={`text-xs px-3 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
                 isSelected
-                  ? 'bg-[#2B2D42] text-white shadow-xs'
-                  : 'bg-white text-slate-600 border border-[#EAE6DF] hover:bg-slate-50'
+                  ? 'bg-[#FFD13B] text-[#2D2640] font-bold shadow-sm'
+                  : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] font-bold'
               }`}
             >
               {formatCategory(cat)} ({count})
@@ -715,13 +636,13 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
 
       {/* Items List Grouped by Category in Pure White #FFFFFF Cards */}
       {displayItems.length === 0 ? (
-        <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-[#EAE6DF] space-y-3 shadow-sm">
-          <CheckCircle2 className="w-8 h-8 text-slate-400 mx-auto opacity-60" />
+        <div className="bg-white dark:bg-[#252220] rounded-2xl p-8 text-center border border-dashed border-[#EDE8DF] dark:border-[#38332E] space-y-3 shadow-sm">
+          <CheckCircle2 className="w-8 h-8 text-[#B8AFA4] dark:text-[#5A5450] mx-auto opacity-60" />
           <div className="space-y-1">
-            <h4 className="text-sm font-bold text-slate-900">
+            <h4 className="text-sm font-bold text-[#2D2640] dark:text-[#F0EDE8]">
               {totalCount === 0 ? t('grocery.emptyTitle') : activeTab === 'checked' ? (language === 'zh-CN' ? '购物车中暂无已勾选食材' : 'No items in cart') : (language === 'zh-CN' ? '所有食材均已完成采购！' : 'All items purchased!')}
             </h4>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#9A8A7E] dark:text-[#7A6E64]">
               {totalCount === 0
                 ? t('grocery.emptySubtitle')
                 : (language === 'zh-CN' ? '在周计划中安排菜品，或直接点击上方一键生成。' : 'Plan recipes in your calendar or add manual items.')}
@@ -730,7 +651,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
           {totalCount === 0 && (
             <button
               onClick={handleRegenerate}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2B2D42] text-white text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all cursor-pointer text-xs"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>{t('grocery.generateThisWeek')}</span>
@@ -742,12 +663,12 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
           {Object.entries(groupedByCategory).map(([cat, catItems]) => (
             <div key={cat} className="space-y-2">
               <div className="flex items-center justify-between px-1">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-[#7A6E64] dark:text-[#9A9088]">
                   {formatCategory(cat)} ({catItems.length})
                 </h4>
               </div>
 
-              <div className="bg-white rounded-2xl p-2 border border-[#EAE6DF] divide-y divide-[#F4F1EA] shadow-sm">
+              <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-2 divide-y divide-[#EDE8DF] dark:divide-[#38332E] shadow-sm">
                 {catItems.map((item) => {
                   const isEditing = editingItemId === item.id;
                   const isInPantry = item.inPantry;
@@ -758,10 +679,10 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
                       onClick={() => !isEditing && handleToggleItem(item.id)}
                       className={`p-3 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
                         item.checked
-                          ? 'bg-[#FDFBF7]/60 opacity-50'
+                          ? 'bg-white/60 dark:bg-[#252220]/60 opacity-50'
                           : isInPantry
-                          ? 'bg-emerald-50/20 hover:bg-emerald-50/40'
-                          : 'hover:bg-[#FDFBF7]'
+                          ? 'bg-[#E8F5ED]/20 dark:bg-[#0D2E1A]/20 hover:bg-[#E8F5ED]/40 dark:hover:bg-[#0D2E1A]/40'
+                          : 'hover:bg-[#FAF7F2] dark:hover:bg-[#1E1B18]'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -769,17 +690,17 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
                         <div
                           className={`w-5 h-5 rounded-lg flex items-center justify-center transition-all shrink-0 ${
                             item.checked
-                              ? 'bg-[#2B2D42] text-white shadow-xs'
+                              ? 'bg-[#FFD13B] text-[#2D2640] border border-[#2D2640]/10 shadow-sm'
                               : isInPantry
-                              ? 'border-2 border-emerald-500 bg-emerald-50 text-emerald-700'
-                              : 'border border-slate-300 bg-white'
+                              ? 'border-2 border-[#A8D8BC] dark:border-[#1D4A2A] bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82]'
+                              : 'border border-[#EDE8DF] dark:border-[#38332E] bg-white dark:bg-[#252220]'
                           }`}
                           title={isInPantry ? 'Already in Pantry stock' : undefined}
                         >
                           {item.checked ? (
                             <Check className="w-3.5 h-3.5 stroke-[3]" />
                           ) : isInPantry ? (
-                            <Home className="w-3 h-3 text-emerald-700" />
+                            <Home className="w-3 h-3 text-current" />
                           ) : null}
                         </div>
 
@@ -788,10 +709,10 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
                             <span
                               className={`text-xs font-bold truncate ${
                                 item.checked
-                                  ? 'line-through text-slate-400'
+                                  ? 'line-through text-[#B8AFA4] dark:text-[#5A5450]'
                                   : isInPantry
-                                  ? 'text-emerald-900 font-semibold'
-                                  : 'text-slate-800'
+                                  ? 'text-[#2D6A4A] dark:text-[#4CAF82] font-semibold'
+                                  : 'text-[#2D2640] dark:text-[#F0EDE8]'
                               }`}
                             >
                               {item.name}
@@ -799,7 +720,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
 
                             {/* Pantry Auto Half-Mark Badge with Substitute Notice */}
                             {isInPantry && !item.checked && (
-                              <span className="text-[9px] font-extrabold tracking-wide bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md border border-emerald-200 inline-flex items-center gap-1">
+                              <span className="text-[9px] font-extrabold tracking-wide bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border border-[#A8D8BC] dark:border-[#1D4A2A] px-1.5 py-0.5 rounded-md inline-flex items-center gap-1">
                                 <span>🏡</span>
                                 <span>{item.pantrySubstituteNote ? item.pantrySubstituteNote : 'In Pantry (Have at home)'}</span>
                               </span>
@@ -807,18 +728,52 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
                           </div>
                           
                           {item.sourceDishes && item.sourceDishes.length > 0 && (
-                            <span className="text-[10px] text-slate-400 truncate block">
+                            <span className="text-[10px] text-[#B8AFA4] dark:text-[#5A5450] truncate block">
                               For: {item.sourceDishes.join(', ')}
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Quantity display / Inline Editor */}
+                      {/* Quantity display & 1-Tap In-Pantry Action */}
                       <div
                         className="flex items-center gap-1.5 shrink-0 pl-2"
                         onClick={(e) => e.stopPropagation()}
                       >
+                        {/* 1-Tap "Have at Home" Pantry Toggle Shortcut */}
+                        {onTogglePantryItem && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onTogglePantryItem(item.name);
+                              // Also toggle local inPantry tag on item for immediate visual feedback
+                              const nextItems = items.map((it) => {
+                                if (it.id === item.id) {
+                                  return { ...it, inPantry: !it.inPantry };
+                                }
+                                return it;
+                              });
+                              onUpdateGroceryList({
+                                ...groceryList,
+                                items: nextItems
+                              });
+                              showToast(
+                                !isInPantry
+                                  ? (language === 'zh-CN' ? `🏡 已将 "${item.name}" 设为家中常备！` : `🏡 Added "${item.name}" to Home Pantry!`)
+                                  : (language === 'zh-CN' ? `已从家中常备移除 "${item.name}"` : `Removed "${item.name}" from Home Pantry.`)
+                              );
+                            }}
+                            className={`p-1.5 rounded-xl border transition active:scale-95 cursor-pointer ${
+                              isInPantry
+                                ? 'bg-[#E8F5ED] dark:bg-[#0D2E1A] border-[#A8D8BC] dark:border-[#1D4A2A] text-[#2D6A4A] dark:text-[#4CAF82] shadow-sm'
+                                : 'bg-[#F5F0E8] dark:bg-[#2E2A26] border-[#EDE8DF] dark:border-[#38332E] text-[#7A6E64] dark:text-[#9A9088] hover:bg-[#E8F5ED] dark:hover:bg-[#0D2E1A] hover:text-[#2D6A4A] dark:hover:text-[#4CAF82]'
+                            }`}
+                            title={isInPantry ? 'In Home Pantry (Tap to remove)' : 'Have at home? Tap to add to Pantry'}
+                          >
+                            <Home className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
                         {isEditing ? (
                           <div className="flex items-center gap-1">
                             <input
@@ -828,17 +783,17 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
                               onChange={(e) =>
                                 setEditingAmount(e.target.value === '' ? '' : Number(e.target.value))
                               }
-                              className="w-14 text-xs font-bold px-1.5 py-1 bg-white text-slate-900 border border-slate-400 rounded-lg text-center"
+                              className="w-14 text-xs font-bold px-1.5 py-1 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] text-[#2D2640] dark:text-[#F0EDE8] rounded-lg text-center"
                             />
                             <input
                               type="text"
                               value={editingUnit}
                               onChange={(e) => setEditingUnit(e.target.value)}
-                              className="w-12 text-xs font-bold px-1.5 py-1 bg-white text-slate-900 border border-slate-400 rounded-lg text-center"
+                              className="w-12 text-xs font-bold px-1.5 py-1 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] text-[#2D2640] dark:text-[#F0EDE8] rounded-lg text-center"
                             />
                             <button
                               onClick={() => handleSaveEdit(item.id)}
-                              className="p-1 bg-[#2B2D42] text-white rounded-lg text-xs font-bold"
+                              className="p-1 bg-[#FFD13B] text-[#2D2640] border border-[#2D2640]/10 rounded-lg text-xs font-bold"
                             >
                               <Check className="w-3.5 h-3.5" />
                             </button>
@@ -846,7 +801,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
                         ) : (
                           <button
                             onClick={() => handleStartEdit(item)}
-                            className="flex items-center gap-1 text-xs font-semibold text-slate-700 bg-[#F4F1EA] border border-[#EAE6DF] px-2 py-1 rounded-lg hover:bg-[#EAE6DF] transition cursor-pointer"
+                            className="flex items-center gap-1 text-xs font-semibold bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] px-2 py-1 rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer"
                             title="Edit quantity"
                           >
                             <span>

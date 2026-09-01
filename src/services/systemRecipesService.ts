@@ -1,12 +1,13 @@
 import type { Dish } from '../types';
 import { INITIAL_DISHES } from './seedData';
+import { detectDishAllergens } from './personalisationService';
 
 let cachedSystemRecipes: Dish[] | null = null;
 let isLoadingPromise: Promise<Dish[]> | null = null;
 
 const INDEXED_DB_NAME = 'GyummySystemDB';
 const INDEXED_DB_STORE = 'system_recipes';
-const INDEXED_DB_VERSION = 1;
+const INDEXED_DB_VERSION = 2;
 
 /**
  * Open IndexedDB for offline persistent storage of large system recipes
@@ -140,7 +141,16 @@ export function mergeSystemWithUserDishes(userDishes: Dish[], systemDishes: Dish
     }
   });
 
-  return result;
+  return result.map((d) => {
+    if (!d.allergens || d.allergens.length === 0) {
+      return {
+        ...d,
+        allergens: detectDishAllergens(d),
+        timesPlanned: typeof d.timesPlanned === 'number' ? d.timesPlanned : 0
+      };
+    }
+    return d;
+  });
 }
 
 /**

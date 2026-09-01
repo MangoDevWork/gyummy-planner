@@ -15,13 +15,13 @@ export const MealSlotSettingsModal: React.FC<MealSlotSettingsModalProps> = ({
   mealSlots,
   onSaveMealSlots
 }) => {
-  if (!isOpen) return null;
-
   const [editableSlots, setEditableSlots] = useState<MealSlotConfig[]>(
     JSON.parse(JSON.stringify(mealSlots))
   );
   const [newSlotName, setNewSlotName] = useState('');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  if (!isOpen) return null;
 
   const showToast = (msg: string) => {
     setToastMsg(msg);

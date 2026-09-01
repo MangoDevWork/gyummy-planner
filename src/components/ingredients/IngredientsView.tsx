@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
 import type { MasterIngredient, GroceryCategory } from '../../types';
 import { GROCERY_CATEGORIES } from '../../types';
-import { Search, Edit3, Plus, Trash2, Save, Download, Upload, AlertCircle, CheckCircle2, Home, Check } from 'lucide-react';
-import { exportToZip, parseUploadedDataFile } from '../../services/zipExportService';
+import { Search, Edit3, Plus, Trash2, Save, AlertCircle, CheckCircle2, Home, Check } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedMasterIngredient } from '../../services/dataLocalizationService';
 
@@ -17,7 +16,6 @@ interface IngredientsViewProps {
 const COMMON_UNITS = ['g', 'kg', 'ml', 'L', 'tbsp', 'tsp', 'pcs', 'slices', 'can', 'packet', 'stalks', 'cloves', 'cup', 'pinch'];
 
 export const IngredientsView: React.FC<IngredientsViewProps> = ({
-  familyName,
   ingredients,
   pantryIngredients,
   onSaveIngredients,
@@ -31,7 +29,6 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
   const [editableList, setEditableList] = useState<MasterIngredient[]>(ingredients);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -162,122 +159,22 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
     showToast(`✅ Saved ${trimmed.length} master ingredients!`);
   };
 
-  const handleExportZip = async () => {
-    try {
-      const filename = await exportToZip(familyName, 'Ingredients', {
-        masterIngredients: ingredients,
-        pantryIngredients
-      });
-      showToast(`📦 Exported ${filename}`);
-    } catch (err: any) {
-      showToast(`❌ Export failed: ${err.message}`);
-    }
-  };
-
-  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const res = await parseUploadedDataFile(file);
-    if (!res.success || !res.data) {
-      showToast(`❌ ${res.message}`);
-      return;
-    }
-
-    if (res.type !== 'ingredients' && res.type !== 'full') {
-      showToast('⚠️ Please choose an Ingredients Zip/JSON file.');
-      return;
-    }
-
-    const incoming: MasterIngredient[] =
-      res.type === 'ingredients' ? res.data : res.data.masterIngredients || [];
-
-    if (incoming.length === 0) {
-      showToast('⚠️ No ingredients found in file.');
-      return;
-    }
-
-    const existingNames = new Set(ingredients.map((i) => i.name.toLowerCase().trim()));
-    const merged = [...ingredients];
-    let newCount = 0;
-
-    incoming.forEach((item) => {
-      const norm = item.name.toLowerCase().trim();
-      if (norm && !existingNames.has(norm)) {
-        merged.push(item);
-        existingNames.add(norm);
-        newCount++;
-      }
-    });
-
-    onSaveIngredients(merged);
-    showToast(`✅ Added ${newCount} new master ingredients!`);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
   return (
     <div className="flex-1 pb-28 pt-3 px-4 space-y-3.5 max-w-md mx-auto w-full">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
+          <CheckCircle2 className="w-4 h-4 text-[#4CAF82] dark:text-[#2D6A4A]" />
           <span>{toastMsg}</span>
         </div>
       )}
 
-      {/* Hidden File Input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleImportFile}
-        accept=".zip,.json"
-        className="hidden"
-      />
-
-      {/* Search Bar & Sharing Buttons */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder={language === 'zh-CN' ? '搜索食材总库...' : 'Search master ingredients...'}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs font-medium pl-9 pr-4 py-2.5 bg-white text-slate-900 placeholder:text-slate-400 rounded-xl border border-[#EAE6DF] focus:outline-hidden focus:border-slate-400 shadow-2xs"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full w-4 h-4 flex items-center justify-center cursor-pointer"
-            >
-              ×
-            </button>
-          )}
-        </div>
-
-        <button
-          onClick={handleExportZip}
-          className="p-2.5 rounded-xl border border-[#EAE6DF] bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer"
-          title="Export Ingredients Zip"
-        >
-          <Download className="w-4 h-4" />
-        </button>
-
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="p-2.5 rounded-xl border border-[#EAE6DF] bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer"
-          title="Import Ingredients Zip/JSON"
-        >
-          <Upload className="w-4 h-4" />
-        </button>
-      </div>
-
       {/* In My Pantry Overview & Live Benefit Card */}
-      <div className="bg-white rounded-2xl p-4 border border-[#EAE6DF] shadow-sm space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-[#F4F1EA]">
+      <div className="bg-white dark:bg-[#252220] rounded-2xl p-4 border border-[#EDE8DF] dark:border-[#38332E] shadow-sm space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#F0EAE0] dark:border-[#38332E]">
           <div className="flex items-center gap-2">
-            <Home className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <Home className="w-4 h-4 text-[#2D6A4A] dark:text-[#4CAF82]" />
+            <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
               {t('pantry.inMyPantryTitle', { count: pantryIngredients.length })}
             </h3>
           </div>
@@ -286,8 +183,8 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
             onClick={() => setShowOnlyPantry(!showOnlyPantry)}
             className={`text-[11px] font-bold px-2.5 py-1 rounded-xl transition cursor-pointer border ${
               showOnlyPantry
-                ? 'bg-[#2B2D42] text-white border-[#2B2D42]'
-                : 'bg-[#F4F1EA] text-slate-700 border-[#EAE6DF] hover:bg-[#EAE6DF]'
+                ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
+                : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E]'
             }`}
           >
             {showOnlyPantry ? t('pantry.showAllCatalog') : t('pantry.filterPantryOnly')}
@@ -299,13 +196,13 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
           {pantryIngredients.map((item) => (
             <span
               key={item}
-              className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold px-2.5 py-1 rounded-xl shadow-2xs"
+              className="inline-flex items-center gap-1 bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border border-[#A8D8BC] dark:border-[#1D4A2A] text-xs font-bold px-2.5 py-1 rounded-xl shadow-2xs"
             >
               <span>🏡 {item}</span>
               <button
                 type="button"
                 onClick={() => handleTogglePantryItem(item)}
-                className="w-4 h-4 rounded-full hover:bg-emerald-200 flex items-center justify-center text-emerald-700 cursor-pointer ml-0.5"
+                className="w-4 h-4 rounded-full hover:bg-[#A8D8BC]/50 dark:hover:bg-[#1D4A2A] flex items-center justify-center text-[#2D6A4A] dark:text-[#4CAF82] cursor-pointer ml-0.5"
                 title={`Remove ${item} from pantry`}
               >
                 ×
@@ -313,13 +210,13 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
             </span>
           ))}
           {pantryIngredients.length === 0 && (
-            <p className="text-xs text-slate-400 italic">{t('pantry.noPantryItems')}</p>
+            <p className="text-xs text-[#B8AFA4] dark:text-[#5A5450] italic">{t('pantry.noPantryItems')}</p>
           )}
         </div>
 
         {/* Quick Stock Top Staples */}
         <div className="space-y-1.5 pt-1">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+          <span className="text-[10px] font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider block">
             {language === 'zh-CN' ? '⚡ 常用主食与调味品 (点击一键收录)' : '⚡ Quick Stock Top Staples (Tap to toggle)'}
           </span>
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
@@ -345,8 +242,8 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                   onClick={() => handleTogglePantryItem(language === 'zh-CN' ? item.label : item.en)}
                   className={`shrink-0 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-xl transition cursor-pointer border ${
                     isStocked
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                      : 'bg-[#FDFBF7] text-slate-700 border-[#EAE6DF] hover:bg-slate-100'
+                      ? 'bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border-[#A8D8BC] dark:border-[#1D4A2A] shadow-xs'
+                      : 'bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#3D3530] dark:text-[#D0C8C0] border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#F5F0E8] dark:hover:bg-[#2E2A26]'
                   }`}
                 >
                   <span>{item.icon}</span>
@@ -359,11 +256,33 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
         </div>
 
         {/* Smart Substitution Engine Live Notice */}
-        <div className="bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EAE6DF] text-[11px] text-slate-600 flex items-start gap-2">
+        <div className="bg-[#FAF7F2] dark:bg-[#1E1B18] p-2.5 rounded-xl border border-[#EDE8DF] dark:border-[#38332E] text-[11px] text-[#7A6E64] dark:text-[#9A9088] flex items-start gap-2">
           <span className="text-sm">✨</span>
           <p className="leading-snug">
-            <strong>{t('pantry.smartSubNoticeTitle')}</strong> {t('pantry.smartSubNoticeDesc')}
+            <strong className="text-[#2D2640] dark:text-[#F0EDE8]">{t('pantry.smartSubNoticeTitle')}</strong> {t('pantry.smartSubNoticeDesc')}
           </p>
+        </div>
+      </div>
+
+      {/* Search Bar - Positioned above Ingredients Catalog for quick searching to flag/unflag */}
+      <div className="flex items-center gap-2 pt-1">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-[#9A8A7E] dark:text-[#7A6E64] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder={language === 'zh-CN' ? '搜索食材总库以添加/移除常备...' : 'Search ingredient catalog to toggle in pantry...'}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full text-xs font-medium pl-9 pr-8 py-2.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-2xs"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8] bg-[#F5F0E8] dark:bg-[#2E2A26] rounded-full w-4 h-4 flex items-center justify-center cursor-pointer"
+            >
+              ×
+            </button>
+          )}
         </div>
       </div>
 
@@ -373,8 +292,8 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
           onClick={() => setSelectedCategory('All')}
           className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
             selectedCategory === 'All'
-              ? 'bg-[#2B2D42] text-white shadow-xs'
-              : 'bg-white text-slate-600 border border-[#EAE6DF] hover:bg-slate-50'
+              ? 'bg-[#FFD13B] text-[#2D2640] shadow-xs'
+              : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E]'
           }`}
         >
           {formatCategory('All')} ({activeList.length})
@@ -389,8 +308,8 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
               onClick={() => setSelectedCategory(cat)}
               className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
                 isSelected
-                  ? 'bg-[#2B2D42] text-white shadow-xs'
-                  : 'bg-white text-slate-600 border border-[#EAE6DF] hover:bg-slate-50'
+                  ? 'bg-[#FFD13B] text-[#2D2640] shadow-xs'
+                  : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E]'
               }`}
             >
               {formatCategory(cat)} ({count})
@@ -401,15 +320,15 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
 
       {/* Validation Error Alert Banner */}
       {validationError && (
-        <div className="p-3 bg-rose-50 text-rose-800 rounded-xl border border-rose-200 text-xs font-semibold flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+        <div className="p-3 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 rounded-xl border border-rose-200 dark:border-rose-900 text-xs font-semibold flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
           <span>{validationError}</span>
         </div>
       )}
 
       {/* Action Header & Mode Toggle */}
       <div className="flex items-center justify-between pt-1">
-        <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+        <span className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
           {t('pantry.libraryCount', { count: filtered.length })}
         </span>
 
@@ -418,7 +337,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
             <>
               <button
                 onClick={handleAddNewRow}
-                className="flex items-center gap-1 text-xs font-semibold text-slate-800 bg-[#F4F1EA] hover:bg-[#EAE6DF] px-2.5 py-1 rounded-xl transition cursor-pointer"
+                className="flex items-center gap-1 text-xs font-semibold text-[#2D2640] dark:text-[#D0C8C0] bg-[#F5F0E8] dark:bg-[#2E2A26] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] px-2.5 py-1 rounded-xl transition cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>{t('pantry.addItem')}</span>
@@ -426,14 +345,14 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
 
               <button
                 onClick={handleCancelEditMode}
-                className="text-xs font-semibold text-slate-500 hover:text-slate-900 px-2 py-1 transition cursor-pointer"
+                className="text-xs font-semibold text-[#7A6E64] dark:text-[#9A9088] hover:text-[#2D2640] dark:hover:text-[#F0EDE8] px-2 py-1 transition cursor-pointer"
               >
                 {t('common.cancel')}
               </button>
 
               <button
                 onClick={handleSaveAll}
-                className="flex items-center gap-1 text-xs font-bold bg-[#2B2D42] hover:bg-[#1E1F2E] text-white px-3 py-1.5 rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+                className="flex items-center gap-1 text-xs font-extrabold bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] border border-[#2D2640]/10 px-3 py-1.5 rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>{t('common.save')}</span>
@@ -442,19 +361,19 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
           ) : (
             <button
               onClick={handleEnterEditMode}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-800 bg-white border border-[#EAE6DF] hover:bg-slate-50 px-3 py-1.5 rounded-xl transition active:scale-95 cursor-pointer shadow-2xs"
+              className="flex items-center gap-1.5 text-xs font-bold text-[#2D2640] dark:text-[#D0C8C0] bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#F7F4EF] dark:hover:bg-[#2E2A26] px-3 py-1.5 rounded-xl transition active:scale-95 cursor-pointer shadow-2xs"
             >
-              <Edit3 className="w-3.5 h-3.5 text-slate-600" />
+              <Edit3 className="w-3.5 h-3.5 text-[#7A6E64] dark:text-[#9A9088]" />
               <span>{t('common.editMode')}</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Master Ingredients Cards in Pure White #FFFFFF */}
+      {/* Master Ingredients Cards */}
       <div className="space-y-2">
         {filtered.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-[#EAE6DF] text-xs text-slate-400 shadow-sm">
+          <div className="bg-white dark:bg-[#252220] rounded-2xl p-8 text-center border border-dashed border-[#EDE8DF] dark:border-[#38332E] text-xs text-[#9A8A7E] dark:text-[#7A6E64] shadow-sm">
             {showOnlyPantry
               ? 'No pantry items found matching this filter.'
               : 'No ingredients found matching your search.'}
@@ -470,12 +389,12 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
             return (
               <div
                 key={item.id || originalIndex}
-                className={`bg-white rounded-xl p-3 border transition-all shadow-2xs ${
+                className={`rounded-xl p-3 border transition-all shadow-2xs ${
                   isNameEmpty && isEditMode
-                    ? 'border-rose-500 bg-rose-50/50'
+                    ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/30'
                     : isInPantry
-                    ? 'border-emerald-300/80 bg-emerald-50/20'
-                    : 'border-[#EAE6DF] hover:border-slate-300'
+                    ? 'bg-[#E8F5ED]/40 dark:bg-[#0D2E1A]/40 border-[#A8D8BC] dark:border-[#1D4A2A]'
+                    : 'bg-white dark:bg-[#252220] border-[#EDE8DF] dark:border-[#38332E] hover:border-[#B8AFA4] dark:hover:border-[#5A5450]'
                 }`}
               >
                 {isEditMode ? (
@@ -487,16 +406,16 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                         placeholder="Ingredient Name *"
                         value={item.name}
                         onChange={(e) => handleFieldChange(item.id, 'name', e.target.value)}
-                        className={`flex-1 text-xs font-bold px-2.5 py-1.5 rounded-lg border bg-[#FDFBF7] text-slate-900 focus:outline-hidden ${
+                        className={`flex-1 text-xs font-bold px-2.5 py-1.5 rounded-lg border focus:outline-hidden ${
                           isNameEmpty
-                            ? 'border-rose-500 bg-rose-50'
-                            : 'border-[#EAE6DF] focus:border-slate-400'
+                            ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200'
+                            : 'bg-[#FAF7F2] dark:bg-[#1E1B18] border-[#E8E0D5] dark:border-[#38332E] text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:border-[#2D2640] dark:focus:border-[#F0EDE8]'
                         }`}
                       />
                       <button
                         type="button"
                         onClick={() => handleDeleteRow(item.id)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition cursor-pointer"
+                        className="p-1.5 text-[#9A8A7E] dark:text-[#7A6E64] hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition cursor-pointer"
                         title="Delete row"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -505,7 +424,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
 
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">
+                        <label className="block text-[9px] font-bold text-[#7A6E64] dark:text-[#9A9088] uppercase mb-0.5">
                           Default Qty
                         </label>
                         <input
@@ -519,18 +438,18 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                               e.target.value === '' ? null : Number(e.target.value)
                             )
                           }
-                          className="w-full text-xs font-medium px-2 py-1 rounded-lg border border-[#EAE6DF] bg-[#FDFBF7] text-slate-900 focus:outline-hidden focus:border-slate-400 text-center"
+                          className="w-full text-xs font-medium px-2 py-1 rounded-lg border border-[#E8E0D5] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#2D2640] dark:text-[#F0EDE8] focus:outline-hidden focus:border-[#2D2640] dark:focus:border-[#F0EDE8] text-center"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">
+                        <label className="block text-[9px] font-bold text-[#7A6E64] dark:text-[#9A9088] uppercase mb-0.5">
                           Default Unit
                         </label>
                         <select
                           value={item.defaultUnit}
                           onChange={(e) => handleFieldChange(item.id, 'defaultUnit', e.target.value)}
-                          className="w-full text-xs font-medium px-2 py-1 rounded-lg border border-[#EAE6DF] bg-[#FDFBF7] text-slate-900 focus:outline-hidden focus:border-slate-400"
+                          className="w-full text-xs font-medium px-2 py-1 rounded-lg border border-[#E8E0D5] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#2D2640] dark:text-[#F0EDE8] focus:outline-hidden focus:border-[#2D2640] dark:focus:border-[#F0EDE8]"
                         >
                           {COMMON_UNITS.map((u) => (
                             <option key={u} value={u}>
@@ -541,13 +460,13 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">
+                        <label className="block text-[9px] font-bold text-[#7A6E64] dark:text-[#9A9088] uppercase mb-0.5">
                           Category
                         </label>
                         <select
                           value={item.category}
                           onChange={(e) => handleFieldChange(item.id, 'category', e.target.value)}
-                          className="w-full text-xs font-medium px-1.5 py-1 rounded-lg border border-[#EAE6DF] bg-[#FDFBF7] text-slate-900 focus:outline-hidden focus:border-slate-400"
+                          className="w-full text-xs font-medium px-1.5 py-1 rounded-lg border border-[#E8E0D5] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#2D2640] dark:text-[#F0EDE8] focus:outline-hidden focus:border-[#2D2640] dark:focus:border-[#F0EDE8]"
                         >
                           {GROCERY_CATEGORIES.map((cat) => (
                             <option key={cat} value={cat}>
@@ -570,8 +489,8 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                             onClick={() => handleTogglePantryItem(item.name)}
                             className={`p-1.5 rounded-lg border transition cursor-pointer shrink-0 ${
                               isInPantry
-                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-                                : 'bg-white text-slate-400 border-[#EAE6DF] hover:text-emerald-700 hover:border-emerald-300'
+                                ? 'bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border-[#A8D8BC] dark:border-[#1D4A2A] shadow-2xs'
+                                : 'bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#9A8A7E] dark:text-[#7A6E64] border-[#EDE8DF] dark:border-[#38332E] hover:text-[#2D6A4A] dark:hover:text-[#4CAF82] hover:border-[#A8D8BC] dark:hover:border-[#1D4A2A]'
                             }`}
                             title={isInPantry ? 'In Pantry (Click to remove)' : 'Click to add to Home Pantry'}
                           >
@@ -580,15 +499,15 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
 
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-slate-800 truncate block">{loc.name}</span>
+                              <span className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] truncate block">{loc.name}</span>
                               {loc.isUntranslated && (
-                                <span className="text-[9px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.1 rounded shrink-0">
+                                <span className="text-[9px] font-semibold text-[#7A5C00] dark:text-[#FFD13B] bg-[#FFF3D6] dark:bg-[#2A1E00] border border-[#FFD13B]/40 px-1 py-0.5 rounded shrink-0">
                                   {language === 'zh-CN' ? '英文' : 'Chinese'}
                                 </span>
                               )}
                             </div>
                             {isInPantry && (
-                              <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-0.5">
+                              <span className="text-[10px] text-[#2D6A4A] dark:text-[#4CAF82] font-semibold flex items-center gap-0.5">
                                 <Check className="w-2.5 h-2.5 stroke-[3]" />
                                 {language === 'zh-CN' ? '常备食材 (清单自动半选标记)' : 'In Home Pantry (Auto half-marks on grocery list)'}
                               </span>
@@ -598,11 +517,11 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
 
                         <div className="flex items-center gap-2 shrink-0">
                           {item.defaultValue !== null && (
-                            <span className="text-xs font-bold text-slate-700 bg-[#F4F1EA] border border-[#EAE6DF] px-2 py-0.5 rounded-md">
+                            <span className="text-xs font-bold text-[#3D3530] dark:text-[#D0C8C0] bg-[#F5F0E8] dark:bg-[#2E2A26] border border-[#EDE8DF] dark:border-[#38332E] px-2 py-0.5 rounded-md">
                               {item.defaultValue} {item.defaultUnit}
                             </span>
                           )}
-                          <span className="text-[10px] text-slate-500 bg-[#FDFBF7] px-2 py-0.5 rounded-md font-medium border border-[#EAE6DF]">
+                          <span className="text-[10px] text-[#7A6E64] dark:text-[#9A9088] bg-[#FAF7F2] dark:bg-[#1E1B18] px-2 py-0.5 rounded-md font-medium border border-[#EDE8DF] dark:border-[#38332E]">
                             {formatCategory(item.category)}
                           </span>
                         </div>
@@ -620,7 +539,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
           <div ref={loadMoreRef} className="py-4 text-center">
             <button
               onClick={() => setVisibleLimit((prev) => prev + 40)}
-              className="px-5 py-2 rounded-xl bg-white border border-[#EAE6DF] text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer"
+              className="px-5 py-2 rounded-xl bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] text-xs font-bold text-[#2D2640] dark:text-[#D0C8C0] hover:bg-[#F7F4EF] dark:hover:bg-[#2E2A26] transition shadow-2xs cursor-pointer"
             >
               Showing {Math.min(visibleLimit, filtered.length)} of {filtered.length.toLocaleString()} ingredients • Load More
             </button>

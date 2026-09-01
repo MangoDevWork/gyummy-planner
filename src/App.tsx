@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { AppData, Dish, MasterIngredient, MealPlan, MealScheduleConfig, MealScheduleEntry, UserProfile } from './types';
 import { loadAppData, saveAppData, generateGroceryList, setActiveProfile, resetActiveSession } from './services/storage';
 import { getInitialAppData } from './services/seedData';
+import { DEFAULT_MASTER_INGREDIENTS } from './services/masterIngredients';
 import { LanguageProvider } from './i18n/LanguageContext';
 import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
@@ -18,6 +19,9 @@ import { FirstTimeOnboardingGuide } from './components/auth/FirstTimeOnboardingG
 import { loadMasterSystemRecipes, mergeSystemWithUserDishes, getCachedSystemRecipes } from './services/systemRecipesService';
 import { loadDarkModePreference, applyDarkMode } from './services/darkMode';
 import { loadMemberLanguage } from './services/languageService';
+import { subscribeToFamilyCloudData, fetchFamilyCloudData, pushAppDataToCloud } from './services/firebase';
+import { mergeAppData } from './services/mergeSyncService';
+import { calculateDishPlanStats } from './services/personalisationService';
 
 export function App() {
   const [appData, setAppData] = useState<AppData>(() => loadAppData());
@@ -26,6 +30,7 @@ export function App() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isOnboardingGuideOpen, setIsOnboardingGuideOpen] = useState(false);
   const [isSystemGuideActive, setIsSystemGuideActive] = useState(false);
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     // On first load, check if there's an active profile and restore their preference
     const stored = loadAppData();
@@ -51,6 +56,66 @@ export function App() {
     }
   }, [appData.currentProfile?.memberName]);
 
+  // Subscribe to Cloud Firestore real-time updates for the current family
+  useEffect(() => {
+    const familyName = appData.currentProfile?.familyName;
+    if (!familyName) return;
+
+    const unsubscribe = subscribeToFamilyCloudData(
+      familyName,
+      (remoteData) => {
+        setAppData((prev) => {
+          const merged = mergeAppData(prev, remoteData);
+          const systemDishes = getCachedSystemRecipes();
+          const finalData = {
+            ...merged,
+            dishes: mergeSystemWithUserDishes(merged.dishes, systemDishes)
+          };
+          saveAppData(finalData, true); // save to localStorage only, do NOT re-push to cloud
+          return finalData;
+        });
+      },
+      (status) => {
+        setCloudSyncStatus(status);
+      }
+    );
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [appData.currentProfile?.familyName]);
+
+  // 1-Tap Manual Force Sync handler
+  const handleForceSync = async () => {
+    const familyName = appData.currentProfile?.familyName;
+    if (!familyName) return;
+
+    setCloudSyncStatus('syncing');
+    try {
+      // 1. Push local changes immediately to cloud (immediate=true bypasses debounce)
+      await pushAppDataToCloud(familyName, appData, (status) => setCloudSyncStatus(status), true);
+
+      // 2. Pull remote cloud data and smart-merge
+      const remoteData = await fetchFamilyCloudData(familyName);
+      if (remoteData) {
+        setAppData((prev) => {
+          const merged = mergeAppData(prev, remoteData);
+          const systemDishes = getCachedSystemRecipes();
+          const finalData = {
+            ...merged,
+            dishes: mergeSystemWithUserDishes(merged.dishes, systemDishes)
+          };
+          saveAppData(finalData, true); // save locally, do not push duplicate write
+          return finalData;
+        });
+      }
+      setCloudSyncStatus('synced');
+    } catch (err) {
+      console.error('Force sync error:', err);
+      setCloudSyncStatus('error');
+    }
+  };
+
   // Load master system recipes (3,000+ recipes) from static asset / IndexedDB on launch
   useEffect(() => {
     loadMasterSystemRecipes().then((systemRecipes) => {
@@ -63,9 +128,11 @@ export function App() {
     });
   }, []);
 
-  // Sync to local storage whenever appData changes
+  // Sync to local storage and push debounced updates to cloud whenever user modifies appData
   useEffect(() => {
-    saveAppData(appData);
+    if (appData.currentProfile) {
+      saveAppData(appData);
+    }
   }, [appData]);
 
   // Check if first-time onboarding schedule setup should be presented
@@ -76,7 +143,7 @@ export function App() {
   }, [appData.currentProfile, appData.settings?.hasCompletedScheduleOnboarding]);
 
   // Auth Profile handler: loads data isolated to this family and switches directly to Planner
-  const handleSelectProfile = (profile: UserProfile, updatedMembers?: string[]) => {
+  const handleSelectProfile = async (profile: UserProfile, updatedMembers?: string[], initialCloudData?: Partial<AppData>) => {
     setActiveProfile(profile);
     const loadedData = loadAppData(profile);
     const membersSet = new Set(loadedData.familyMembers || []);
@@ -84,20 +151,37 @@ export function App() {
     if (updatedMembers) updatedMembers.forEach((m) => membersSet.add(m));
 
     const systemDishes = getCachedSystemRecipes();
-    const finalData: AppData = {
+    let finalData: AppData = {
       ...loadedData,
       currentProfile: profile,
       familyMembers: Array.from(membersSet),
       dishes: mergeSystemWithUserDishes(loadedData.dishes, systemDishes)
     };
 
+    // Immediately merge cloud data (either passed from login verification or fetched fresh)
+    try {
+      const remoteData = initialCloudData || await fetchFamilyCloudData(profile.familyName);
+      if (remoteData) {
+        const merged = mergeAppData(finalData, remoteData);
+        finalData = {
+          ...merged,
+          dishes: mergeSystemWithUserDishes(merged.dishes, systemDishes)
+        };
+      }
+    } catch (err) {
+      console.warn('Initial cloud hydration error on login:', err);
+    }
+
     setAppData(finalData);
     saveAppData(finalData);
     setIsProfileModalOpen(false);
     setActiveTab('planner');
 
-    if (!finalData.settings?.hasCompletedScheduleOnboarding) {
+    // Never show first-time guide if user already configured on any device
+    if (!finalData.settings?.hasCompletedScheduleOnboarding && (!finalData.mealSchedules || finalData.mealSchedules.length === 0)) {
       setIsOnboardingGuideOpen(true);
+    } else {
+      setIsOnboardingGuideOpen(false);
     }
   };
 
@@ -247,13 +331,14 @@ export function App() {
 
   const handleAddSingleMasterIngredient = (newIngredient: MasterIngredient) => {
     setAppData((prev) => {
-      const exists = prev.masterIngredients.some(
+      const currentList = prev.masterIngredients || [];
+      const exists = currentList.some(
         (i) => i.name.trim().toLowerCase() === newIngredient.name.trim().toLowerCase()
       );
       if (exists) return prev;
       return {
         ...prev,
-        masterIngredients: [newIngredient, ...prev.masterIngredients]
+        masterIngredients: [newIngredient, ...currentList]
       };
     });
   };
@@ -268,21 +353,48 @@ export function App() {
         delete currentDay[scheduleId];
       }
 
+      // Automatically promote any scheduled recipes to Family Cookbook (isFamilyRecipe = true)
+      // This ensures all planned meals automatically sync across all family members' devices
+      let updatedDishes = prev.dishes;
+      if (entry) {
+        const plannedIds = new Set<string>();
+        if (entry.dishId) plannedIds.add(entry.dishId);
+        if (entry.dishIds) entry.dishIds.forEach((id) => plannedIds.add(id));
+
+        if (plannedIds.size > 0) {
+          updatedDishes = prev.dishes.map((dish) => {
+            if (plannedIds.has(dish.id) && !dish.isFamilyRecipe) {
+              return { ...dish, isFamilyRecipe: true, updatedAt: new Date().toISOString() };
+            }
+            return dish;
+          });
+        }
+      }
+
+      const updatedPlan = {
+        ...prev.mealPlan,
+        [date]: currentDay
+      };
+
+      const dishesWithStats = calculateDishPlanStats(updatedDishes, updatedPlan);
+
       return {
         ...prev,
-        mealPlan: {
-          ...prev.mealPlan,
-          [date]: currentDay
-        }
+        dishes: dishesWithStats,
+        mealPlan: updatedPlan
       };
     });
   };
 
   const handleBatchUpdateMealPlan = (updatedPlan: MealPlan) => {
-    setAppData((prev) => ({
-      ...prev,
-      mealPlan: updatedPlan
-    }));
+    setAppData((prev) => {
+      const dishesWithStats = calculateDishPlanStats(prev.dishes, updatedPlan);
+      return {
+        ...prev,
+        dishes: dishesWithStats,
+        mealPlan: updatedPlan
+      };
+    });
   };
 
   const handleSaveMealSchedules = (schedules: MealScheduleConfig[]) => {
@@ -373,15 +485,20 @@ export function App() {
           <Navbar
             activeTab={activeTab}
             currentProfile={appData.currentProfile}
+            cloudSyncStatus={cloudSyncStatus}
             onOpenProfileModal={() => setIsProfileModalOpen(true)}
             onOpenDishCreator={() => setIsDishCreatorOpen(true)}
+            onForceSync={handleForceSync}
           />
 
           {/* Screen Content */}
           <main className="flex-1 flex flex-col">
             {activeTab === 'planner' && (
               <PlannerView
-                familyName={familyName}
+                currentProfile={appData.currentProfile}
+                familyMembers={appData.familyMembers}
+                memberProfiles={appData.memberProfiles}
+                familyPersonalisation={appData.familyPersonalisation}
                 dishes={appData.dishes}
                 mealPlan={appData.mealPlan}
                 mealSchedules={appData.mealSchedules || []}
@@ -392,11 +509,8 @@ export function App() {
                   setActiveTab('dishes');
                   setIsDishCreatorOpen(true);
                 }}
-                onNavigateToLibrary={() => {
-                  setActiveTab('dishes');
-                  setIsSystemGuideActive(true);
-                }}
                 onToggleFamilyRecipe={handleToggleFamilyRecipe}
+                onToggleFavoriteDish={handleToggleFavoriteDish}
                 onGoToGrocery={handleGoToGrocery}
               />
             )}
@@ -405,10 +519,12 @@ export function App() {
               <DishesView
                 familyName={familyName}
                 currentProfile={appData.currentProfile}
+                familyMembers={appData.familyMembers}
+                memberProfiles={appData.memberProfiles}
+                familyPersonalisation={appData.familyPersonalisation}
                 dishes={appData.dishes}
-                masterIngredients={appData.masterIngredients}
+                masterIngredients={appData.masterIngredients || DEFAULT_MASTER_INGREDIENTS}
                 initialScope={isSystemGuideActive ? 'system' : 'family'}
-                showSystemGuideHint={isSystemGuideActive}
                 onSaveDish={handleSaveDish}
                 onDeleteDish={handleDeleteDish}
                 onToggleFavoriteDish={handleToggleFavoriteDish}
@@ -428,7 +544,7 @@ export function App() {
             {activeTab === 'ingredients' && (
               <IngredientsView
                 familyName={familyName}
-                ingredients={appData.masterIngredients}
+                ingredients={appData.masterIngredients || DEFAULT_MASTER_INGREDIENTS}
                 pantryIngredients={appData.pantryIngredients || []}
                 onSaveIngredients={handleSaveIngredients}
                 onUpdatePantryIngredients={handleUpdatePantryIngredients}
@@ -443,6 +559,16 @@ export function App() {
                 pantryIngredients={appData.pantryIngredients || []}
                 groceryList={appData.groceryList}
                 onUpdateGroceryList={handleUpdateGroceryList}
+                onTogglePantryItem={(ingName) => {
+                  const clean = ingName.trim();
+                  if (!clean) return;
+                  const current = appData.pantryIngredients || [];
+                  const exists = current.some((p) => p.toLowerCase() === clean.toLowerCase());
+                  const next = exists
+                    ? current.filter((p) => p.toLowerCase() !== clean.toLowerCase())
+                    : [...current, clean];
+                  handleUpdatePantryIngredients(next);
+                }}
               />
             )}
 
@@ -480,16 +606,46 @@ export function App() {
             isMandatory={false}
           />
 
-          {/* First Launch Guided Onboarding Modal (Meal Schedule Setup & Recipe Library Walkthrough) */}
+          {/* First Launch Guided Onboarding Modal (Personalisation, Meal Schedule & Recipe Tour) */}
           <FirstTimeOnboardingGuide
             isOpen={isOnboardingGuideOpen}
+            currentMember={appData.currentProfile?.memberName || ''}
+            familyMembers={appData.familyMembers}
+            memberProfiles={appData.memberProfiles || {}}
+            familyPersonalisation={
+              appData.familyPersonalisation || {
+                strictAllergyFilter: true,
+                householdAllergies: [],
+                householdCuisines: [],
+                householdCategories: []
+              }
+            }
             mealSchedules={appData.mealSchedules}
+            onSavePersonalisation={(updatedProfiles, updatedFamilyPers) => {
+              setAppData((prev) => ({
+                ...prev,
+                memberProfiles: updatedProfiles,
+                familyPersonalisation: updatedFamilyPers
+              }));
+            }}
+            onAddFamilyMember={(name) => {
+              if (!appData.familyMembers.includes(name)) {
+                setAppData((prev) => ({
+                  ...prev,
+                  familyMembers: [...prev.familyMembers, name]
+                }));
+              }
+            }}
             onSaveMealSchedules={handleSaveMealSchedules}
             onCompleteOnboarding={() => {
               setIsOnboardingGuideOpen(false);
               setAppData((prev) => ({
                 ...prev,
-                settings: { ...prev.settings, hasCompletedScheduleOnboarding: true }
+                settings: {
+                  ...prev.settings,
+                  hasCompletedScheduleOnboarding: true,
+                  hasCompletedPersonalisationOnboarding: true
+                }
               }));
               setActiveTab('planner');
             }}

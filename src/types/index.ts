@@ -23,6 +23,7 @@ export interface UserProfile {
   familyName: string;
   memberName: string;
   avatarUrl?: string; // Base64 data URL or photo URL
+  pin?: string;
 }
 
 export interface MasterIngredient {
@@ -67,6 +68,9 @@ export interface Dish {
   tags?: string[];
   favoritedByMembers: string[]; // List of member names in the family who marked this dish as favorite
   isFamilyRecipe?: boolean;     // True if added to this Family's Cookbook
+  timesPlanned?: number;        // Total number of times this dish has been scheduled in meal plans
+  lastPlannedAt?: string;       // Date YYYY-MM-DD when this recipe was last scheduled
+  allergens?: string[];         // Detected allergen identifiers (e.g. 'peanuts', 'cow_milk', 'shellfish_crustacean')
   createdAt: string;
   updatedAt: string;
   translations?: Partial<Record<'en' | 'zh-CN', LocalizedDishContent>>;
@@ -123,6 +127,32 @@ export interface AppSettings {
   defaultServings: number;
   theme: 'warm' | 'fresh' | 'lavender';
   hasCompletedScheduleOnboarding?: boolean;
+  hasCompletedPersonalisationOnboarding?: boolean;
+}
+
+export type DietaryPreference =
+  | 'Vegetarian'
+  | 'Vegan'
+  | 'Pescatarian'
+  | 'Halal'
+  | 'Gluten-Free'
+  | 'Dairy-Free'
+  | 'Keto'
+  | 'Low-Carb';
+
+export interface MemberPreferences {
+  allergies: string[];            // Allergen IDs declared for this member
+  dislikedIngredients?: string[]; // Specific ingredients this member dislikes
+  favoriteCuisines?: string[];    // e.g. ['Chinese', 'Japanese', 'Italian']
+  favoriteCategories?: string[];  // e.g. ['Dinner', 'Quick Meals']
+  dietaryPreferences?: DietaryPreference[];
+}
+
+export interface FamilyPersonalisation {
+  strictAllergyFilter: boolean;     // Automatically filter out any recipe with a family allergen
+  householdAllergies?: string[];    // Additional family-wide excluded allergens
+  householdCuisines?: string[];     // Family top cuisine choices
+  householdCategories?: string[];   // Family top meal categories
 }
 
 // AI Recipe Generation Background Preparation Types
@@ -149,8 +179,10 @@ export interface AppData {
   version: number;
   currentProfile: UserProfile | null;
   familyMembers: string[];
+  memberProfiles?: Record<string, MemberPreferences>; // Keyed by memberName
+  familyPersonalisation?: FamilyPersonalisation;
   dishes: Dish[];
-  masterIngredients: MasterIngredient[];
+  masterIngredients?: MasterIngredient[];
   pantryIngredients: string[]; // List of ingredient names the family has in stock at home
   mealSchedules: MealScheduleConfig[];
   mealPlan: MealPlan;
@@ -163,6 +195,9 @@ export interface AppData {
   aiStagingRecipes?: AiDiscoveredRecipe[];
   aiPromptUsage?: AiPromptUsageTracker;
   settings: AppSettings;
+  familyPin?: string;
+  lastSyncedAt?: string;
+  cloudSyncStatus?: 'synced' | 'syncing' | 'offline' | 'error';
 }
 
 // Backward compatibility alias for any existing code

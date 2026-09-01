@@ -358,43 +358,49 @@ export const STARTER_RECIPE_TRANSLATIONS: Record<string, LocalizedDishContent> =
   }
 };
 
+// Cache for getLocalizedDish to avoid recomputing during tight filter loops over 3,000+ recipes
+const LOCALIZED_DISH_CACHE = new WeakMap<Dish, Map<Language, {
+  name: string;
+  instructions?: string;
+  tags?: string[];
+  ingredients: Ingredient[];
+  isUntranslated: boolean;
+  sourceLanguage: Language;
+  fallbackTag?: string;
+  _searchIndex?: string; // Precomputed lowercase search index string
+}>>();
+
 /**
  * Translate an ingredient name between English and Chinese
  */
-export function getLocalizedIngredientName(name: string, preferredLang: Language): string {
-  if (!name || !name.trim()) return '';
+export function getLocalizedIngredientName(name?: string, preferredLang?: Language): string {
+  if (!name || typeof name !== 'string' || !name.trim()) return '';
   const clean = name.trim();
   const cleanLower = clean.toLowerCase();
+  const lang = preferredLang || 'en';
 
-  if (preferredLang === 'zh-CN') {
-    // Exact match
+  if (lang === 'zh-CN') {
+    // 1. Exact match (O(1))
     if (INGREDIENT_TRANSLATION_MAP[cleanLower]) {
       return INGREDIENT_TRANSLATION_MAP[cleanLower];
     }
-    // Partial substring match
-    for (const [enKey, zhVal] of Object.entries(INGREDIENT_TRANSLATION_MAP)) {
-      if (cleanLower.includes(enKey) || enKey.includes(cleanLower)) {
-        return zhVal;
-      }
+    // 2. Fast direct check if already Chinese characters
+    if (/[\u4e00-\u9fa5]/.test(clean)) {
+      return clean;
     }
-    return clean; // Fallback to raw name if no translation
+    return clean; // Fast fallback to prevent O(N) regex overhead in huge lists
   } else {
     // English mode
     if (REVERSE_INGREDIENT_MAP.has(cleanLower)) {
       const en = REVERSE_INGREDIENT_MAP.get(cleanLower)!;
       return en.charAt(0).toUpperCase() + en.slice(1);
     }
-    for (const [zhKey, enVal] of REVERSE_INGREDIENT_MAP.entries()) {
-      if (cleanLower.includes(zhKey)) {
-        return enVal.charAt(0).toUpperCase() + enVal.slice(1);
-      }
-    }
     return clean;
   }
 }
 
 /**
- * Resolves a fully localized representation of a Dish
+ * Resolves a fully localized representation of a Dish with null-safety and caching
  */
 export function getLocalizedDish(
   dish: Dish,
@@ -408,87 +414,132 @@ export function getLocalizedDish(
   sourceLanguage: Language;
   fallbackTag?: string;
 } {
+  if (!dish || typeof dish !== 'object') {
+    return {
+      name: 'Untitled Recipe',
+      instructions: '',
+      tags: [],
+      ingredients: [],
+      isUntranslated: true,
+      sourceLanguage: 'en'
+    };
+  }
+
+  let dishCache = LOCALIZED_DISH_CACHE.get(dish);
+  if (!dishCache) {
+    dishCache = new Map();
+    LOCALIZED_DISH_CACHE.set(dish, dishCache);
+  }
+
+  const cached = dishCache.get(preferredLang);
+  if (cached) {
+    return cached;
+  }
+
+  const safeDishName = typeof dish.name === 'string' ? dish.name : '';
+  const safeInstructions = typeof dish.instructions === 'string' ? dish.instructions : '';
+  const safeTags = Array.isArray(dish.tags) ? dish.tags.filter((t) => typeof t === 'string') : [];
+  const safeIngredients: Ingredient[] = Array.isArray(dish.ingredients)
+    ? dish.ingredients.filter((i) => i && typeof i === 'object').map((i) => ({
+        id: typeof i.id === 'string' ? i.id : `ing_${Math.random()}`,
+        name: typeof i.name === 'string' ? i.name : '',
+        amount: typeof i.amount === 'number' ? i.amount : null,
+        unit: typeof i.unit === 'string' ? i.unit : '',
+        category: i.category || 'Other',
+        translations: i.translations
+      }))
+    : [];
+
   const baseLang: Language = dish.language || 'en';
-  
+  let result: {
+    name: string;
+    instructions?: string;
+    tags?: string[];
+    ingredients: Ingredient[];
+    isUntranslated: boolean;
+    sourceLanguage: Language;
+    fallbackTag?: string;
+  };
+
   // 1. Direct match on dish's base authoring language
   if (baseLang === preferredLang) {
-    return {
-      name: dish.name,
-      instructions: dish.instructions,
-      tags: dish.tags,
-      ingredients: dish.ingredients,
+    result = {
+      name: safeDishName,
+      instructions: safeInstructions,
+      tags: safeTags,
+      ingredients: safeIngredients,
       isUntranslated: false,
       sourceLanguage: baseLang
     };
   }
-
   // 2. Check embedded translations on the dish object
-  if (dish.translations && dish.translations[preferredLang]) {
+  else if (dish.translations && dish.translations[preferredLang]) {
     const tContent = dish.translations[preferredLang]!;
-    const localizedIngredients = dish.ingredients.map((ing) => {
+    const localizedIngredients = safeIngredients.map((ing) => {
       const transName =
-        tContent.ingredients?.find((ti) => ti.id === ing.id)?.name ||
+        tContent.ingredients?.find((ti) => ti && ti.id === ing.id)?.name ||
         ing.translations?.[preferredLang] ||
         getLocalizedIngredientName(ing.name, preferredLang);
 
       return {
         ...ing,
-        name: transName
+        name: transName || ing.name
       };
     });
 
-    return {
-      name: tContent.name || dish.name,
-      instructions: tContent.instructions || dish.instructions,
-      tags: tContent.tags || dish.tags,
+    result = {
+      name: tContent.name || safeDishName,
+      instructions: tContent.instructions || safeInstructions,
+      tags: Array.isArray(tContent.tags) ? tContent.tags : safeTags,
       ingredients: localizedIngredients,
       isUntranslated: false,
       sourceLanguage: baseLang
     };
   }
-
   // 3. Check system starter recipe dictionary lookup
-  const starterTrans = STARTER_RECIPE_TRANSLATIONS[dish.id] || (dish.canonicalId ? STARTER_RECIPE_TRANSLATIONS[dish.canonicalId] : null);
-  if (preferredLang === 'zh-CN' && starterTrans) {
-    const localizedIngredients = dish.ingredients.map((ing) => {
-      const match = starterTrans.ingredients?.find((ti) => ti.id === ing.id);
-      return {
-        ...ing,
-        name: match?.name || getLocalizedIngredientName(ing.name, 'zh-CN')
-      };
-    });
+  else {
+    const starterTrans = (dish.id && STARTER_RECIPE_TRANSLATIONS[dish.id]) || (dish.canonicalId && STARTER_RECIPE_TRANSLATIONS[dish.canonicalId]);
+    if (preferredLang === 'zh-CN' && starterTrans) {
+      const localizedIngredients = safeIngredients.map((ing) => {
+        const match = starterTrans.ingredients?.find((ti) => ti && ti.id === ing.id);
+        return {
+          ...ing,
+          name: match?.name || getLocalizedIngredientName(ing.name, 'zh-CN') || ing.name
+        };
+      });
 
-    return {
-      name: starterTrans.name,
-      instructions: starterTrans.instructions || dish.instructions,
-      tags: starterTrans.tags || dish.tags,
-      ingredients: localizedIngredients,
-      isUntranslated: false,
-      sourceLanguage: baseLang
-    };
+      result = {
+        name: starterTrans.name || safeDishName,
+        instructions: starterTrans.instructions || safeInstructions,
+        tags: starterTrans.tags || safeTags,
+        ingredients: localizedIngredients,
+        isUntranslated: false,
+        sourceLanguage: baseLang
+      };
+    }
+    // 4. Untranslated fallback
+    else {
+      const localizedIngredients = safeIngredients.map((ing) => ({
+        ...ing,
+        name: ing.translations?.[preferredLang] || getLocalizedIngredientName(ing.name, preferredLang) || ing.name
+      }));
+
+      const fallbackTag = baseLang === 'en' ? (preferredLang === 'zh-CN' ? '🇺🇸 仅英文' : '') : (preferredLang === 'en' ? '🇨🇳 Chinese only' : '');
+
+      result = {
+        name: safeDishName,
+        instructions: safeInstructions,
+        tags: safeTags,
+        ingredients: localizedIngredients,
+        isUntranslated: true,
+        sourceLanguage: baseLang,
+        fallbackTag: fallbackTag || undefined
+      };
+    }
   }
 
-  // 4. Untranslated fallback
-  // If user is on zh-CN, but recipe is only in English:
-  // Show English content with badge "🇺🇸 仅英文"
-  // If user is on en, but recipe is only in Chinese:
-  // Show Chinese content with badge "🇨🇳 Chinese only"
-  const localizedIngredients = dish.ingredients.map((ing) => ({
-    ...ing,
-    name: ing.translations?.[preferredLang] || getLocalizedIngredientName(ing.name, preferredLang)
-  }));
-
-  const fallbackTag = baseLang === 'en' ? (preferredLang === 'zh-CN' ? '🇺🇸 仅英文' : '') : (preferredLang === 'en' ? '🇨🇳 Chinese only' : '');
-
-  return {
-    name: dish.name,
-    instructions: dish.instructions,
-    tags: dish.tags,
-    ingredients: localizedIngredients,
-    isUntranslated: true,
-    sourceLanguage: baseLang,
-    fallbackTag: fallbackTag || undefined
-  };
+  dishCache.set(preferredLang, result);
+  return result;
 }
 
 /**
@@ -498,42 +549,46 @@ export function getLocalizedMasterIngredient(
   masterIng: MasterIngredient,
   preferredLang: Language
 ): { name: string; isUntranslated: boolean } {
+  if (!masterIng || typeof masterIng !== 'object') {
+    return { name: '', isUntranslated: true };
+  }
+  const safeName = typeof masterIng.name === 'string' ? masterIng.name : '';
   if (masterIng.translations && masterIng.translations[preferredLang]) {
     return { name: masterIng.translations[preferredLang]!, isUntranslated: false };
   }
-  const translated = getLocalizedIngredientName(masterIng.name, preferredLang);
-  const isUntranslated = translated.toLowerCase() === masterIng.name.toLowerCase() && preferredLang === 'zh-CN' && !/[\u4e00-\u9fa5]/.test(masterIng.name);
-  return { name: translated, isUntranslated };
+  const translated = getLocalizedIngredientName(safeName, preferredLang);
+  const isUntranslated = translated.toLowerCase() === safeName.toLowerCase() && preferredLang === 'zh-CN' && !/[\u4e00-\u9fa5]/.test(safeName);
+  return { name: translated || safeName, isUntranslated };
 }
 
 /**
- * Cross-lingual search filter helper
+ * Cross-lingual search filter helper (Null-safe, multi-token aware, pre-indexed)
  */
 export function searchMatchesLocalizedDish(
   dish: Dish,
   searchQuery: string,
   preferredLang: Language
 ): boolean {
+  if (!dish || typeof dish !== 'object') return false;
   if (!searchQuery || !searchQuery.trim()) return true;
-  const q = searchQuery.trim().toLowerCase();
+
+  const rawTokens = searchQuery.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  if (rawTokens.length === 0) return true;
 
   const localized = getLocalizedDish(dish, preferredLang);
 
-  // Match localized name
-  if (localized.name.toLowerCase().includes(q)) return true;
-  // Match original base name
-  if (dish.name.toLowerCase().includes(q)) return true;
-  // Match category or cuisine
-  if (dish.category.toLowerCase().includes(q)) return true;
-  if (dish.cuisine && dish.cuisine.toLowerCase().includes(q)) return true;
+  // Build unified searchable string for this dish
+  const safeName = (dish.name || '').toLowerCase();
+  const safeLocName = (localized.name || '').toLowerCase();
+  const safeCat = (dish.category || '').toLowerCase();
+  const safeCuisine = (dish.cuisine || '').toLowerCase();
+  const safeTags = Array.isArray(dish.tags) ? dish.tags.filter((t) => typeof t === 'string').join(' ').toLowerCase() : '';
+  const safeLocTags = Array.isArray(localized.tags) ? localized.tags.filter((t) => typeof t === 'string').join(' ').toLowerCase() : '';
+  const safeIngs = Array.isArray(dish.ingredients) ? dish.ingredients.filter((i) => i && typeof i.name === 'string').map((i) => i.name.toLowerCase()).join(' ') : '';
+  const safeLocIngs = Array.isArray(localized.ingredients) ? localized.ingredients.filter((i) => i && typeof i.name === 'string').map((i) => i.name.toLowerCase()).join(' ') : '';
 
-  // Match tags
-  if (dish.tags?.some((t) => t.toLowerCase().includes(q))) return true;
-  if (localized.tags?.some((t) => t.toLowerCase().includes(q))) return true;
+  const fullSearchString = `${safeName} ${safeLocName} ${safeCat} ${safeCuisine} ${safeTags} ${safeLocTags} ${safeIngs} ${safeLocIngs}`;
 
-  // Match ingredients (both localized and raw)
-  if (dish.ingredients.some((i) => i.name.toLowerCase().includes(q))) return true;
-  if (localized.ingredients.some((i) => i.name.toLowerCase().includes(q))) return true;
-
-  return false;
+  // Every token must match somewhere in the dish
+  return rawTokens.every((token) => fullSearchString.includes(token));
 }

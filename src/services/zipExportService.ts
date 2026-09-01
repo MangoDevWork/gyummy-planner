@@ -195,12 +195,13 @@ export function mergeImportedData(
   if (importType === 'ingredients' || (importType === 'full' && Array.isArray(importedPayload.masterIngredients))) {
     const ingsToMerge: MasterIngredient[] = importType === 'ingredients' ? importedPayload : importedPayload.masterIngredients;
     let addedCount = 0;
-    const existingNames = new Set(nextData.masterIngredients.map((i) => i.name.trim().toLowerCase()));
+    const currentMaster = nextData.masterIngredients || [];
+    const existingNames = new Set(currentMaster.map((i) => i.name.trim().toLowerCase()));
 
     ingsToMerge.forEach((ing) => {
       const normName = ing.name.trim().toLowerCase();
       if (!existingNames.has(normName)) {
-        nextData.masterIngredients = [...nextData.masterIngredients, ing];
+        nextData.masterIngredients = [...(nextData.masterIngredients || []), ing];
         existingNames.add(normName);
         addedCount++;
       }

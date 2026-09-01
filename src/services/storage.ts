@@ -3,6 +3,7 @@ import { getInitialAppData, DEFAULT_MEAL_SCHEDULES, DEFAULT_PANTRY_INGREDIENTS }
 import { DEFAULT_MASTER_INGREDIENTS } from './masterIngredients';
 import { matchPantryIngredient } from './pantryMatching';
 import { STARTER_RECIPE_TRANSLATIONS, getLocalizedDish } from './dataLocalizationService';
+import { pushAppDataToCloud } from './firebase';
 
 const ACTIVE_PROFILE_KEY = 'gyummy_active_profile_v2';
 const FAMILY_DATA_PREFIX = 'gyummy_family_data_v2_';
@@ -128,6 +129,26 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
     if (!parsed.familyMembers) {
       parsed.familyMembers = currentProfile ? [currentProfile.memberName] : [];
     }
+
+    if (!parsed.memberProfiles) {
+      parsed.memberProfiles = currentProfile ? {
+        [currentProfile.memberName]: {
+          allergies: [],
+          favoriteCuisines: ['Chinese', 'Japanese', 'Italian'],
+          favoriteCategories: ['Dinner', 'Lunch']
+        }
+      } : {};
+    }
+
+    if (!parsed.familyPersonalisation) {
+      parsed.familyPersonalisation = {
+        strictAllergyFilter: true,
+        householdAllergies: [],
+        householdCuisines: [],
+        householdCategories: []
+      };
+    }
+
     parsed.currentProfile = currentProfile;
 
     return parsed;
@@ -137,27 +158,47 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
   }
 }
 
-export function saveAppData(data: AppData): void {
+export function saveAppData(data: AppData, skipCloudPush = false): void {
   try {
     if (data.currentProfile) {
       setActiveProfile(data.currentProfile);
       const familyKey = getFamilyStorageKey(data.currentProfile.familyName);
 
-      // Lightweight filter: Only save user custom dishes, family cookbook dishes, or favorited dishes
-      // to keep localStorage tiny (~50KB) and prevent quota errors with 3,000+ system recipes.
+      const systemSeedDishIds = new Set([
+        'dish_tomato_meatball',
+        'dish_chicken_teriyaki',
+        'dish_korean_beef_bulgogi',
+        'dish_egg_fried_rice',
+        'dish_thai_basil_chicken',
+        'dish_steamed_fish_fillet',
+        'dish_japanese_chicken_curry',
+        'dish_scallion_oil_noodles',
+        'dish_lemongrass_pork',
+        'dish_sweet_sour_chicken'
+      ]);
+
       const persistedDishes = data.dishes.filter((d) => {
-        if (d.isFamilyRecipe) return true;
-        if (d.favoritedByMembers && d.favoritedByMembers.length > 0) return true;
-        if (!d.id.startsWith('dish_scraped_') && !d.id.startsWith('dish_csv_')) return true;
-        return false;
+        if (d.isFamilyRecipe === false && (!d.favoritedByMembers || d.favoritedByMembers.length === 0)) {
+          return false;
+        }
+        if (systemSeedDishIds.has(d.id) && (!d.favoritedByMembers || d.favoritedByMembers.length === 0)) {
+          return false;
+        }
+        return Boolean(d.isFamilyRecipe || (d.favoritedByMembers && d.favoritedByMembers.length > 0));
       });
 
       const payloadToSave = {
         ...data,
+        masterIngredients: undefined, // Never serialize 42,000 lines of system masterIngredients
         dishes: persistedDishes
       };
 
       localStorage.setItem(familyKey, JSON.stringify(payloadToSave));
+
+      // Push to Firebase Cloud (debounced) if not skipped
+      if (!skipCloudPush) {
+        pushAppDataToCloud(data.currentProfile.familyName, payloadToSave);
+      }
     } else {
       setActiveProfile(null);
     }

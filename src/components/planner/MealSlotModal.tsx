@@ -25,12 +25,12 @@ export const MealSlotModal: React.FC<MealSlotModalProps> = ({
   onSaveEntry,
   onCreateNewDish
 }) => {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'library' | 'custom'>('library');
   const [searchQuery, setSearchQuery] = useState('');
   const [customText, setCustomText] = useState(currentEntry?.customText || '');
   const servingsMultiplier = currentEntry?.servingsMultiplier || 1;
+
+  if (!isOpen) return null;
 
   const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
     weekday: 'short',
@@ -72,46 +72,46 @@ export const MealSlotModal: React.FC<MealSlotModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-md max-h-[85vh] sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 animate-in slide-in-from-bottom-4 duration-300">
-        
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#252220] w-full max-w-md max-h-[85vh] sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col overflow-hidden border border-[#EDE8DF] dark:border-[#38332E] animate-in slide-in-from-bottom-4 duration-300">
+
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-slate-50/70">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#F0EAE0] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18]">
           <div className="flex items-center gap-2">
             <span className="text-xl">🍲</span>
             <div>
-              <h2 className="text-sm font-bold text-slate-800">
+              <h2 className="text-sm font-bold text-[#2D2640] dark:text-[#F0EDE8]">
                 Plan {slotName}
               </h2>
-              <p className="text-xs text-slate-500 font-medium">{formattedDate}</p>
+              <p className="text-xs text-[#9A8A7E] dark:text-[#7A6E64] font-medium">{formattedDate}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-[#F5F0E8] dark:bg-[#2E2A26] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] text-[#7A6E64] dark:text-[#9A9088] flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Tab Switcher: From Library vs Custom Text */}
-        <div className="p-3 border-b border-slate-100 bg-white grid grid-cols-2 gap-1.5">
+        {/* Tab Switcher */}
+        <div className="p-3 border-b border-[#F0EAE0] dark:border-[#38332E] bg-white dark:bg-[#252220] grid grid-cols-2 gap-1.5">
           <button
             onClick={() => setActiveTab('library')}
-            className={`py-2 text-xs font-bold rounded-xl transition-all ${
+            className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
               activeTab === 'library'
-                ? 'bg-amber-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-[#FFD13B] text-[#2D2640] shadow-sm'
+                : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border border-[#EDE8DF] dark:border-[#38332E]'
             }`}
           >
             From Recipe Library
           </button>
           <button
             onClick={() => setActiveTab('custom')}
-            className={`py-2 text-xs font-bold rounded-xl transition-all ${
+            className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
               activeTab === 'custom'
-                ? 'bg-amber-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-[#FFD13B] text-[#2D2640] shadow-sm'
+                : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border border-[#EDE8DF] dark:border-[#38332E]'
             }`}
           >
             Quick Note / Eat Out
@@ -120,25 +120,22 @@ export const MealSlotModal: React.FC<MealSlotModalProps> = ({
 
         {/* Body Content */}
         {activeTab === 'library' ? (
-          <div className="flex-1 flex flex-col overflow-hidden p-4 space-y-3">
+          <div className="flex-1 flex flex-col overflow-hidden p-4 space-y-3 bg-white dark:bg-[#252220]">
             {/* Search and New Dish Button */}
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-[#B8AFA4] dark:text-[#5A5450] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Search recipes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-xs pl-8 pr-3 py-2 bg-slate-50 rounded-xl border border-slate-200 focus:outline-hidden focus:border-amber-500"
+                  className="w-full text-xs pl-8 pr-3 py-2 bg-[#FAF7F2] dark:bg-[#1E1B18] rounded-xl border border-[#E8E0D5] dark:border-[#38332E] text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8]"
                 />
               </div>
               <button
-                onClick={() => {
-                  onClose();
-                  onCreateNewDish();
-                }}
-                className="shrink-0 flex items-center gap-1 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-3 py-2 rounded-xl transition-colors"
+                onClick={() => { onClose(); onCreateNewDish(); }}
+                className="shrink-0 flex items-center gap-1 text-xs font-bold bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] px-3 py-2 rounded-xl transition-colors cursor-pointer"
                 title="Create a new recipe"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -149,7 +146,7 @@ export const MealSlotModal: React.FC<MealSlotModalProps> = ({
             {/* Dishes list */}
             <div className="flex-1 overflow-y-auto space-y-2 pr-0.5">
               {filteredDishes.length === 0 ? (
-                <div className="text-center py-8 text-slate-400 space-y-2">
+                <div className="text-center py-8 text-[#B8AFA4] dark:text-[#5A5450] space-y-2">
                   <Utensils className="w-8 h-8 mx-auto opacity-30" />
                   <p className="text-xs">No matching recipes found.</p>
                 </div>
@@ -162,31 +159,31 @@ export const MealSlotModal: React.FC<MealSlotModalProps> = ({
                       onClick={() => handleSelectDish(dish)}
                       className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between active:scale-[0.98] ${
                         isCurrent
-                          ? 'border-amber-500 bg-amber-50/80 shadow-xs'
-                          : 'border-slate-200/80 hover:border-amber-300 bg-white'
+                          ? 'border-[#FFD13B] bg-[#FFF8E6] dark:bg-[#2A1E00] ring-2 ring-[#FFD13B]/30 shadow-sm'
+                          : 'border-[#EDE8DF] dark:border-[#38332E] hover:border-[#FFD13B]/50 bg-white dark:bg-[#252220]'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-2xl">{dish.imageEmoji || '🍲'}</span>
                         <div className="min-w-0">
                           <div className="flex items-center gap-1">
-                            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600">
+                            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-px rounded-md bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088]">
                               {dish.category}
                             </span>
-                            <span className="text-[10px] text-amber-800 font-medium">
+                            <span className="text-[10px] text-[#9A8A7E] dark:text-[#7A6E64] font-medium">
                               • {dish.ingredients.length} ingredients
                             </span>
                           </div>
-                          <h4 className="text-xs font-bold text-slate-800 truncate">{dish.name}</h4>
+                          <h4 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] truncate">{dish.name}</h4>
                         </div>
                       </div>
 
                       {isCurrent ? (
-                        <div className="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-[#FFD13B] text-[#2D2640] flex items-center justify-center shrink-0">
                           <Check className="w-3.5 h-3.5 stroke-[3]" />
                         </div>
                       ) : (
-                        <span className="text-xs font-semibold text-amber-600 shrink-0">Select</span>
+                        <span className="text-xs font-semibold text-[#7A6E64] dark:text-[#9A9088] shrink-0">Select</span>
                       )}
                     </div>
                   );
@@ -195,9 +192,9 @@ export const MealSlotModal: React.FC<MealSlotModalProps> = ({
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSaveCustom} className="p-5 space-y-4">
+          <form onSubmit={handleSaveCustom} className="p-5 space-y-4 bg-white dark:bg-[#252220]">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider mb-1.5">
                 Quick Meal Note
               </label>
               <input
@@ -206,9 +203,9 @@ export const MealSlotModal: React.FC<MealSlotModalProps> = ({
                 value={customText}
                 onChange={(e) => setCustomText(e.target.value)}
                 autoFocus
-                className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-hidden focus:border-amber-500 focus:bg-white"
+                className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl border border-[#E8E0D5] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] focus:bg-white dark:focus:bg-[#252220]"
               />
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] text-[#B8AFA4] dark:text-[#5A5450] mt-1">
                 Note: Custom notes won't auto-generate grocery ingredients unless assigned to a recipe.
               </p>
             </div>
@@ -216,21 +213,21 @@ export const MealSlotModal: React.FC<MealSlotModalProps> = ({
             <button
               type="submit"
               disabled={!customText.trim()}
-              className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-amber-600/20 active:scale-95 transition-all"
+              className="w-full py-2.5 rounded-xl bg-[#FFD13B] hover:bg-[#FFC200] disabled:opacity-50 text-[#2D2640] text-xs font-extrabold shadow-sm border border-[#2D2640]/10 active:scale-[0.98] transition-all cursor-pointer"
             >
               Save Meal Note
             </button>
           </form>
         )}
 
-        {/* Footer with Clear Slot option if occupied */}
+        {/* Footer with Clear Slot option */}
         {(currentEntry?.dishId || currentEntry?.customText) && (
-          <div className="p-3 border-t border-slate-100 bg-slate-50/90 flex items-center justify-between pb-safe">
-            <span className="text-xs text-slate-500">Slot currently occupied</span>
+          <div className="p-3 border-t border-[#F0EAE0] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18] flex items-center justify-between pb-safe">
+            <span className="text-xs text-[#9A8A7E] dark:text-[#7A6E64]">Slot currently occupied</span>
             <button
               type="button"
               onClick={handleClearSlot}
-              className="flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-700 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
+              className="flex items-center gap-1 text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Clear Slot</span>
