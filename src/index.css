@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* =========================================================
-   LIGHT MODE TOKENS (default)
+   LIGHT MODE TOKENS (default - clean, bright, airy Gyummy)
    ========================================================= */
 :root {
   --bg-page:        #F4F1EA;
   --bg-shell:       #FDFBF7;
   --bg-card:        #FFFFFF;
-  --bg-input:       #FDFBF7;
+  --bg-input:       #FAF8F5;
   --bg-muted:       #F4F1EA;
   --bg-muted2:      #EAE6DF;
   --border:         #EAE6DF;
@@ -16,39 +18,36 @@
   --text-secondary: #64748B;
   --text-muted:     #94A3B8;
   --text-inverse:   #FFFFFF;
-  --accent-bg:      #2B2D42;
-  --accent-hover:   #1E1F2E;
-  --accent-text:    #FFFFFF;
-  --navbar-bg:      rgba(253, 251, 247, 0.90);
-  --tag-bg:         #E2D9CC;
-  --tag-text:       #3D3929;
+  --accent-bg:      #FFD13B;
+  --accent-hover:   #FFC200;
+  --accent-text:    #2B2D42;
+  --navbar-bg:      rgba(253, 251, 247, 0.95);
+  --tag-bg:         #FAF7F2;
+  --tag-text:       #6B7280;
 }
 
 /* =========================================================
-   DARK MODE TOKENS
-   — Modern Sleek Obsidian & Charcoal Dark Mode
-   — Electric Mint Fizz (#00F5A0, #00D68F, #C6F1D6, #DFF7F0)
-     for light-colored UI elements, badges, highlights & CTAs
+   DARK MODE TOKENS (warm evening cozy palette)
    ========================================================= */
 .dark {
-  --bg-page:        #0B0D11; /* Ultra-deep dark obsidian */
-  --bg-shell:       #12151C; /* Sleek slate dark shell */
-  --bg-card:        #181D26; /* Elevated card surface */
-  --bg-input:       #1F2430; /* Input and component background */
-  --bg-muted:       #1F2430; 
-  --bg-muted2:      #262C3A; 
-  --border:         #2A3242; /* Clean modern dark borders */
-  --border2:        #212836; 
-  --text-primary:   #FFFFFF; /* Pure crisp bright white for primary text & dish titles */
-  --text-secondary: #E2E8F0; /* Bright crisp silver for secondary labels */
-  --text-muted:     #94A3B8; /* High-contrast readable slate for metadata and headers */
-  --text-inverse:   #090B0E; 
-  --accent-bg:      #00F5A0; /* Vibrant Mint Fizz Electric Green */
-  --accent-hover:   #00D68F; 
-  --accent-text:    #090B0E; 
-  --navbar-bg:      rgba(18, 21, 28, 0.92);
-  --tag-bg:         rgba(0, 245, 160, 0.12); /* Translucent Mint Fizz */
-  --tag-text:       #00F5A0;
+  --bg-page:        #12100E;
+  --bg-shell:       #1C1917;
+  --bg-card:        #2A2520;
+  --bg-input:       #201C18;
+  --bg-muted:       #201C18;
+  --bg-muted2:      #28231E;
+  --border:         #3A332C;
+  --border2:        #2E2822;
+  --text-primary:   #F0EDE8;
+  --text-secondary: #C8BFB5;
+  --text-muted:     #8A7A70;
+  --text-inverse:   #12100E;
+  --accent-bg:      #FFD13B;
+  --accent-hover:   #FFC200;
+  --accent-text:    #2D2640;
+  --navbar-bg:      rgba(28, 25, 23, 0.95);
+  --tag-bg:         rgba(255, 209, 59, 0.15);
+  --tag-text:       #FFD13B;
 }
 
 @layer base {

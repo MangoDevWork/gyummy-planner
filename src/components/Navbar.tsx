@@ -73,11 +73,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={onForceSync}
-            className="inline-flex items-center gap-1 rounded-full border border-amber-200/70 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 transition-transform active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-1 rounded-full border border-[#BCE8D0] bg-[#E8F8F0] px-2.5 py-1 text-[11px] font-bold text-[#1E9E64] dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 transition-transform active:scale-95 cursor-pointer shadow-2xs"
             title="All family data synced. Tap to refresh."
           >
             <Check className="h-3.5 w-3.5" strokeWidth={3} />
-            <span>{language === 'zh-CN' ? '已同步' : 'Synced'}</span>
+            <span>{language === 'zh-CN' ? '已同步' : 'Sync'}</span>
           </button>
         );
     }
