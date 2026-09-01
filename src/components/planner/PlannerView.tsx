@@ -6,10 +6,8 @@ import {
   Plus,
   ShoppingCart,
   Copy,
-  Sliders,
+  SlidersHorizontal,
   CheckCircle2,
-  Move,
-  Sparkles,
   Share2
 } from 'lucide-react';
 import { MealScheduleModal } from './MealScheduleModal';
@@ -34,6 +32,27 @@ interface PlannerViewProps {
   onToggleFamilyRecipe?: (dishId: string) => void;
   onToggleFavoriteDish?: (dishId: string) => void;
   onGoToGrocery: (startDate: string, endDate: string) => void;
+}
+
+function ToolbarButton({
+  children,
+  onClick,
+  title
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  title?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#EDE8DF] bg-white text-[#9A8A7E] transition-colors hover:text-[#2D2640] dark:border-[#3A332C] dark:bg-[#28231E] dark:hover:text-[#F0EDE8] cursor-pointer"
+    >
+      {children}
+    </button>
+  );
 }
 
 export const PlannerView: React.FC<PlannerViewProps> = ({
@@ -70,18 +89,6 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   // Manual per-day extra schedules added
   const [customDaySchedules, setCustomDaySchedules] = useState<Record<string, string[]>>({});
 
-  // Drag & Drop Rescheduling state
-  const [draggedMeal, setDraggedMeal] = useState<{
-    fromDate: string;
-    fromScheduleId: string;
-    entry: MealScheduleEntry;
-  } | null>(null);
-
-  const [dragOverTarget, setDragOverTarget] = useState<{
-    toDate: string;
-    toScheduleId: string;
-  } | null>(null);
-
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3500);
@@ -104,7 +111,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
 
   const todayISO = formatDateISO(new Date());
 
-  // Week generator: Get 7 days for the currentBaseDate
+  // Week generator: Get 7 days for the currentBaseDate (Mon to Sun)
   const currentWeekDays = useMemo(() => {
     const curr = new Date(currentBaseDate);
     const dayOfWeek = curr.getDay(); // 0 is Sunday
@@ -118,7 +125,6 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
       dateObj: Date;
       dayOfWeek: string;
       dayName: string;
-      dayOfWeekFull: string;
       dayNumber: number;
       isToday: boolean;
     }> = [];
@@ -132,7 +138,6 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         dateObj: d,
         dayOfWeek: formatDayOfWeek(iso),
         dayName: formatDayOfWeek(iso),
-        dayOfWeekFull: d.toLocaleDateString('en-US', { weekday: 'long' }),
         dayNumber: d.getDate(),
         isToday: iso === todayISO
       });
@@ -144,19 +149,21 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   const weekStartISO = currentWeekDays.length > 0 ? currentWeekDays[0].dateStr : '';
   const weekEndISO = currentWeekDays.length > 0 ? currentWeekDays[6].dateStr : '';
 
-  // Formatted week header range label (e.g. "Oct 14 – 20, 2024")
+  // Formatted week header range label (e.g. "1 – 7 Sep")
   const weekRangeLabel = useMemo(() => {
     if (currentWeekDays.length === 0) return '';
     const start = currentWeekDays[0].dateObj;
     const end = currentWeekDays[6].dateObj;
-    const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
-    const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
-    if (startMonth === endMonth) {
-      return `${startMonth} ${start.getDate()} – ${end.getDate()}, ${start.getFullYear()}`;
-    }
-    return `${startMonth} ${start.getDate()} – ${endMonth} ${end.getDate()}, ${start.getFullYear()}`;
-  }, [currentWeekDays]);
+    const sMonth = start.toLocaleDateString(language === 'zh-CN' ? 'zh-CN' : 'en-US', { month: 'short' });
+    const eMonth = end.toLocaleDateString(language === 'zh-CN' ? 'zh-CN' : 'en-US', { month: 'short' });
 
+    if (sMonth === eMonth) {
+      return `${start.getDate()} – ${end.getDate()} ${sMonth}`;
+    }
+    return `${start.getDate()} ${sMonth} – ${end.getDate()} ${eMonth}`;
+  }, [currentWeekDays, language]);
+
+  // Week navigation
   const handlePrevPeriod = () => {
     const d = new Date(currentBaseDate);
     d.setDate(d.getDate() - 7);
@@ -173,63 +180,9 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
     setCurrentBaseDate(new Date());
   };
 
-  // Drag and Drop handlers
-  const handleDragStart = (
-    e: React.DragEvent,
-    date: string,
-    scheduleId: string,
-    entry: MealScheduleEntry
-  ) => {
-    setDraggedMeal({ fromDate: date, fromScheduleId: scheduleId, entry });
-    e.dataTransfer.setData('text/plain', JSON.stringify({ date, scheduleId }));
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent, toDate: string, toScheduleId: string) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (!dragOverTarget || dragOverTarget.toDate !== toDate || dragOverTarget.toScheduleId !== toScheduleId) {
-      setDragOverTarget({ toDate, toScheduleId });
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent, toDate: string, toScheduleId: string) => {
-    e.preventDefault();
-    setDragOverTarget(null);
-
-    if (!draggedMeal) return;
-    const { fromDate, fromScheduleId, entry } = draggedMeal;
-
-    if (fromDate === toDate && fromScheduleId === toScheduleId) {
-      setDraggedMeal(null);
-      return;
-    }
-
-    const updated = { ...mealPlan };
-    const srcDay = updated[fromDate] ? { ...updated[fromDate] } : {};
-    const dstDay = updated[toDate] ? { ...updated[toDate] } : {};
-
-    const targetExistingEntry = dstDay[toScheduleId];
-
-    dstDay[toScheduleId] = entry;
-
-    if (targetExistingEntry) {
-      srcDay[fromScheduleId] = targetExistingEntry;
-    } else {
-      delete srcDay[fromScheduleId];
-    }
-
-    updated[fromDate] = srcDay;
-    updated[toDate] = dstDay;
-
-    onBatchUpdateMealPlan(updated);
-    setDraggedMeal(null);
-    showToast(`🔄 Rescheduled meal to ${toScheduleId}`);
-  };
-
-  // Manual per-day extra meal schedule addition override
+  // Add extra schedule slot
   const handleAddManualScheduleToDay = (dateStr: string) => {
-    const extraName = window.prompt('Enter extra meal schedule name (e.g. Afternoon Tea, Snack):');
+    const extraName = window.prompt(language === 'zh-CN' ? '输入加餐段名称 (如: 下午茶、加餐):' : 'Enter extra meal schedule name:');
     if (!extraName || !extraName.trim()) return;
 
     const extraId = `extra_${Date.now()}`;
@@ -245,6 +198,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
     });
   };
 
+  // Share weekly plan
   const handleShareMealPlan = async () => {
     const days = currentWeekDays.map((d) => ({
       dateStr: d.dateStr,
@@ -259,6 +213,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
     }
   };
 
+  // Count total planned meals this week
   const totalMealsPlannedThisWeek = useMemo(() => {
     let count = 0;
     currentWeekDays.forEach((day) => {
@@ -273,315 +228,258 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   }, [currentWeekDays, mealPlan]);
 
   return (
-    <div className="flex-1 pb-28 pt-3 px-4 space-y-4 max-w-md mx-auto w-full bg-[#F7F4EF] dark:bg-[#1A1714]">
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
-          <CheckCircle2 className="w-4 h-4 text-[#FFD13B] dark:text-[#2D2640]" />
-          <span>{toastMsg}</span>
-        </div>
-      )}
+    <div className="relative">
+      <div className="px-4 pb-32 pt-4 max-w-md mx-auto">
+        {/* Toast */}
+        {toastMsg && (
+          <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
+            <CheckCircle2 className="w-4 h-4 text-[#FFD13B] dark:text-[#2D2640]" />
+            <span>{toastMsg}</span>
+          </div>
+        )}
 
-      {/* Top Header: Date Navigation & Weekly Toolbar */}
-      <div className="bg-white dark:bg-[#252220] rounded-2xl p-3.5 border border-[#EDE8DF] dark:border-[#38332E] shadow-sm space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          {/* Week Date Navigator */}
-          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        {/* Week Header */}
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={handlePrevPeriod}
-              className="w-8 h-8 flex items-center justify-center bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer"
-              title="Previous 7 Days"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EDE8DF] bg-white text-[#8A7A70] dark:border-[#3A332C] dark:bg-[#28231E] cursor-pointer"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="h-4 w-4" />
             </button>
 
-            <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-center">
-              <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] truncate">
+            <div className="text-center min-w-[120px]">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#B8AFA4]">
+                {language === 'zh-CN' ? '当前排餐' : 'This Week'}
+              </p>
+              <p className="text-[14px] font-bold text-[#2D2640] dark:text-[#F0EDE8]">
                 {weekRangeLabel}
-              </h3>
-              <button
-                onClick={handleJumpToday}
-                className="bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] px-2 py-0.5 rounded-xl text-[10px] font-bold hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition active:scale-95 shadow-sm cursor-pointer shrink-0"
-                title="Jump to Today"
-              >
-                {t('common.today')}
-              </button>
+              </p>
             </div>
 
             <button
+              type="button"
               onClick={handleNextPeriod}
-              className="w-8 h-8 flex items-center justify-center bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer"
-              title="Next 7 Days"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EDE8DF] bg-white text-[#8A7A70] dark:border-[#3A332C] dark:bg-[#28231E] cursor-pointer"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Compact Toolbar Action Buttons */}
-          <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={handleShareMealPlan}
-              className="p-2 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer"
-              title={language === 'zh-CN' ? '复制并分享周餐单' : 'Share Weekly Plan as text'}
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setIsWeekCopyOpen(true)}
-              className="p-2 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer"
-              title={language === 'zh-CN' ? '复制排餐至其他周' : 'Copy Schedule across weeks'}
-            >
-              <Copy className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setIsScheduleSettingsOpen(true)}
-              className="p-2 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer"
-              title={language === 'zh-CN' ? '自定义餐段配置' : 'Configure Meal Schedules'}
-            >
-              <Sliders className="w-4 h-4" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleJumpToday}
+            className="rounded-full bg-[#FFD13B] px-3 py-1.5 text-[11px] font-bold text-[#2D2640] transition-transform active:scale-95 cursor-pointer shadow-xs"
+          >
+            {t('common.today')}
+          </button>
         </div>
-      </div>
 
-      {/* Main Grocery List Banner */}
-      <div className="bg-amber-50 dark:bg-amber-950/20 rounded-2xl p-3.5 text-[#2D2640] dark:text-[#F0EDE8] shadow-sm border border-amber-200 dark:border-amber-900 flex items-center justify-between">
-        <div>
-          <h4 className="text-xs font-bold">{t('nav.grocery')}</h4>
-          <span className="text-[10px] text-amber-800 dark:text-amber-400 font-medium">
-            {weekRangeLabel} ({t('planner.scheduledMealsCount', { count: totalMealsPlannedThisWeek })})
-          </span>
+        {/* Toolbar */}
+        <div className="mb-4 flex items-center justify-end gap-2">
+          <ToolbarButton onClick={handleShareMealPlan} title="Share week as message">
+            <Share2 className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => setIsWeekCopyOpen(true)} title="Copy week schedule">
+            <Copy className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => setIsScheduleSettingsOpen(true)} title="Configure meal slots">
+            <SlidersHorizontal className="h-4 w-4" />
+          </ToolbarButton>
         </div>
-        <button
-          onClick={() => onGoToGrocery(weekStartISO, weekEndISO)}
-          className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-xs font-semibold px-3.5 py-1.5 rounded-xl shadow-sm active:scale-95 transition-all cursor-pointer"
-        >
-          <ShoppingCart className="w-3.5 h-3.5" />
-          <span>{t('grocery.shareListBtn').replace('分享', '查看').replace('Share', 'View')}</span>
-        </button>
-      </div>
 
-      {/* Empty Week Encouragement Banner */}
-      {totalMealsPlannedThisWeek === 0 && (
-        <div className="bg-white dark:bg-[#252220] rounded-2xl p-5 text-center border border-dashed border-[#EDE8DF] dark:border-[#38332E] space-y-2 shadow-sm animate-in fade-in">
-          <div className="text-2xl">🗓️ 🍲</div>
-          <h4 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8]">{t('planner.emptyWeekTitle')}</h4>
-          <p className="text-[11px] text-[#7A6E64] dark:text-[#9A9088] max-w-xs mx-auto">
-            {t('planner.emptyWeekSubtitle')}
-          </p>
-        </div>
-      )}
+        {/* Day Cards Stack */}
+        <div className="space-y-3">
+          {currentWeekDays.map((day) => {
+            const dayPlan = mealPlan[day.dateStr] || {};
+            const dayNum = day.dateObj.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
 
-      {/* Weekly Schedule Days - 7-Day Rolling from Monday to Sunday */}
-      <div className="space-y-3.5">
-        {currentWeekDays.map((day) => {
-          const dayPlan = mealPlan[day.dateStr] || {};
-          const dayNum = day.dateObj.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+            // Applicable meal schedules for this day
+            const applicableDefaultSchedules = mealSchedules.filter((s) => {
+              if (!s.defaultEnabled) return false;
+              if (!s.applicableDays || s.applicableDays.length === 0) return true;
+              return s.applicableDays.includes(dayNum);
+            });
 
-          // Filter default enabled schedules that apply to this day of week
-          const applicableDefaultSchedules = mealSchedules.filter((s) => {
-            if (!s.defaultEnabled) return false;
-            if (!s.applicableDays || s.applicableDays.length === 0) return true;
-            return s.applicableDays.includes(dayNum);
-          });
+            const extraManualIds = customDaySchedules[day.dateStr] || [];
+            const allScheduleIds = Array.from(
+              new Set([
+                ...applicableDefaultSchedules.map((s) => s.id),
+                ...Object.keys(dayPlan),
+                ...extraManualIds
+              ])
+            );
 
-          const extraManualIds = customDaySchedules[day.dateStr] || [];
-          const allScheduleIds = Array.from(
-            new Set([
-              ...applicableDefaultSchedules.map((s) => s.id),
-              ...Object.keys(dayPlan),
-              ...extraManualIds
-            ])
-          );
-
-          return (
-            <React.Fragment key={day.dateStr}>
-
-                  <div
-                    className={`rounded-2xl p-4 border transition-all shadow-sm ${
-                      day.isToday
-                        ? 'bg-white dark:bg-[#252220] border-[#FFD13B] ring-2 ring-[#FFD13B]/40 shadow-md'
-                        : 'bg-white dark:bg-[#252220] border-[#EDE8DF] dark:border-[#38332E]'
-                    }`}
-                  >
-                    {/* Day Header */}
-                    <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-[#F0EAE0] dark:border-[#38332E]">
-                      <div className="flex items-center gap-2">
-                        {day.isToday ? (
-                          <span className="flex items-center gap-1 text-xs font-extrabold px-3 py-1 rounded-xl bg-[#FFD13B] text-[#2D2640] shadow-sm tracking-wide">
-                            <Sparkles className="w-3 h-3 fill-current text-[#2D2640]" />
-                            <span>{t('common.today')} • {formatDayOfWeek(day.dateStr)}</span>
-                          </span>
-                        ) : (
-                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088]">
-                            {formatDayOfWeek(day.dateStr)}
-                          </span>
-                        )}
-                        <span className={`text-xs font-semibold ${day.isToday ? 'text-[#2D2640] dark:text-[#F0EDE8] font-bold' : 'text-[#3D3530] dark:text-[#D0C8C0]'}`}>
-                          {formatDate(day.dateStr, { month: 'short', day: 'numeric' })}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {/* Simplified '+' Button */}
-                        <button
-                          onClick={() => handleAddManualScheduleToDay(day.dateStr)}
-                          className="w-7 h-7 rounded-xl flex items-center justify-center transition cursor-pointer shadow-sm active:scale-95 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E]"
-                          title={t('planner.addSchedule')}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Meal Schedules Grid for this Day */}
-                    <div className="grid grid-cols-2 gap-2.5">
-                      {allScheduleIds.map((scheduleId) => {
-                        const configuredSchedule = mealSchedules.find((s) => s.id === scheduleId);
-                        const scheduleLabel = configuredSchedule?.name || scheduleId.replace('extra_', 'Extra ').replace('schedule_', '');
-                        const displayScheduleName = formatScheduleName(scheduleLabel);
-                        const entry = dayPlan[scheduleId];
-                        
-                        const entryDishIds = entry?.dishIds && entry.dishIds.length > 0
-                          ? entry.dishIds
-                          : (entry?.dishId ? [entry.dishId] : []);
-                        const entryDishes = entryDishIds.map((id) => dishMap.get(id)).filter(Boolean) as Dish[];
-                        const hasPlan = Boolean(entryDishes.length > 0 || entry?.customText);
-
-                        const isDropTarget =
-                          dragOverTarget?.toDate === day.dateStr && dragOverTarget?.toScheduleId === scheduleId;
-
-                        return (
-                          <div
-                            key={scheduleId}
-                            draggable={Boolean(hasPlan)}
-                            onDragStart={(e) => {
-                              if (hasPlan && entry) {
-                                handleDragStart(e, day.dateStr, scheduleId, entry);
-                              }
-                            }}
-                            onDragOver={(e) => handleDragOver(e, day.dateStr, scheduleId)}
-                            onDrop={(e) => handleDrop(e, day.dateStr, scheduleId)}
-                            onClick={() =>
-                              setSelectedModalSchedule({
-                                date: day.dateStr,
-                                scheduleId,
-                                scheduleName: scheduleLabel,
-                                entry
-                              })
-                            }
-                            className={`rounded-xl p-2.5 border transition-all cursor-pointer active:scale-[0.98] ${
-                              isDropTarget
-                                ? 'border-[#FFD13B] bg-[#FFF8E6] ring-2 ring-[#FFD13B]/30 scale-102 shadow-md'
-                                : hasPlan
-                                ? 'bg-[#FAF7F2] dark:bg-[#1E1B18] border-[#EDE8DF] dark:border-[#38332E] hover:border-[#FFD13B] shadow-sm'
-                                : 'bg-[#FAF7F2] dark:bg-[#1E1B18] border-dashed border-[#EDE8DF] dark:border-[#38332E] hover:border-[#FFD13B]/50 hover:bg-[#F7F4EF] dark:hover:bg-[#252220] shadow-sm'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider text-[#7A6E64] dark:text-[#9A9088]">
-                                <span>🍲</span>
-                                <span className="truncate max-w-[80px]">{displayScheduleName}</span>
-                              </div>
-                              {hasPlan ? (
-                                <span title={t('planner.dragHint')}>
-                                  <Move className="w-3 h-3 text-[#9A8A7E] dark:text-[#7A6E64] opacity-60" />
-                                </span>
-                              ) : (
-                                <Plus className="w-3 h-3 text-[#B8AFA4] dark:text-[#5A5450]" />
-                              )}
-                            </div>
-
-                            {entryDishes.length > 0 ? (
-                              <div className="space-y-1 mt-1">
-                                {entryDishes.map((dish) => {
-                                  const loc = getLocalizedDish(dish, language);
-                                  return (
-                                    <div key={dish.id} className="flex items-center gap-1.5 min-w-0">
-                                      {dish.imageUrl ? (
-                                        <img
-                                          src={dish.imageUrl}
-                                          alt={loc.name}
-                                          className="w-4 h-4 rounded-md object-cover shrink-0"
-                                        />
-                                      ) : (
-                                        <span className="text-sm shrink-0">{dish.imageEmoji || '🍲'}</span>
-                                      )}
-                                      <span className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] truncate leading-tight">
-                                        {loc.name}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
-                                {entry?.customText && (
-                                  <span className="text-[10px] text-[#9A8A7E] dark:text-[#7A6E64] italic block truncate">
-                                    📝 {entry.customText}
-                                  </span>
-                                )}
-                              </div>
-                            ) : entry?.customText ? (
-                              <div className="mt-1">
-                                <span className="text-[10px] text-[#9A8A7E] dark:text-[#7A6E64] italic block truncate">
-                                  📝 {entry.customText}
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="mt-1">
-                                <span className="text-[11px] text-[#B8AFA4] dark:text-[#5A5450] font-medium">{t('planner.addMeal')}</span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+            return (
+              <div
+                key={day.dateStr}
+                className={`rounded-2xl border bg-white shadow-sm dark:bg-[#28231E] ${
+                  day.isToday
+                    ? 'border-l-4 border-l-[#FFD13B] border-y-[#EDE8DF] border-r-[#EDE8DF] dark:border-y-[#3A332C] dark:border-r-[#3A332C]'
+                    : 'border-[#EDE8DF] dark:border-[#3A332C]'
+                }`}
+              >
+                {/* Day Header Row */}
+                <div className="flex items-center justify-between px-4 pb-2 pt-3">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[15px] font-bold text-[#2D2640] dark:text-[#F0EDE8]">
+                      {day.dayOfWeek}
+                    </span>
+                    <span className="text-[12px] text-[#8A7A70] dark:text-[#9A8A7E]">
+                      {formatDate(day.dateStr, { month: 'short', day: 'numeric' })}
+                    </span>
                   </div>
-                </React.Fragment>
-              );
-            })}
-      </div>
 
-      {/* Sticky Bottom Date Navigation Controls */}
-      <div className="sticky bottom-16 left-0 right-0 z-20 pt-2 pointer-events-none">
-        <div className="max-w-md mx-auto pointer-events-auto bg-white/95 dark:bg-[#252220]/95 backdrop-blur-md rounded-2xl p-2.5 border border-[#EDE8DF] dark:border-[#38332E] shadow-md flex items-center justify-between">
-          <button
-            onClick={handlePrevPeriod}
-            className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 transition cursor-pointer bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E]"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Prev 7 Days</span>
-          </button>
+                  <div className="flex items-center gap-2">
+                    {day.isToday && (
+                      <span className="rounded-full bg-[#FFD13B] px-2 py-0.5 text-[10px] font-bold text-[#2D2640]">
+                        {t('common.today')}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleAddManualScheduleToDay(day.dateStr)}
+                      className="p-1 text-[#C4B0A5] hover:text-[#2D2640] rounded-lg transition cursor-pointer"
+                      title={t('planner.addSchedule')}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
 
-          <span className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] truncate max-w-[150px]">
-            {weekRangeLabel}
-          </span>
+                {/* Slots Stack */}
+                <div className="space-y-1.5 px-3 pb-3">
+                  {allScheduleIds.map((scheduleId) => {
+                    const configuredSchedule = mealSchedules.find((s) => s.id === scheduleId);
+                    const scheduleLabel = configuredSchedule?.name || scheduleId.replace('extra_', 'Extra ').replace('schedule_', '');
+                    const displayScheduleName = formatScheduleName(scheduleLabel);
+                    const entry = dayPlan[scheduleId];
 
-          <button
-            onClick={handleNextPeriod}
-            className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 transition cursor-pointer bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E]"
-          >
-            <span>Next 7 Days</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+                    const entryDishIds = entry?.dishIds && entry.dishIds.length > 0
+                      ? entry.dishIds
+                      : (entry?.dishId ? [entry.dishId] : []);
+                    const entryDishes = entryDishIds.map((id) => dishMap.get(id)).filter(Boolean) as Dish[];
+                    const hasPlan = Boolean(entryDishes.length > 0 || entry?.customText);
+
+                    if (hasPlan) {
+                      const firstDish = entryDishes[0];
+                      const localizedFirst = firstDish ? getLocalizedDish(firstDish, language) : null;
+                      const title = localizedFirst ? localizedFirst.name : (entry?.customText || 'Planned Meal');
+                      const emoji = firstDish?.imageEmoji || '🍲';
+                      const extraCount = entryDishes.length > 1 ? entryDishes.length - 1 : 0;
+
+                      return (
+                        <div
+                          key={scheduleId}
+                          onClick={() =>
+                            setSelectedModalSchedule({
+                              date: day.dateStr,
+                              scheduleId,
+                              scheduleName: displayScheduleName,
+                              entry
+                            })
+                          }
+                          className="flex items-center gap-3 rounded-xl bg-[#FAF7F2] px-3 py-2.5 dark:bg-[#201C18] cursor-pointer hover:bg-[#F5F0E8] dark:hover:bg-[#2A2420] transition-colors"
+                        >
+                          <span className="text-lg leading-none" aria-hidden="true">
+                            {emoji}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#B8AFA4]">
+                              {displayScheduleName}
+                            </p>
+                            <p className="truncate text-[13.5px] font-medium text-[#4A3F35] dark:text-[#F0EDE8]">
+                              {title}
+                              {extraCount > 0 && (
+                                <span className="ml-1 text-[11px] text-[#8A7A70] font-normal">
+                                  +{extraCount}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={scheduleId}
+                        type="button"
+                        onClick={() =>
+                          setSelectedModalSchedule({
+                            date: day.dateStr,
+                            scheduleId,
+                            scheduleName: displayScheduleName,
+                            entry
+                          })
+                        }
+                        className="flex w-full items-center justify-between rounded-xl border border-dashed border-[#E0D6CB] px-3 py-2.5 text-left transition-colors hover:border-[#FFD13B] dark:border-[#3A332C] cursor-pointer"
+                      >
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#C4B0A5]">
+                            {displayScheduleName}
+                          </p>
+                          <p className="text-[13px] text-[#C4B0A5]">
+                            {language === 'zh-CN' ? `今天${displayScheduleName}吃什么？` : `What's for ${displayScheduleName.toLowerCase()}?`}
+                          </p>
+                        </div>
+                        <span className="flex items-center gap-1 rounded-lg bg-[#F5F0E8] px-2 py-1 text-[11px] font-semibold text-[#8A7A70] dark:bg-[#201C18] dark:text-[#9A8A7E]">
+                          <Plus className="h-3.5 w-3.5" strokeWidth={2.6} />
+                          <span>{language === 'zh-CN' ? '排餐' : 'Add'}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Floating Action Bar Sticky at Bottom */}
+      <div className="fixed bottom-16 left-0 right-0 z-30 px-4 pointer-events-none">
+        <div className="max-w-md mx-auto pointer-events-auto">
+          <div className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[#2D2640]/10 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-md dark:border-[#3A332C] dark:bg-[#28231E]/95">
+            <div className="leading-tight">
+              <p className="text-[13px] font-semibold text-[#2D2640] dark:text-[#F0EDE8]">
+                {totalMealsPlannedThisWeek} {language === 'zh-CN' ? '餐已排定' : 'meals planned'}
+              </p>
+              <p className="text-[11px] text-[#8A7A70] dark:text-[#9A8A7E]">
+                {weekRangeLabel}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onGoToGrocery(weekStartISO, weekEndISO)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#2D2640]/10 bg-[#FFD13B] px-4 py-2.5 text-[13px] font-semibold text-[#2D2640] transition-transform active:scale-95 cursor-pointer shadow-xs"
+            >
+              <ShoppingCart className="h-4 w-4" strokeWidth={2.4} />
+              <span>{language === 'zh-CN' ? '采购清单' : 'Grocery List'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Meal Selection / Custom Note Schedule Modal */}
       {selectedModalSchedule && (
         <MealScheduleModal
           isOpen={Boolean(selectedModalSchedule)}
+          onClose={() => setSelectedModalSchedule(null)}
           date={selectedModalSchedule.date}
           scheduleId={selectedModalSchedule.scheduleId}
           scheduleName={selectedModalSchedule.scheduleName}
-          currentProfile={currentProfile}
+          currentEntry={selectedModalSchedule.entry}
+          dishes={dishes}
           familyMembers={familyMembers}
           memberProfiles={memberProfiles}
           familyPersonalisation={familyPersonalisation}
-          currentEntry={selectedModalSchedule.entry}
-          dishes={dishes}
-          onClose={() => setSelectedModalSchedule(null)}
-          onSaveEntry={(date, scheduleId, entry) => {
-            onUpdateMealPlan(date, scheduleId, entry);
+          currentProfile={currentProfile}
+          onSaveEntry={(date, schedId, entry) => {
+            onUpdateMealPlan(date, schedId, entry);
             setSelectedModalSchedule(null);
+            showToast('✅ Saved meal plan');
           }}
           onCreateNewDish={onOpenDishCreator}
           onToggleFamilyRecipe={onToggleFamilyRecipe}
@@ -589,15 +487,20 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         />
       )}
 
+      {/* Week Copy Modal */}
       <WeekCopyModal
         isOpen={isWeekCopyOpen}
         onClose={() => setIsWeekCopyOpen(false)}
         currentWeekStartISO={weekStartISO}
         mealPlan={mealPlan}
-        onApplyCopy={onBatchUpdateMealPlan}
-        onShowToast={showToast}
+        onApplyCopy={(updated) => {
+          onBatchUpdateMealPlan(updated);
+          setIsWeekCopyOpen(false);
+          showToast('📋 Copied weekly schedule!');
+        }}
       />
 
+      {/* Meal Schedule Settings Modal */}
       <MealScheduleSettingsModal
         isOpen={isScheduleSettingsOpen}
         onClose={() => setIsScheduleSettingsOpen(false)}

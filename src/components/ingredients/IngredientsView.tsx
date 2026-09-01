@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import type { MasterIngredient, GroceryCategory } from '../../types';
 import { GROCERY_CATEGORIES } from '../../types';
-import { Search, Edit3, Plus, Trash2, Save, AlertCircle, CheckCircle2, Home, Check } from 'lucide-react';
+import { Search, Edit3, Plus, Trash2, CheckCircle2, Check, Home } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedMasterIngredient } from '../../services/dataLocalizationService';
 
@@ -13,7 +13,6 @@ interface IngredientsViewProps {
   onUpdatePantryIngredients: (updatedPantry: string[]) => void;
 }
 
-const COMMON_UNITS = ['g', 'kg', 'ml', 'L', 'tbsp', 'tsp', 'pcs', 'slices', 'can', 'packet', 'stalks', 'cloves', 'cup', 'pinch'];
 
 export const IngredientsView: React.FC<IngredientsViewProps> = ({
   ingredients,
@@ -29,6 +28,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
   const [editableList, setEditableList] = useState<MasterIngredient[]>(ingredients);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [quickAddName, setQuickAddName] = useState('');
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -46,12 +46,22 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
     let next: string[];
     if (exists) {
       next = pantryIngredients.filter((p) => p.toLowerCase() !== clean.toLowerCase());
-      showToast(`Removed "${clean}" from Home Pantry.`);
+      showToast(`Removed "${clean}" from Pantry.`);
     } else {
       next = [...pantryIngredients, clean];
-      showToast(`🏡 Added "${clean}" to Home Pantry!`);
+      showToast(`🏡 Added "${clean}" to Pantry!`);
     }
     onUpdatePantryIngredients(next);
+  };
+
+  // Quick add custom item
+  const handleQuickAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = quickAddName.trim();
+    if (!clean) return;
+
+    handleTogglePantryItem(clean);
+    setQuickAddName('');
   };
 
   // Filter ingredients
@@ -64,6 +74,20 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
     const matchesPantry = !showOnlyPantry || isItemInPantry;
     return matchesSearch && matchesCat && matchesPantry;
   });
+
+  // Group filtered items by category
+  const groupedItems = React.useMemo(() => {
+    const map = new Map<string, MasterIngredient[]>();
+    filtered.forEach((item) => {
+      const cat = item.category || 'Other';
+      if (!map.has(cat)) map.set(cat, []);
+      map.get(cat)!.push(item);
+    });
+    return Array.from(map.entries()).map(([category, items]) => ({
+      category,
+      items
+    }));
+  }, [filtered]);
 
   const [visibleLimit, setVisibleLimit] = useState(40);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -138,414 +162,273 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
     }
   };
 
-  const handleSaveAll = () => {
-    const emptyNames = editableList.filter((item) => !item.name || !item.name.trim());
-    if (emptyNames.length > 0) {
-      setValidationError(
-        `⚠️ Please enter an ingredient name for all items before saving. ${emptyNames.length} item(s) are missing a name.`
-      );
+  const handleSaveEditList = () => {
+    const hasEmptyName = editableList.some((item) => !item.name.trim());
+    if (hasEmptyName) {
+      setValidationError('All ingredients must have a valid name.');
       return;
     }
 
-    const trimmed = editableList.map((item) => ({
-      ...item,
-      name: item.name.trim(),
-      defaultUnit: item.defaultUnit ? item.defaultUnit.trim() : ''
-    }));
-
-    onSaveIngredients(trimmed);
+    onSaveIngredients(editableList);
     setIsEditMode(false);
-    setValidationError(null);
-    showToast(`✅ Saved ${trimmed.length} master ingredients!`);
+    showToast('✅ Saved pantry master database!');
   };
 
-  return (
-    <div className="flex-1 pb-28 pt-3 px-4 space-y-3.5 max-w-md mx-auto w-full">
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
-          <CheckCircle2 className="w-4 h-4 text-[#4CAF82] dark:text-[#2D6A4A]" />
-          <span>{toastMsg}</span>
-        </div>
-      )}
+  const stockedCount = pantryIngredients.length;
+  const totalMasterCount = ingredients.length;
 
-      {/* In My Pantry Overview & Live Benefit Card */}
-      <div className="bg-white dark:bg-[#252220] rounded-2xl p-4 border border-[#EDE8DF] dark:border-[#38332E] shadow-sm space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-[#F0EAE0] dark:border-[#38332E]">
-          <div className="flex items-center gap-2">
-            <Home className="w-4 h-4 text-[#2D6A4A] dark:text-[#4CAF82]" />
-            <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-              {t('pantry.inMyPantryTitle', { count: pantryIngredients.length })}
-            </h3>
+  return (
+    <div className="relative">
+      <div className="px-4 pb-32 pt-4 max-w-md mx-auto">
+        {/* Toast */}
+        {toastMsg && (
+          <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
+            <CheckCircle2 className="w-4 h-4 text-[#FFD13B] dark:text-[#2D2640]" />
+            <span>{toastMsg}</span>
           </div>
+        )}
+
+        {/* Summary Card */}
+        <div className="mb-4 rounded-2xl border border-[#EDE8DF] bg-white px-4 py-3 shadow-sm dark:border-[#3A332C] dark:bg-[#28231E]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-[#B8AFA4]">
+                {language === 'zh-CN' ? '家庭储藏室' : 'Your Pantry'}
+              </p>
+              <p className="mt-0.5 text-[15px] font-bold text-[#2D2640] dark:text-[#F0EDE8]">
+                {stockedCount} {language === 'zh-CN' ? '种常备食材已有库存' : `of ${totalMasterCount} ingredients stocked`}
+              </p>
+            </div>
+            {!isEditMode && (
+              <button
+                type="button"
+                onClick={handleEnterEditMode}
+                className="inline-flex items-center gap-1 rounded-lg bg-[#F5F0E8] px-2.5 py-1 text-[11px] font-semibold text-[#2D2640] dark:bg-[#201C18] dark:text-[#F0EDE8] transition cursor-pointer"
+              >
+                <Edit3 className="w-3 h-3" />
+                <span>{language === 'zh-CN' ? '管理库' : 'Edit DB'}</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative mb-3">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#C4B0A5]" />
+          <input
+            type="text"
+            placeholder={language === 'zh-CN' ? '搜索食材或按分类筛选...' : 'Search pantry items...'}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] py-2.5 pl-9 pr-3 text-[13px] text-[#2D2640] placeholder:text-[#C4B0A5] focus:border-[#A0867A] focus:outline-none dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
+          />
+        </div>
+
+        {/* Categories Chip Row */}
+        <div className="mb-4 flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           <button
             type="button"
             onClick={() => setShowOnlyPantry(!showOnlyPantry)}
-            className={`text-[11px] font-bold px-2.5 py-1 rounded-xl transition cursor-pointer border ${
+            className={`inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors cursor-pointer border ${
               showOnlyPantry
-                ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
-                : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E]'
+                ? 'border-[#4E9E72]/30 bg-[#EBF5EE] text-[#4E9E72]'
+                : 'border-[#EDE8DF] bg-white text-[#8A7A70] dark:border-[#3A332C] dark:bg-[#28231E] dark:text-[#9A8A7E]'
             }`}
           >
-            {showOnlyPantry ? t('pantry.showAllCatalog') : t('pantry.filterPantryOnly')}
+            <Home className="h-3 w-3" />
+            <span>{language === 'zh-CN' ? '已有库存' : 'In Stock Only'}</span>
           </button>
+
+          {['All', ...GROCERY_CATEGORIES].map((cat) => {
+            const isSel = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors cursor-pointer ${
+                  isSel
+                    ? 'bg-[#FFD13B] text-[#2D2640]'
+                    : 'border border-[#EDE8DF] bg-white text-[#8A7A70] dark:border-[#3A332C] dark:bg-[#28231E] dark:text-[#9A8A7E]'
+                }`}
+              >
+                {cat === 'All' ? (language === 'zh-CN' ? '全部' : 'All') : formatCategory(cat as any)}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Stocked Pantry Chips */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {pantryIngredients.map((item) => (
-            <span
-              key={item}
-              className="inline-flex items-center gap-1 bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border border-[#A8D8BC] dark:border-[#1D4A2A] text-xs font-bold px-2.5 py-1 rounded-xl shadow-2xs"
-            >
-              <span>🏡 {item}</span>
+        {/* Edit Mode Toolbar */}
+        {isEditMode && (
+          <div className="mb-4 p-3 rounded-2xl bg-amber-50 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-900 dark:text-amber-300">
+                {language === 'zh-CN' ? '食材主数据库编辑模式' : 'Master Database Edit Mode'}
+              </span>
               <button
                 type="button"
-                onClick={() => handleTogglePantryItem(item)}
-                className="w-4 h-4 rounded-full hover:bg-[#A8D8BC]/50 dark:hover:bg-[#1D4A2A] flex items-center justify-center text-[#2D6A4A] dark:text-[#4CAF82] cursor-pointer ml-0.5"
-                title={`Remove ${item} from pantry`}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-          {pantryIngredients.length === 0 && (
-            <p className="text-xs text-[#B8AFA4] dark:text-[#5A5450] italic">{t('pantry.noPantryItems')}</p>
-          )}
-        </div>
-
-        {/* Quick Stock Top Staples */}
-        <div className="space-y-1.5 pt-1">
-          <span className="text-[10px] font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider block">
-            {language === 'zh-CN' ? '⚡ 常用主食与调味品 (点击一键收录)' : '⚡ Quick Stock Top Staples (Tap to toggle)'}
-          </span>
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
-            {[
-              { en: 'Cooking Oil', label: language === 'zh-CN' ? '食用油' : 'Cooking Oil', icon: '🛢️' },
-              { en: 'Salt', label: language === 'zh-CN' ? '食盐' : 'Salt', icon: '🧂' },
-              { en: 'Soy Sauce', label: language === 'zh-CN' ? '生抽' : 'Soy Sauce', icon: '🍶' },
-              { en: 'Eggs', label: language === 'zh-CN' ? '鸡蛋' : 'Eggs', icon: '🥚' },
-              { en: 'Rice', label: language === 'zh-CN' ? '大米' : 'Rice', icon: '🍚' },
-              { en: 'Garlic', label: language === 'zh-CN' ? '大蒜' : 'Garlic', icon: '🧄' },
-              { en: 'Black Pepper', label: language === 'zh-CN' ? '黑胡椒' : 'Black Pepper', icon: '🧂' },
-              { en: 'Sugar', label: language === 'zh-CN' ? '白糖' : 'Sugar', icon: '🍬' },
-              { en: 'Butter', label: language === 'zh-CN' ? '黄油' : 'Butter', icon: '🧈' },
-              { en: 'Cornstarch', label: language === 'zh-CN' ? '玉米淀粉' : 'Cornstarch', icon: '🌽' }
-            ].map((item) => {
-              const isStocked = pantryIngredients.some((p) => 
-                p.toLowerCase() === item.en.toLowerCase() || p.toLowerCase() === item.label.toLowerCase()
-              );
-              return (
-                <button
-                  key={item.en}
-                  type="button"
-                  onClick={() => handleTogglePantryItem(language === 'zh-CN' ? item.label : item.en)}
-                  className={`shrink-0 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-xl transition cursor-pointer border ${
-                    isStocked
-                      ? 'bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border-[#A8D8BC] dark:border-[#1D4A2A] shadow-xs'
-                      : 'bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#3D3530] dark:text-[#D0C8C0] border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#F5F0E8] dark:hover:bg-[#2E2A26]'
-                  }`}
-                >
-                  <span>{item.icon}</span>
-                  <span>{item.label}</span>
-                  {isStocked && <Check className="w-3 h-3 stroke-[3]" />}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Smart Substitution Engine Live Notice */}
-        <div className="bg-[#FAF7F2] dark:bg-[#1E1B18] p-2.5 rounded-xl border border-[#EDE8DF] dark:border-[#38332E] text-[11px] text-[#7A6E64] dark:text-[#9A9088] flex items-start gap-2">
-          <span className="text-sm">✨</span>
-          <p className="leading-snug">
-            <strong className="text-[#2D2640] dark:text-[#F0EDE8]">{t('pantry.smartSubNoticeTitle')}</strong> {t('pantry.smartSubNoticeDesc')}
-          </p>
-        </div>
-      </div>
-
-      {/* Search Bar - Positioned above Ingredients Catalog for quick searching to flag/unflag */}
-      <div className="flex items-center gap-2 pt-1">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-[#9A8A7E] dark:text-[#7A6E64] absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder={language === 'zh-CN' ? '搜索食材总库以添加/移除常备...' : 'Search ingredient catalog to toggle in pantry...'}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs font-medium pl-9 pr-8 py-2.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-2xs"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8] bg-[#F5F0E8] dark:bg-[#2E2A26] rounded-full w-4 h-4 flex items-center justify-center cursor-pointer"
-            >
-              ×
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Category Filter Pills */}
-      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
-        <button
-          onClick={() => setSelectedCategory('All')}
-          className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
-            selectedCategory === 'All'
-              ? 'bg-[#FFD13B] text-[#2D2640] shadow-xs'
-              : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E]'
-          }`}
-        >
-          {formatCategory('All')} ({activeList.length})
-        </button>
-
-        {GROCERY_CATEGORIES.map((cat) => {
-          const count = activeList.filter((i) => i.category === cat).length;
-          const isSelected = selectedCategory === cat;
-          return (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
-                isSelected
-                  ? 'bg-[#FFD13B] text-[#2D2640] shadow-xs'
-                  : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E]'
-              }`}
-            >
-              {formatCategory(cat)} ({count})
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Validation Error Alert Banner */}
-      {validationError && (
-        <div className="p-3 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 rounded-xl border border-rose-200 dark:border-rose-900 text-xs font-semibold flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
-          <span>{validationError}</span>
-        </div>
-      )}
-
-      {/* Action Header & Mode Toggle */}
-      <div className="flex items-center justify-between pt-1">
-        <span className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-          {t('pantry.libraryCount', { count: filtered.length })}
-        </span>
-
-        <div className="flex items-center gap-2">
-          {isEditMode ? (
-            <>
-              <button
                 onClick={handleAddNewRow}
-                className="flex items-center gap-1 text-xs font-semibold text-[#2D2640] dark:text-[#D0C8C0] bg-[#F5F0E8] dark:bg-[#2E2A26] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] px-2.5 py-1 rounded-xl transition cursor-pointer"
+                className="inline-flex items-center gap-1 rounded-lg bg-[#FFD13B] px-2.5 py-1 text-[11px] font-semibold text-[#2D2640] cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{t('pantry.addItem')}</span>
+                <Plus className="w-3 h-3" />
+                <span>{language === 'zh-CN' ? '添加条目' : 'New Item'}</span>
               </button>
-
+            </div>
+            {validationError && (
+              <p className="text-[11px] text-rose-600 font-semibold">{validationError}</p>
+            )}
+            <div className="flex gap-2">
               <button
+                type="button"
                 onClick={handleCancelEditMode}
-                className="text-xs font-semibold text-[#7A6E64] dark:text-[#9A9088] hover:text-[#2D2640] dark:hover:text-[#F0EDE8] px-2 py-1 transition cursor-pointer"
+                className="flex-1 py-1.5 rounded-xl border border-[#EDE8DF] bg-white text-xs font-semibold text-[#8A7A70] cursor-pointer"
               >
                 {t('common.cancel')}
               </button>
-
               <button
-                onClick={handleSaveAll}
-                className="flex items-center gap-1 text-xs font-extrabold bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] border border-[#2D2640]/10 px-3 py-1.5 rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+                type="button"
+                onClick={handleSaveEditList}
+                className="flex-1 py-1.5 rounded-xl bg-[#FFD13B] border border-[#2D2640]/10 text-xs font-semibold text-[#2D2640] cursor-pointer shadow-xs"
               >
-                <Save className="w-3.5 h-3.5" />
-                <span>{t('common.save')}</span>
+                {t('common.save')}
               </button>
-            </>
-          ) : (
-            <button
-              onClick={handleEnterEditMode}
-              className="flex items-center gap-1.5 text-xs font-bold text-[#2D2640] dark:text-[#D0C8C0] bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#F7F4EF] dark:hover:bg-[#2E2A26] px-3 py-1.5 rounded-xl transition active:scale-95 cursor-pointer shadow-2xs"
-            >
-              <Edit3 className="w-3.5 h-3.5 text-[#7A6E64] dark:text-[#9A9088]" />
-              <span>{t('common.editMode')}</span>
-            </button>
+            </div>
+          </div>
+        )}
+
+        {/* Groups */}
+        <div className="space-y-4">
+          {groupedItems.map((group) => {
+            const visibleItems = group.items.slice(0, visibleLimit);
+            if (visibleItems.length === 0) return null;
+
+            return (
+              <section key={group.category}>
+                <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#8A7A70] dark:text-[#9A8A7E]">
+                  {formatCategory(group.category as any)}
+                </h2>
+                <div className="overflow-hidden rounded-2xl border border-[#EDE8DF] bg-white shadow-sm dark:border-[#3A332C] dark:bg-[#28231E]">
+                  {visibleItems.map((item, idx) => {
+                    const loc = getLocalizedMasterIngredient(item, language);
+                    const isInPantry = pantryIngredients.some(
+                      (p) => p.toLowerCase() === item.name.toLowerCase().trim() || p.toLowerCase() === loc.name.toLowerCase().trim()
+                    );
+
+                    if (isEditMode) {
+                      return (
+                        <div
+                          key={item.id}
+                          className={`p-3 flex items-center gap-2 ${
+                            idx !== 0 ? 'border-t border-[#EDE8DF] dark:border-[#3A332C]' : ''
+                          }`}
+                        >
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => handleFieldChange(item.id, 'name', e.target.value)}
+                            placeholder="Name"
+                            className="flex-1 px-2.5 py-1.5 rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] text-xs text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
+                          />
+                          <select
+                            value={item.category}
+                            onChange={(e) => handleFieldChange(item.id, 'category', e.target.value)}
+                            className="px-2 py-1.5 rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] text-xs text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
+                          >
+                            {GROCERY_CATEGORIES.map((c) => (
+                              <option key={c} value={c}>{formatCategory(c)}</option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRow(item.id)}
+                            className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => handleTogglePantryItem(item.name)}
+                        className={`flex w-full items-center justify-between px-4 py-3 text-left transition-colors cursor-pointer ${
+                          idx !== 0 ? 'border-t border-[#EDE8DF] dark:border-[#3A332C]' : ''
+                        } ${isInPantry ? 'bg-[#EBF5EE]/60 dark:bg-[#4E9E72]/10' : 'hover:bg-[#FAF7F2] dark:hover:bg-[#201C18]'}`}
+                      >
+                        <div className="min-w-0 flex-1 pr-3">
+                          <p
+                            className={`text-[13.5px] font-medium ${
+                              isInPantry ? 'text-[#4E9E72]' : 'text-[#4A3F35] dark:text-[#F0EDE8]'
+                            }`}
+                          >
+                            {loc.name}
+                          </p>
+                          {loc.name !== item.name && (
+                            <p className="text-[11px] text-[#8A7A70] dark:text-[#9A8A7E] truncate">{item.name}</p>
+                          )}
+                        </div>
+                        <span
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                            isInPantry
+                              ? 'border-[#4E9E72] bg-[#4E9E72]'
+                              : 'border-[#D8CCC0] bg-transparent'
+                          }`}
+                        >
+                          {isInPantry ? <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} /> : null}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+
+          {filtered.length === 0 && (
+            <div className="py-12 text-center text-[13px] text-[#8A7A70] dark:text-[#9A8A7E] space-y-1">
+              <p>🌾 {language === 'zh-CN' ? '未找到匹配的食材' : 'No matching ingredients found.'}</p>
+            </div>
+          )}
+
+          {/* Sentinel element for infinite scroll */}
+          {filtered.length > visibleLimit && (
+            <div ref={loadMoreRef} className="py-4 text-center text-xs text-[#8A7A70]">
+              Loading more ingredients...
+            </div>
           )}
         </div>
       </div>
 
-      {/* Master Ingredients Cards */}
-      <div className="space-y-2">
-        {filtered.length === 0 ? (
-          <div className="bg-white dark:bg-[#252220] rounded-2xl p-8 text-center border border-dashed border-[#EDE8DF] dark:border-[#38332E] text-xs text-[#9A8A7E] dark:text-[#7A6E64] shadow-sm">
-            {showOnlyPantry
-              ? 'No pantry items found matching this filter.'
-              : 'No ingredients found matching your search.'}
-          </div>
-        ) : (
-          filtered.slice(0, visibleLimit).map((item) => {
-            const originalIndex = activeList.findIndex((i) => i.id === item.id);
-            const isNameEmpty = !item.name || !item.name.trim();
-            const isInPantry = pantryIngredients.some(
-              (p) => p.toLowerCase() === item.name.toLowerCase().trim()
-            );
-
-            return (
-              <div
-                key={item.id || originalIndex}
-                className={`rounded-xl p-3 border transition-all shadow-2xs ${
-                  isNameEmpty && isEditMode
-                    ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/30'
-                    : isInPantry
-                    ? 'bg-[#E8F5ED]/40 dark:bg-[#0D2E1A]/40 border-[#A8D8BC] dark:border-[#1D4A2A]'
-                    : 'bg-white dark:bg-[#252220] border-[#EDE8DF] dark:border-[#38332E] hover:border-[#B8AFA4] dark:hover:border-[#5A5450]'
-                }`}
-              >
-                {isEditMode ? (
-                  /* Edit Row Form */
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="Ingredient Name *"
-                        value={item.name}
-                        onChange={(e) => handleFieldChange(item.id, 'name', e.target.value)}
-                        className={`flex-1 text-xs font-bold px-2.5 py-1.5 rounded-lg border focus:outline-hidden ${
-                          isNameEmpty
-                            ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200'
-                            : 'bg-[#FAF7F2] dark:bg-[#1E1B18] border-[#E8E0D5] dark:border-[#38332E] text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:border-[#2D2640] dark:focus:border-[#F0EDE8]'
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteRow(item.id)}
-                        className="p-1.5 text-[#9A8A7E] dark:text-[#7A6E64] hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition cursor-pointer"
-                        title="Delete row"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <label className="block text-[9px] font-bold text-[#7A6E64] dark:text-[#9A9088] uppercase mb-0.5">
-                          Default Qty
-                        </label>
-                        <input
-                          type="number"
-                          step="any"
-                          value={item.defaultValue !== null ? item.defaultValue : ''}
-                          onChange={(e) =>
-                            handleFieldChange(
-                              item.id,
-                              'defaultValue',
-                              e.target.value === '' ? null : Number(e.target.value)
-                            )
-                          }
-                          className="w-full text-xs font-medium px-2 py-1 rounded-lg border border-[#E8E0D5] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#2D2640] dark:text-[#F0EDE8] focus:outline-hidden focus:border-[#2D2640] dark:focus:border-[#F0EDE8] text-center"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[9px] font-bold text-[#7A6E64] dark:text-[#9A9088] uppercase mb-0.5">
-                          Default Unit
-                        </label>
-                        <select
-                          value={item.defaultUnit}
-                          onChange={(e) => handleFieldChange(item.id, 'defaultUnit', e.target.value)}
-                          className="w-full text-xs font-medium px-2 py-1 rounded-lg border border-[#E8E0D5] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#2D2640] dark:text-[#F0EDE8] focus:outline-hidden focus:border-[#2D2640] dark:focus:border-[#F0EDE8]"
-                        >
-                          {COMMON_UNITS.map((u) => (
-                            <option key={u} value={u}>
-                              {u}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[9px] font-bold text-[#7A6E64] dark:text-[#9A9088] uppercase mb-0.5">
-                          Category
-                        </label>
-                        <select
-                          value={item.category}
-                          onChange={(e) => handleFieldChange(item.id, 'category', e.target.value)}
-                          className="w-full text-xs font-medium px-1.5 py-1 rounded-lg border border-[#E8E0D5] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#2D2640] dark:text-[#F0EDE8] focus:outline-hidden focus:border-[#2D2640] dark:focus:border-[#F0EDE8]"
-                        >
-                          {GROCERY_CATEGORIES.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* Read Only Row */
-                  (() => {
-                    const loc = getLocalizedMasterIngredient(item, language);
-                    return (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                          <button
-                            type="button"
-                            onClick={() => handleTogglePantryItem(item.name)}
-                            className={`p-1.5 rounded-lg border transition cursor-pointer shrink-0 ${
-                              isInPantry
-                                ? 'bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border-[#A8D8BC] dark:border-[#1D4A2A] shadow-2xs'
-                                : 'bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#9A8A7E] dark:text-[#7A6E64] border-[#EDE8DF] dark:border-[#38332E] hover:text-[#2D6A4A] dark:hover:text-[#4CAF82] hover:border-[#A8D8BC] dark:hover:border-[#1D4A2A]'
-                            }`}
-                            title={isInPantry ? 'In Pantry (Click to remove)' : 'Click to add to Home Pantry'}
-                          >
-                            <Home className="w-3.5 h-3.5" />
-                          </button>
-
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] truncate block">{loc.name}</span>
-                              {loc.isUntranslated && (
-                                <span className="text-[9px] font-semibold text-[#7A5C00] dark:text-[#FFD13B] bg-[#FFF3D6] dark:bg-[#2A1E00] border border-[#FFD13B]/40 px-1 py-0.5 rounded shrink-0">
-                                  {language === 'zh-CN' ? '英文' : 'Chinese'}
-                                </span>
-                              )}
-                            </div>
-                            {isInPantry && (
-                              <span className="text-[10px] text-[#2D6A4A] dark:text-[#4CAF82] font-semibold flex items-center gap-0.5">
-                                <Check className="w-2.5 h-2.5 stroke-[3]" />
-                                {language === 'zh-CN' ? '常备食材 (清单自动半选标记)' : 'In Home Pantry (Auto half-marks on grocery list)'}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          {item.defaultValue !== null && (
-                            <span className="text-xs font-bold text-[#3D3530] dark:text-[#D0C8C0] bg-[#F5F0E8] dark:bg-[#2E2A26] border border-[#EDE8DF] dark:border-[#38332E] px-2 py-0.5 rounded-md">
-                              {item.defaultValue} {item.defaultUnit}
-                            </span>
-                          )}
-                          <span className="text-[10px] text-[#7A6E64] dark:text-[#9A9088] bg-[#FAF7F2] dark:bg-[#1E1B18] px-2 py-0.5 rounded-md font-medium border border-[#EDE8DF] dark:border-[#38332E]">
-                            {formatCategory(item.category)}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })()
-                )}
-              </div>
-            );
-          })
-        )}
-
-        {/* Progressive Loading Sentinel / Show More Trigger */}
-        {filtered.length > visibleLimit && (
-          <div ref={loadMoreRef} className="py-4 text-center">
-            <button
-              onClick={() => setVisibleLimit((prev) => prev + 40)}
-              className="px-5 py-2 rounded-xl bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] text-xs font-bold text-[#2D2640] dark:text-[#D0C8C0] hover:bg-[#F7F4EF] dark:hover:bg-[#2E2A26] transition shadow-2xs cursor-pointer"
+      {/* Quick-add bar sticky at bottom */}
+      {!isEditMode && (
+        <div className="fixed bottom-16 left-0 right-0 z-30 px-4 pointer-events-none">
+          <div className="max-w-md mx-auto pointer-events-auto">
+            <form
+              onSubmit={handleQuickAdd}
+              className="flex items-center gap-2 rounded-2xl border border-[#2D2640]/10 bg-white/95 p-2 shadow-lg backdrop-blur-md dark:border-[#3A332C] dark:bg-[#28231E]/95"
             >
-              Showing {Math.min(visibleLimit, filtered.length)} of {filtered.length.toLocaleString()} ingredients • Load More
-            </button>
+              <input
+                type="text"
+                placeholder={language === 'zh-CN' ? '快速添加食材到储藏室...' : 'Add a pantry item...'}
+                value={quickAddName}
+                onChange={(e) => setQuickAddName(e.target.value)}
+                className="flex-1 rounded-xl bg-[#FAF7F2] px-3 py-2 text-[13px] text-[#2D2640] placeholder:text-[#C4B0A5] focus:outline-none dark:bg-[#201C18] dark:text-[#F0EDE8]"
+              />
+              <button
+                type="submit"
+                disabled={!quickAddName.trim()}
+                className="flex items-center gap-1 rounded-xl border border-[#2D2640]/10 bg-[#FFD13B] px-4 py-2 text-[13px] font-semibold text-[#2D2640] transition-transform active:scale-95 disabled:opacity-40 cursor-pointer"
+              >
+                <Plus className="h-4 w-4" strokeWidth={2.6} />
+                <span>{language === 'zh-CN' ? '存入' : 'Add'}</span>
+              </button>
+            </form>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

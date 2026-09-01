@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, UtensilsCrossed, Home, ShoppingCart, Settings } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 
 export type TabType = 'planner' | 'dishes' | 'ingredients' | 'grocery' | 'settings';
@@ -17,54 +18,51 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 }) => {
   const { t } = useLanguage();
 
-  const tabs = [
-    { id: 'planner' as TabType,     label: t('nav.planner'),  icon: Calendar,         badge: null },
-    { id: 'dishes' as TabType,      label: t('nav.recipes'),  icon: UtensilsCrossed,  badge: null },
-    { id: 'ingredients' as TabType, label: t('nav.pantry'),   icon: Home,             badge: null },
-    {
-      id: 'grocery' as TabType,
-      label: t('nav.grocery'),
-      icon: ShoppingCart,
-      badge: groceryPendingCount > 0 ? groceryPendingCount : null
-    },
-    { id: 'settings' as TabType,    label: t('nav.settings'), icon: Settings,         badge: null }
+  const tabs: { id: TabType; label: string; icon: LucideIcon; badge?: number | null }[] = [
+    { id: 'planner', label: t('nav.planner'), icon: Calendar },
+    { id: 'dishes', label: t('nav.recipes'), icon: UtensilsCrossed },
+    { id: 'ingredients', label: t('nav.pantry'), icon: Home },
+    { id: 'grocery', label: t('nav.grocery'), icon: ShoppingCart, badge: groceryPendingCount > 0 ? groceryPendingCount : null },
+    { id: 'settings', label: t('nav.settings'), icon: Settings }
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#1A1714]/95 backdrop-blur-xl border-t border-[#EDE8DF] dark:border-[#38332E] pb-safe shadow-sm">
-      <div className="max-w-md mx-auto grid grid-cols-5 h-16">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#EDE8DF]/80 bg-white/95 backdrop-blur-md dark:border-[#3A332C]/80 dark:bg-[#28231E]/95 pb-safe shadow-xs">
+      <div className="max-w-md mx-auto flex items-stretch justify-between px-2 pb-2 pt-2">
         {tabs.map((tab) => {
-          const Icon = tab.icon;
           const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 active:scale-95 cursor-pointer ${
-                isActive
-                  ? 'text-[#2D2640] dark:text-[#F0EDE8]'
-                  : 'text-[#B8AFA4] dark:text-[#5A5450] hover:text-[#7A6E64] dark:hover:text-[#9A9088]'
-              }`}
+              className="flex flex-1 flex-col items-center gap-1 py-1 cursor-pointer transition-transform active:scale-95"
+              aria-current={isActive ? 'page' : undefined}
             >
-              {/* Icon pill — yellow background when active */}
-              <div
-                className={`relative flex items-center justify-center w-11 h-6 rounded-full transition-all duration-200 ${
-                  isActive ? 'bg-[#FFD13B]' : ''
+              <span
+                className={`relative flex h-8 w-14 items-center justify-center rounded-full transition-colors ${
+                  isActive ? 'bg-[#FFD13B]' : 'bg-transparent'
                 }`}
               >
                 <Icon
-                  className={`w-[18px] h-[18px] transition-transform duration-200 ${
-                    isActive ? 'scale-110 stroke-[2.2]' : 'stroke-[1.6]'
+                  className={`h-[18px] w-[18px] ${
+                    isActive ? 'text-[#2D2640]' : 'text-[#B8AFA4] dark:text-[#9A8A7E]'
                   }`}
+                  strokeWidth={isActive ? 2.4 : 2}
                 />
-                {tab.badge !== null && (
-                  <span className="absolute -top-1.5 -right-2 bg-[#FFD13B] text-[#2D2640] text-[10px] font-extrabold px-1.5 py-px rounded-full min-w-[18px] text-center shadow-sm border border-[#2D2640]/10">
+                {tab.badge ? (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FFD13B] px-1 text-[10px] font-bold text-[#2D2640] ring-2 ring-white dark:ring-[#28231E]">
                     {tab.badge > 99 ? '99+' : tab.badge}
                   </span>
-                )}
-              </div>
-
-              <span className={`text-[10px] tracking-tight truncate px-1 ${isActive ? 'font-bold' : 'font-medium'}`}>
+                ) : null}
+              </span>
+              <span
+                className={`text-[10.5px] ${
+                  isActive
+                    ? 'font-bold text-[#2D2640] dark:text-[#F0EDE8]'
+                    : 'font-medium text-[#B8AFA4] dark:text-[#9A8A7E]'
+                }`}
+              >
                 {tab.label}
               </span>
             </button>

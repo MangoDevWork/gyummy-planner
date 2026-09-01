@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
 import type { Dish, UserProfile, MemberPreferences } from '../../types';
-import { ArrowLeft, Clock, Users, Edit3, Trash2, CalendarPlus, Tag, Heart, Download, Star, Plus, Minus, FileText, BookmarkCheck, BookmarkPlus, Check, ShieldAlert, Calendar } from 'lucide-react';
+import {
+  ArrowLeft,
+  Clock,
+  Heart,
+  Download,
+  Plus,
+  Minus,
+  Check,
+  AlertTriangle,
+  BookmarkCheck,
+  BookmarkPlus,
+  CalendarPlus,
+  Edit3,
+  Trash2
+} from 'lucide-react';
 import { exportToZip } from '../../services/zipExportService';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedDish } from '../../services/dataLocalizationService';
@@ -30,7 +44,6 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
   dish,
   isOpen,
   currentProfile,
-  familyMembers = [],
   memberProfiles,
   onClose,
   onEdit,
@@ -43,8 +56,6 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
 }) => {
   const { language, t, formatCategory, formatCuisine } = useLanguage();
   const [servingMultiplier, setServingMultiplier] = useState(1);
-  const [quickNote, setQuickNote] = useState('');
-  const [isAddingNote, setIsAddingNote] = useState(false);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
 
   if (!isOpen || !dish) return null;
@@ -54,6 +65,19 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
   const favoritedBy = dish.favoritedByMembers || [];
   const isFavoritedByMe = currentMember ? favoritedBy.includes(currentMember) : false;
   const isInFamilyCookbook = dish.isFamilyRecipe !== false;
+
+  const baseServings = dish.servings || 4;
+  const currentServings = Math.max(1, Math.round(baseServings * servingMultiplier));
+
+  // Toggle ingredient checked for cooking
+  const toggleIngredientCheck = (idx: number) => {
+    setCheckedIngredients((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
 
   const handleExportSingle = async () => {
     try {
@@ -69,12 +93,21 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
     }
   };
 
+  // Allergen risk detection for family members
+  const allergenRisk = memberProfiles
+    ? checkDishAllergenRisk(dish, memberProfiles)
+    : { hasRisk: false, dishAllergens: [], affectedMembers: [] };
+
+  const instructionSteps = typeof localized.instructions === 'string'
+    ? localized.instructions.split('\n').map((s) => s.trim()).filter(Boolean)
+    : (typeof dish.instructions === 'string' ? dish.instructions.split('\n').map((s) => s.trim()).filter(Boolean) : []);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#252220] w-full max-w-md max-h-[92vh] sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden border border-[#EDE8DF] dark:border-[#38332E] animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-50 flex justify-center bg-black/40 backdrop-blur-sm">
+      <div className="flex h-full w-full max-w-[448px] flex-col bg-[#F8F5F0] dark:bg-[#1C1917] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
         
-        {/* Top Hero Photo Section */}
-        <div className="relative h-60 w-full bg-[#F5F0E8] dark:bg-[#2E2A26] overflow-hidden shrink-0">
+        {/* Hero Section */}
+        <div className="relative flex h-56 shrink-0 items-center justify-center bg-gradient-to-b from-[#FDEAE3] to-[#FADFD3] dark:from-[#3A2A24] dark:to-[#2A1F1A] overflow-hidden">
           {dish.imageUrl ? (
             <img
               src={dish.imageUrl}
@@ -82,426 +115,270 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl">
+            <span className="text-7xl" aria-hidden="true">
               {dish.imageEmoji || '🍲'}
-            </div>
+            </span>
           )}
-          
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/30" />
 
-          {/* Floating Back Pill & Top Actions */}
+          {dish.imageUrl && <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />}
+
+          {/* Top Floating Buttons */}
           <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
             <button
+              type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-white/90 dark:bg-[#252220]/90 hover:bg-white dark:hover:bg-[#2E2A26] text-[#2D2640] dark:text-[#F0EDE8] flex items-center justify-center backdrop-blur-md transition shadow-sm active:scale-95 cursor-pointer"
-              title="Back"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 dark:bg-[#28231E]/80 text-[#2D2640] dark:text-[#F0EDE8] backdrop-blur transition-transform active:scale-95 cursor-pointer shadow-sm"
+              aria-label="Back"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
 
-            <div className="flex items-center gap-2">
-              {/* Family Cookbook Toggle Button */}
+            <div className="flex items-center gap-1.5">
               {onToggleFamilyCookbook && (
                 <button
+                  type="button"
                   onClick={() => onToggleFamilyCookbook(dish)}
-                  className={`w-9 h-9 rounded-full bg-white/90 dark:bg-[#252220]/90 hover:bg-white dark:hover:bg-[#2E2A26] flex items-center justify-center backdrop-blur-md transition shadow-sm active:scale-95 cursor-pointer ${
-                    isInFamilyCookbook ? 'text-[#2D2640] dark:text-[#F0EDE8]' : 'text-[#B8AFA4] dark:text-[#5A5450] hover:text-[#3D3530] dark:hover:text-[#D0C8C0]'
+                  className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/80 dark:bg-[#28231E]/80 backdrop-blur transition-transform active:scale-95 cursor-pointer shadow-sm ${
+                    isInFamilyCookbook ? 'text-[#2D2640] dark:text-[#F0EDE8]' : 'text-[#B8AFA4] dark:text-[#9A8A7E]'
                   }`}
-                  title={isInFamilyCookbook ? 'In Family Cookbook' : 'Add to Family Cookbook'}
+                  title={isInFamilyCookbook ? 'In Cookbook' : 'Save to Cookbook'}
                 >
                   {isInFamilyCookbook ? (
-                    <BookmarkCheck className="w-4 h-4 fill-[#2D2640] dark:fill-[#F0EDE8] text-white dark:text-[#252220]" />
+                    <BookmarkCheck className="h-4 w-4 fill-[#2D2640] dark:fill-[#F0EDE8] text-white dark:text-[#28231E]" />
                   ) : (
-                    <BookmarkPlus className="w-4 h-4" />
+                    <BookmarkPlus className="h-4 w-4" />
                   )}
                 </button>
               )}
 
               <button
+                type="button"
                 onClick={handleExportSingle}
-                className="w-9 h-9 rounded-full bg-white/90 dark:bg-[#252220]/90 hover:bg-white dark:hover:bg-[#2E2A26] text-[#2D2640] dark:text-[#F0EDE8] flex items-center justify-center backdrop-blur-md transition shadow-sm active:scale-95 cursor-pointer"
-                title="Export / Share Recipe"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 dark:bg-[#28231E]/80 text-[#2D2640] dark:text-[#F0EDE8] backdrop-blur transition-transform active:scale-95 cursor-pointer shadow-sm"
+                title="Export"
               >
-                <Download className="w-4 h-4" />
+                <Download className="h-4 w-4" />
               </button>
 
               <button
+                type="button"
                 onClick={() => onToggleFavorite(dish.id)}
-                className={`w-9 h-9 rounded-full bg-white/90 dark:bg-[#252220]/90 hover:bg-white dark:hover:bg-[#2E2A26] flex items-center justify-center backdrop-blur-md transition shadow-sm active:scale-95 cursor-pointer ${
-                  isFavoritedByMe ? 'text-rose-500' : 'text-[#B8AFA4] dark:text-[#5A5450]'
+                className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/80 dark:bg-[#28231E]/80 backdrop-blur transition-transform active:scale-95 cursor-pointer shadow-sm ${
+                  isFavoritedByMe ? 'text-rose-500' : 'text-[#B8AFA4] dark:text-[#9A8A7E]'
                 }`}
-                title={isFavoritedByMe ? 'Favorited' : 'Add to Favorites'}
+                title="Favorite"
               >
-                <Heart className={`w-4 h-4 ${isFavoritedByMe ? 'fill-rose-500' : ''}`} />
+                <Heart className={`h-4 w-4 ${isFavoritedByMe ? 'fill-rose-500' : ''}`} />
               </button>
             </div>
           </div>
 
-          {/* Hero Banner Star Rating & Title */}
-          <div className="absolute bottom-3 left-4 right-4 text-white space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white/90 dark:bg-[#252220]/90 text-[#2D2640] dark:text-[#F0EDE8] shadow-xs">
-                <Star className="w-3 h-3 fill-[#FFD13B] text-[#FFD13B]" />
-                <span>4.8</span>
-              </div>
-
-              <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#2D2640]/80 dark:bg-[#F0EDE8]/20 text-white dark:text-[#F0EDE8] shadow-xs">
-                {formatCategory(dish.category)}
+          {/* Hero Bottom Title Overlay */}
+          <div className="absolute bottom-4 left-4 right-4 z-10">
+            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+              <span className="inline-block rounded-full bg-white/80 dark:bg-[#28231E]/80 px-2.5 py-0.5 text-[11px] font-semibold text-[#8A7A70] dark:text-[#9A8A7E] backdrop-blur shadow-2xs">
+                {dish.cuisine ? formatCuisine(dish.cuisine) : formatCategory(dish.category)}
               </span>
-
-              {dish.cuisine && (
-                <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-md">
-                  {formatCuisine(dish.cuisine)}
-                </span>
-              )}
-
-              {localized.fallbackTag && (
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FFD13B] text-[#2D2640] shadow-xs">
-                  {localized.fallbackTag}
+              {isInFamilyCookbook && (
+                <span className="inline-block rounded-full bg-[#FFF3D6] dark:bg-[#2A1E00] px-2 py-0.5 text-[10px] font-bold text-[#7A5C00] dark:text-[#FFD13B] border border-[#FFD13B]/40">
+                  {language === 'zh-CN' ? '家庭菜谱' : 'In Cookbook'}
                 </span>
               )}
             </div>
-
-            <h2 className="text-xl font-bold text-white leading-tight drop-shadow-sm">
+            <h2 className="text-xl font-bold text-[#2D2640] dark:text-[#F0EDE8] text-balance leading-tight drop-shadow-2xs">
               {localized.name}
             </h2>
           </div>
         </div>
 
-        {/* Scrollable Details Body */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F7F4EF] dark:bg-[#1A1714]">
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto px-4 pb-28 pt-4 space-y-4">
           
-          {/* Untranslated Language Fallback Notice Banner */}
-          {localized.fallbackTag && (
-            <div className="bg-[#FFF3D6] dark:bg-[#2A1E00] border border-[#FFD13B]/40 rounded-xl p-3 flex items-start gap-2.5 text-xs text-[#7A5C00] dark:text-[#FFD13B] shadow-2xs">
-              <span className="text-base leading-none">🌐</span>
-              <p className="leading-snug">
-                <strong>
-                  {language === 'zh-CN' ? '未提供中文翻译' : 'Untranslated Recipe'}
-                </strong>
-                <span className="block text-[11px] mt-0.5 opacity-80">
-                  {language === 'zh-CN'
-                    ? '此菜谱暂无中文译本，已为您显示原作者编写的语言内容。'
-                    : 'This recipe is not translated yet, displaying in available language.'}
-                </span>
-              </p>
+          {/* Metadata & Servings Card */}
+          <div className="flex items-center justify-between rounded-2xl border border-[#EDE8DF] bg-white px-4 py-3 shadow-sm dark:border-[#3A332C] dark:bg-[#28231E]">
+            <div className="flex items-center gap-2 text-[#4A3F35] dark:text-[#F0EDE8]">
+              <Clock className="h-4 w-4 text-[#9A8A7E]" />
+              <span className="text-[13px] font-medium">{dish.prepTimeMinutes || 20} {language === 'zh-CN' ? '分钟' : 'min'}</span>
             </div>
-          )}
-
-          {/* Quick Metrics (Servings & Prep Time) */}
-          <div className="flex items-center gap-2 text-xs text-[#3D3530] dark:text-[#D0C8C0] flex-wrap">
-            <div className="flex items-center gap-1.5 bg-white dark:bg-[#252220] px-3 py-1.5 rounded-xl border border-[#EDE8DF] dark:border-[#38332E] shadow-2xs">
-              <Users className="w-3.5 h-3.5 text-[#9A8A7E] dark:text-[#7A6E64]" />
-              <span className="font-semibold text-[#2D2640] dark:text-[#F0EDE8]">
-                {dish.servings * servingMultiplier} {language === 'zh-CN' ? '人份' : 'Servings'}
+            <div className="flex items-center gap-3">
+              <span className="text-[12px] font-medium text-[#8A7A70] dark:text-[#9A8A7E]">
+                {language === 'zh-CN' ? '份量' : 'Servings'}
               </span>
-            </div>
-
-            {dish.prepTimeMinutes && (
-              <div className="flex items-center gap-1.5 bg-white dark:bg-[#252220] px-3 py-1.5 rounded-xl border border-[#EDE8DF] dark:border-[#38332E] shadow-2xs">
-                <Clock className="w-3.5 h-3.5 text-[#9A8A7E] dark:text-[#7A6E64]" />
-                <span className="font-semibold text-[#2D2640] dark:text-[#F0EDE8]">
-                  {dish.prepTimeMinutes} {language === 'zh-CN' ? '分钟' : 'mins'}
-                </span>
-              </div>
-            )}
-
-            {isInFamilyCookbook ? (
-              <div className="flex items-center gap-1.5 bg-[#FFF3D6] dark:bg-[#2A1E00] text-[#7A5C00] dark:text-[#FFD13B] px-3 py-1.5 rounded-xl border border-[#FFD13B]/40 text-[11px] font-semibold">
-                <BookmarkCheck className="w-3.5 h-3.5" />
-                <span>{t('dishes.addedToCookbook')}</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] px-3 py-1.5 rounded-xl border border-[#EDE8DF] dark:border-[#38332E] text-[11px] font-semibold">
-                <span>{t('dishes.libraryTab')}</span>
-              </div>
-            )}
-
-            {dish.timesPlanned && dish.timesPlanned > 0 ? (
-              <div className="flex items-center gap-1.5 bg-[#FFF3D6] dark:bg-[#2A1E00] text-[#7A5C00] dark:text-[#FFD13B] px-3 py-1.5 rounded-xl border border-[#FFD13B]/40 text-[11px] font-bold">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>
-                  {language === 'zh-CN'
-                    ? `已做过 ${dish.timesPlanned} 次`
-                    : `Cooked ${dish.timesPlanned} times`}
-                </span>
-                {dish.lastPlannedAt && (
-                  <span className="text-[10px] opacity-80 font-normal">
-                    ({dish.lastPlannedAt})
-                  </span>
-                )}
-              </div>
-            ) : null}
-
-            {favoritedBy.length > 0 && (
-              <div className="flex items-center gap-1 text-rose-700 dark:text-rose-400 font-semibold bg-rose-50 dark:bg-rose-950/30 px-2.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900 text-[11px]">
-                <Heart className="w-3 h-3 fill-rose-500" />
-                <span>{favoritedBy.join(', ')}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Allergen Assessment Banner */}
-          {(() => {
-            const risk = checkDishAllergenRisk(dish, memberProfiles, familyMembers);
-            if (risk.hasRisk) {
-              return (
-                <div className="bg-rose-50 dark:bg-rose-950/30 border-2 border-rose-200 dark:border-rose-900 rounded-2xl p-3.5 text-xs text-rose-700 dark:text-rose-400 space-y-2 shadow-xs">
-                  <div className="flex items-center gap-2 font-bold">
-                    <ShieldAlert className="w-5 h-5 shrink-0" />
-                    <span>
-                      {language === 'zh-CN'
-                        ? '⚠️ 家庭过敏原预警 (包含忌口成分)'
-                        : '⚠️ Family Allergen Warning'}
-                    </span>
-                  </div>
-                  <div className="space-y-1 pl-7 text-[11px]">
-                    {risk.affectedMembers.map((m) => (
-                      <div key={m.memberName} className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-extrabold">👤 {m.memberName}:</span>
-                        {m.allergens.map((algId) => {
-                          const def = getAllergenById(algId);
-                          return (
-                            <span
-                              key={algId}
-                              className="bg-rose-200/80 dark:bg-rose-900/50 text-rose-900 dark:text-rose-200 font-bold px-2 py-0.5 rounded-md text-[10px]"
-                            >
-                              {def?.emoji || '⚠️'} {language === 'zh-CN' ? def?.nameZh || algId : def?.nameEn || algId}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            }
-            if (risk.dishAllergens.length > 0) {
-              return (
-                <div className="bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-2.5 flex items-center gap-2 flex-wrap text-[11px] text-[#7A6E64] dark:text-[#9A9088]">
-                  <span className="font-bold text-[#2D2640] dark:text-[#F0EDE8] shrink-0">
-                    {language === 'zh-CN' ? '🏷️ 涉及食材分类:' : '🏷️ Contains:'}
-                  </span>
-                  {risk.dishAllergens.map((algId) => {
-                    const def = getAllergenById(algId);
-                    return (
-                      <span
-                        key={algId}
-                        className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] px-2 py-0.5 rounded-md text-[10px] font-semibold text-[#3D3530] dark:text-[#D0C8C0]"
-                      >
-                        {def?.emoji || '•'} {language === 'zh-CN' ? def?.nameZh || algId : def?.nameEn || algId}
-                      </span>
-                    );
-                  })}
-                </div>
-              );
-            }
-            return null;
-          })()}
-
-          {/* "Add Note Here" section */}
-          <div className="bg-white dark:bg-[#252220] rounded-xl p-3 border border-[#EDE8DF] dark:border-[#38332E] space-y-2 shadow-2xs">
-            <button
-              onClick={() => setIsAddingNote(!isAddingNote)}
-              className="w-full flex items-center justify-between text-xs font-semibold text-[#3D3530] dark:text-[#D0C8C0] hover:text-[#2D2640] dark:hover:text-[#F0EDE8] transition cursor-pointer"
-            >
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#9A8A7E] dark:text-[#7A6E64]" />
-                <span>{language === 'zh-CN' ? '添加个人随手记 / 烹饪心得' : 'Add note here'}</span>
-              </div>
-              <span className="text-[11px] text-[#9A8A7E] dark:text-[#7A6E64]">{isAddingNote ? t('common.close') : `+ ${t('common.notes')}`}</span>
-            </button>
-
-            {isAddingNote && (
-              <textarea
-                rows={2}
-                placeholder={language === 'zh-CN' ? '例如：少放辣、多焖5分钟、换成嫩豆腐...' : 'e.g. Extra spicy, substitute tofu, cook for guests...'}
-                value={quickNote}
-                onChange={(e) => setQuickNote(e.target.value)}
-                className="w-full text-xs text-[#2D2640] dark:text-[#F0EDE8] p-2.5 rounded-xl bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#EDE8DF] dark:border-[#38332E] focus:outline-hidden focus:border-[#2D2640] dark:focus:border-[#F0EDE8]"
-              />
-            )}
-          </div>
-
-          {/* Servings Counter & Quick Plan Action */}
-          <div className="bg-white dark:bg-[#252220] rounded-xl p-3 border border-[#EDE8DF] dark:border-[#38332E] flex items-center justify-between shadow-2xs">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider">
-                {language === 'zh-CN' ? '分量倍数:' : 'Batch Scale:'}
-              </span>
-              <div className="flex items-center bg-[#F5F0E8] dark:bg-[#2E2A26] rounded-xl border border-[#EDE8DF] dark:border-[#38332E] px-1 py-0.5">
                 <button
-                  onClick={() => setServingMultiplier(Math.max(1, servingMultiplier - 1))}
-                  className="p-1 text-[#7A6E64] dark:text-[#9A9088] hover:text-[#2D2640] dark:hover:text-[#F0EDE8] transition cursor-pointer"
+                  type="button"
+                  onClick={() => setServingMultiplier((prev) => Math.max(0.25, prev - 0.25))}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FAF7F2] text-[#4A3F35] dark:bg-[#201C18] dark:text-[#F0EDE8] transition cursor-pointer"
+                  aria-label="Fewer servings"
                 >
-                  <Minus className="w-3.5 h-3.5" />
+                  <Minus className="h-3.5 w-3.5" strokeWidth={2.6} />
                 </button>
-                <span className="w-8 text-center text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8]">
-                  {servingMultiplier}x
+                <span className="w-6 text-center text-[14px] font-bold text-[#2D2640] dark:text-[#F0EDE8]">
+                  {currentServings}
                 </span>
                 <button
-                  onClick={() => setServingMultiplier(servingMultiplier + 1)}
-                  className="p-1 text-[#7A6E64] dark:text-[#9A9088] hover:text-[#2D2640] dark:hover:text-[#F0EDE8] transition cursor-pointer"
+                  type="button"
+                  onClick={() => setServingMultiplier((prev) => prev + 0.25)}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFD13B] text-[#2D2640] transition cursor-pointer"
+                  aria-label="More servings"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="h-3.5 w-3.5" strokeWidth={2.6} />
                 </button>
               </div>
             </div>
-
-            {onQuickPlan && (
-              <button
-                onClick={() => {
-                  onQuickPlan(dish);
-                  onClose();
-                }}
-                className="px-4 py-2 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] text-xs font-extrabold rounded-xl border border-[#2D2640]/10 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
-              >
-                {language === 'zh-CN' ? '+ 加入排餐' : 'ADD TO SCHEDULE'}
-              </button>
-            )}
           </div>
 
-          {/* Tags */}
-          {localized.tags && localized.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {localized.tags.map((tag, idx) => (
-                <span
-                  key={idx}
-                  className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 bg-white dark:bg-[#252220] text-[#7A6E64] dark:text-[#9A9088] rounded-xl border border-[#EDE8DF] dark:border-[#38332E] shadow-2xs"
-                >
-                  <Tag className="w-2.5 h-2.5 text-[#B8AFA4] dark:text-[#5A5450]" />
-                  {tag}
-                </span>
-              ))}
+          {/* Allergen Warning Banner */}
+          {allergenRisk.hasRisk && (
+            <div className="flex items-start gap-2.5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 dark:border-rose-500/25 dark:bg-rose-500/10 animate-in fade-in">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#E05050]" />
+              <div>
+                <p className="text-[13px] font-semibold text-[#E05050]">
+                  {language === 'zh-CN' ? '过敏原预警' : 'Allergy Warning'}
+                </p>
+                <p className="text-[12px] text-rose-600/90 dark:text-rose-300/90 mt-0.5">
+                  {language === 'zh-CN'
+                    ? `含有 ${allergenRisk.dishAllergens.map((id) => getAllergenById(id)?.nameZh || id).join(', ')} — ${allergenRisk.affectedMembers.map((m) => m.memberName).join('、')} 对此过敏。`
+                    : `Contains ${allergenRisk.dishAllergens.map((id) => getAllergenById(id)?.nameEn || id).join(', ')} — ${allergenRisk.affectedMembers.map((m) => m.memberName).join(', ')} allergic.`}
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Ingredients Checklist */}
+          {/* Ingredients Section */}
           <div>
-            <h3 className="text-[11px] font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider mb-2 flex items-center justify-between">
-              <span>{t('dishes.ingredientsSection')} ({localized.ingredients.length})</span>
-            </h3>
-            {localized.ingredients.length === 0 ? (
-              <p className="text-xs text-[#B8AFA4] dark:text-[#5A5450] italic">
-                {language === 'zh-CN' ? '暂无食材清单。' : 'No ingredients listed.'}
-              </p>
-            ) : (
-              <div className="bg-white dark:bg-[#252220] rounded-xl p-3 border border-[#EDE8DF] dark:border-[#38332E] space-y-2 shadow-2xs">
-                {localized.ingredients.map((ing, idx) => {
-                  const isChecked = checkedIngredients.has(idx);
-                  return (
-                    <div
-                      key={ing.id || idx}
-                      onClick={() => {
-                        setCheckedIngredients((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(idx)) next.delete(idx);
-                          else next.add(idx);
-                          return next;
-                        });
-                      }}
-                      className={`flex items-center justify-between text-xs py-1.5 px-2 rounded-lg border-b border-[#F0EAE0] dark:border-[#38332E] last:border-0 cursor-pointer transition-colors ${
-                        isChecked ? 'bg-[#FFF8E6]/40 dark:bg-[#2A1E00]/30 opacity-70' : 'hover:bg-[#FAF7F2] dark:hover:bg-[#1E1B18]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0 pr-2">
-                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-[#B8AFA4]">
+                {language === 'zh-CN' ? `所需食材 (${dish.ingredients.length})` : `Ingredients (${dish.ingredients.length})`}
+              </h3>
+              {checkedIngredients.size > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setCheckedIngredients(new Set())}
+                  className="text-[10px] text-[#8A7A70] hover:underline cursor-pointer"
+                >
+                  {language === 'zh-CN' ? '重置勾选' : 'Reset checklist'}
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              {dish.ingredients.map((ing, idx) => {
+                const isChecked = checkedIngredients.has(idx);
+                const scaledAmount = ing.amount ? Number((ing.amount * servingMultiplier).toFixed(1)) : null;
+
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => toggleIngredientCheck(idx)}
+                    className={`flex w-full items-center justify-between rounded-xl border border-[#EDE8DF] bg-white px-3 py-2.5 text-left transition-colors cursor-pointer dark:border-[#3A332C] dark:bg-[#28231E] ${
+                      isChecked ? 'bg-[#FAF7F2] dark:bg-[#201C18]' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+                      <span
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
                           isChecked
-                            ? 'bg-[#FFD13B] border-[#2D2640]/20 text-[#2D2640]'
-                            : 'border-[#EDE8DF] dark:border-[#38332E] bg-white dark:bg-[#252220]'
-                        }`}>
-                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
-                        </div>
-                        <span className={`font-semibold text-[#2D2640] dark:text-[#F0EDE8] truncate ${isChecked ? 'line-through text-[#9A8A7E] dark:text-[#7A6E64]' : ''}`}>
-                          {ing.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {ing.amount !== null && (
-                          <span className="font-bold text-[#2D2640] dark:text-[#D0C8C0] bg-[#F5F0E8] dark:bg-[#2E2A26] border border-[#EDE8DF] dark:border-[#38332E] px-2 py-0.5 rounded-md text-[11px]">
-                            {Math.round(ing.amount * servingMultiplier * 100) / 100} {ing.unit}
-                          </span>
-                        )}
-                        <span className="text-[10px] text-[#9A8A7E] dark:text-[#7A6E64] bg-[#FAF7F2] dark:bg-[#1E1B18] px-1.5 py-0.5 rounded-md font-medium border border-[#EDE8DF] dark:border-[#38332E]">
-                          {formatCategory(ing.category)}
-                        </span>
-                      </div>
+                            ? 'border-[#4E9E72] bg-[#EBF5EE]'
+                            : 'border-[#D8CCC0] bg-transparent'
+                        }`}
+                      >
+                        {isChecked ? (
+                          <Check className="h-3.5 w-3.5 text-[#4E9E72]" strokeWidth={3} />
+                        ) : null}
+                      </span>
+                      <span
+                        className={`text-[13.5px] truncate ${
+                          isChecked
+                            ? 'text-[#B8AFA4] line-through dark:text-[#5A5450]'
+                            : 'text-[#4A3F35] dark:text-[#F0EDE8]'
+                        }`}
+                      >
+                        {ing.name}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+
+                    <span className="text-[12px] font-semibold text-[#8A7A70] dark:text-[#9A8A7E] shrink-0">
+                      {scaledAmount !== null ? `${scaledAmount} ` : ''}{ing.unit || ''}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Cooking Instructions / Notes */}
-          <div>
-            <h3 className="text-[11px] font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider mb-2">
-              {t('dishes.instructionsSection')}
-            </h3>
-            {localized.instructions ? (
-              <div className="bg-white dark:bg-[#252220] p-4 rounded-xl border border-[#EDE8DF] dark:border-[#38332E] text-xs font-normal leading-relaxed whitespace-pre-line text-[#2D2640] dark:text-[#F0EDE8] shadow-2xs">
-                {localized.instructions}
-              </div>
-            ) : (
-              <p className="text-xs text-[#B8AFA4] dark:text-[#5A5450] italic bg-white dark:bg-[#252220] p-3 rounded-xl border border-[#EDE8DF] dark:border-[#38332E]">
-                {language === 'zh-CN' ? '暂未添加烹饪步骤。点击下方“编辑”即可补充！' : "No cooking instructions added yet. Tap 'Edit' to add the recipe steps."}
-              </p>
-            )}
-          </div>
-        </div>
+          {/* Instructions Section */}
+          {instructionSteps.length > 0 && (
+            <div>
+              <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#B8AFA4]">
+                {language === 'zh-CN' ? '烹饪步骤' : 'Instructions'}
+              </h3>
+              <ol className="space-y-3">
+                {instructionSteps.map((step, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FFD13B] text-[13px] font-bold text-[#2D2640]">
+                      {i + 1}
+                    </span>
+                    <p className="pt-0.5 text-[13.5px] leading-relaxed text-[#4A3F35] dark:text-[#F0EDE8]">
+                      {step}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
 
-        {/* Modal Bottom Footer */}
-        <div className="p-3.5 border-t border-[#EDE8DF] dark:border-[#38332E] bg-white dark:bg-[#252220] flex items-center justify-between gap-2 pb-safe">
-          <button
-            onClick={() => {
-              if (window.confirm(language === 'zh-CN' ? `确定要从菜谱库中删除 "${localized.name}" 吗？` : `Delete "${dish.name}" from recipe library?`)) {
-                onDelete(dish.id);
-                onClose();
-              }
-            }}
-            className="p-2.5 text-[#B8AFA4] dark:text-[#5A5450] hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition cursor-pointer"
-            title={language === 'zh-CN' ? '删除菜谱' : 'Delete Recipe'}
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-
-          <div className="flex items-center gap-2">
+          {/* Action Row */}
+          <div className="flex items-center gap-2 pt-2">
             <button
+              type="button"
               onClick={() => onEdit(dish)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#EDE8DF] dark:border-[#38332E] bg-[#F5F0E8] dark:bg-[#2E2A26] text-xs font-bold text-[#2D2640] dark:text-[#D0C8C0] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] active:scale-95 transition cursor-pointer"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[#E8DDD5] bg-[#F5F0E8] text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8] text-xs font-semibold cursor-pointer"
             >
-              <Edit3 className="w-3.5 h-3.5 text-[#9A8A7E] dark:text-[#7A6E64]" />
-              <span>{language === 'zh-CN' ? '编辑' : 'Edit'}</span>
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{t('common.edit')}</span>
             </button>
-
-            {selectAction ? (
-              <button
-                onClick={() => {
-                  selectAction.onSelect(dish);
-                }}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold shadow-sm active:scale-[0.98] transition-all cursor-pointer ${
-                  selectAction.isSelected
-                    ? 'bg-[#FFD13B] text-[#2D2640] border border-[#2D2640]/10'
-                    : 'bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] border border-[#2D2640]/10'
-                }`}
-              >
-                {selectAction.isSelected ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <Plus className="w-3.5 h-3.5" />}
-                <span>{selectAction.label}</span>
-              </button>
-            ) : onQuickPlan ? (
-              <button
-                onClick={() => {
-                  onQuickPlan(dish);
-                  onClose();
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] text-xs font-extrabold border border-[#2D2640]/10 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
-              >
-                <CalendarPlus className="w-3.5 h-3.5" />
-                <span>{language === 'zh-CN' ? '加入排餐' : 'Add to Schedule'}</span>
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm(`Delete "${dish.name}"?`)) onDelete(dish.id);
+              }}
+              className="p-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold cursor-pointer transition"
+              title="Delete dish"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
+
+        {/* Sticky Bottom Actions */}
+        <div className="sticky bottom-0 z-20 border-t border-[#EDE8DF] bg-white/95 backdrop-blur-md px-4 py-3 dark:border-[#3A332C] dark:bg-[#28231E]/95">
+          {selectAction ? (
+            <button
+              type="button"
+              onClick={() => selectAction.onSelect(dish)}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-transform active:scale-95 cursor-pointer shadow-md bg-[#FFD13B] text-[#2D2640] border border-[#2D2640]/10"
+            >
+              <Check className="w-4 h-4 stroke-[2.4]" />
+              <span>{selectAction.label}</span>
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              {onQuickPlan && (
+                <button
+                  type="button"
+                  onClick={() => onQuickPlan(dish)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-[#FFD13B] border border-[#2D2640]/10 text-[#2D2640] font-semibold text-sm transition-transform active:scale-95 cursor-pointer shadow-md"
+                >
+                  <CalendarPlus className="w-4 h-4" strokeWidth={2.4} />
+                  <span>{language === 'zh-CN' ? '加入排餐' : 'Add to Plan'}</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

@@ -2,32 +2,24 @@ import React, { useState, useRef } from 'react';
 import type { AppData, MealScheduleConfig, UserProfile } from '../../types';
 import { getInitialAppData, DEFAULT_PANTRY_INGREDIENTS, DEFAULT_MEAL_SCHEDULES } from '../../services/seedData';
 import {
-  Share2,
   RotateCcw,
-  Smartphone,
   CheckCircle2,
-  AlertCircle,
-  FileArchive,
-  Download,
-  Users,
-  Sliders,
   Camera,
   Trash2,
   Save,
-  UserPlus,
+  Plus,
   LogOut,
-  UserCheck,
   Moon,
   Sun,
-  Globe,
-  KeyRound,
+  ShieldCheck,
+  Lock,
   RefreshCw,
-  ShieldAlert,
-  ShieldCheck
+  AlertTriangle,
+  Check,
+  ChevronRight
 } from 'lucide-react';
 import { updateFamilyPinFromSettings, fetchFamilyCloudData } from '../../services/firebase';
 import { mergeAppData } from '../../services/mergeSyncService';
-import { exportToZip, parseUploadedDataFile, mergeImportedData } from '../../services/zipExportService';
 import { MealScheduleSettingsModal } from './MealScheduleSettingsModal';
 import { PersonalisationModal } from '../personalisation/PersonalisationModal';
 import { getAllergenById } from '../../services/personalisationService';
@@ -46,6 +38,28 @@ interface SettingsViewProps {
   onToggleDarkMode?: (val: boolean) => void;
 }
 
+function SectionCard({
+  title,
+  action,
+  children
+}: {
+  title: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-[#EDE8DF] bg-white p-4 shadow-sm dark:border-[#3A332C] dark:bg-[#28231E]">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-[11px] font-semibold uppercase tracking-widest text-[#8A7A70] dark:text-[#9A8A7E]">
+          {title}
+        </h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export const SettingsView: React.FC<SettingsViewProps> = ({
   appData,
   onUpdateAppData,
@@ -55,13 +69,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onToggleDarkMode
 }) => {
   const { language, setLanguage, t } = useLanguage();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isScheduleSettingsOpen, setIsScheduleSettingsOpen] = useState(false);
   const [isPersonalisationOpen, setIsPersonalisationOpen] = useState(false);
 
-  // Profile Edit State
-  const [editFamilyName, setEditFamilyName] = useState(appData.currentProfile?.familyName || 'Family');
+  // Profile Edit State — family name is read-only, only member name is editable
   const [editMemberName, setEditMemberName] = useState(appData.currentProfile?.memberName || 'Member');
   const [editAvatarUrl, setEditAvatarUrl] = useState(appData.currentProfile?.avatarUrl || '');
   const [newMemberNameInput, setNewMemberNameInput] = useState('');
@@ -76,11 +88,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [pendingProfileUpdate, setPendingProfileUpdate] = useState<UserProfile | null>(null);
 
-  const [importStatus, setImportStatus] = useState<{
-    type: 'success' | 'error' | null;
-    message: string;
-  }>({ type: null, message: '' });
-
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -89,8 +96,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   const currentMember = appData.currentProfile?.memberName || '';
+  const familyName = appData.currentProfile?.familyName || '';
 
-  // Dark mode toggle — saves per-member preference to localStorage
+  // Dark mode toggle
   const handleToggleDarkMode = () => {
     const newVal = !isDarkMode;
     if (currentMember) {
@@ -103,34 +111,30 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     try {
       const compressed = await compressImage(file, 400, 400, 0.8);
       setEditAvatarUrl(compressed);
       showToast('📷 Photo updated');
-    } catch (err) {
+    } catch {
       showToast('❌ Upload failed');
     }
   };
 
-  // Save Profile Edits
+  // Save Profile
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanFamily = editFamilyName.trim();
     const cleanMember = editMemberName.trim();
-
-    if (!cleanFamily || !cleanMember) {
-      showToast('⚠️ Names required');
+    if (!cleanMember) {
+      showToast('⚠️ Name required');
       return;
     }
 
     const updatedProfile: UserProfile = {
-      familyName: cleanFamily,
+      familyName,
       memberName: cleanMember,
       avatarUrl: editAvatarUrl || undefined
     };
 
-    // Check Easter Egg: contains "Nat" (case-insensitive)
     if (/nat/i.test(cleanMember)) {
       setPendingProfileUpdate(updatedProfile);
       setShowEasterEgg(true);
@@ -143,13 +147,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const applyProfileUpdate = (profile: UserProfile) => {
     const membersSet = new Set(appData.familyMembers);
     membersSet.add(profile.memberName);
-
-    onUpdateAppData({
-      ...appData,
-      currentProfile: profile,
-      familyMembers: Array.from(membersSet)
-    });
-
+    onUpdateAppData({ ...appData, currentProfile: profile, familyMembers: Array.from(membersSet) });
     showToast('✅ Profile saved');
   };
 
@@ -162,6 +160,39 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   // Add a new family member
+  const handleAddMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = newMemberNameInput.trim();
+    if (!clean) return;
+    if (appData.familyMembers.some((m) => m.toLowerCase() === clean.toLowerCase())) {
+      showToast(`⚠️ "${clean}" already exists.`);
+      return;
+    }
+    onUpdateAppData({ ...appData, familyMembers: [...appData.familyMembers, clean] });
+    setNewMemberNameInput('');
+    showToast(`✅ Added "${clean}"`);
+  };
+
+  // Remove a family member
+  const handleRemoveMember = (memberToRemove: string) => {
+    if (memberToRemove === currentMember) {
+      showToast('⚠️ Cannot remove current user');
+      return;
+    }
+    if (window.confirm(`Remove "${memberToRemove}"?`)) {
+      const updatedMembers = appData.familyMembers.filter((m) => m !== memberToRemove);
+      const updatedDishes = appData.dishes.map((dish) => {
+        if (dish.favoritedByMembers?.includes(memberToRemove)) {
+          return { ...dish, favoritedByMembers: dish.favoritedByMembers.filter((m) => m !== memberToRemove) };
+        }
+        return dish;
+      });
+      onUpdateAppData({ ...appData, familyMembers: updatedMembers, dishes: updatedDishes });
+      showToast(`🗑️ Removed "${memberToRemove}"`);
+    }
+  };
+
+  // Family PIN
   const handleUpdateFamilyPin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPinInput || !newPinInput) return;
@@ -169,9 +200,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setPinChangeMsg({ text: 'New PIN must be exactly 4 digits.', isError: true });
       return;
     }
-
-    const fam = appData.currentProfile?.familyName || editFamilyName;
-    const res = await updateFamilyPinFromSettings(fam, currentPinInput, newPinInput);
+    const res = await updateFamilyPinFromSettings(familyName, currentPinInput, newPinInput);
     if (res.success) {
       setPinChangeMsg({ text: '✅ Family PIN updated successfully!', isError: false });
       setCurrentPinInput('');
@@ -183,111 +212,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     }
   };
 
-  const handleAddMember = (e: React.FormEvent) => {
-    e.preventDefault();
-    const clean = newMemberNameInput.trim();
-    if (!clean) return;
-
-    if (appData.familyMembers.some((m) => m.toLowerCase() === clean.toLowerCase())) {
-      showToast(`⚠️ "${clean}" already exists.`);
-      return;
-    }
-
-    const updatedMembers = [...appData.familyMembers, clean];
-    onUpdateAppData({
-      ...appData,
-      familyMembers: updatedMembers
-    });
-
-    setNewMemberNameInput('');
-    showToast(`✅ Added "${clean}"`);
-  };
-
-  // Remove a family member (prevent removing current active member)
-  const handleRemoveMember = (memberToRemove: string) => {
-    if (memberToRemove === currentMember) {
-      showToast('⚠️ Cannot remove current user');
-      return;
-    }
-
-    if (window.confirm(`Remove "${memberToRemove}"?`)) {
-      const updatedMembers = appData.familyMembers.filter((m) => m !== memberToRemove);
-      
-      const updatedDishes = appData.dishes.map((dish) => {
-        if (dish.favoritedByMembers && dish.favoritedByMembers.includes(memberToRemove)) {
-          return {
-            ...dish,
-            favoritedByMembers: dish.favoritedByMembers.filter((m) => m !== memberToRemove)
-          };
-        }
-        return dish;
-      });
-
-      onUpdateAppData({
-        ...appData,
-        familyMembers: updatedMembers,
-        dishes: updatedDishes
-      });
-
-      showToast(`🗑️ Removed "${memberToRemove}"`);
-    }
-  };
-
-  // Export Full Backup Zip
-  const handleExportFullZip = async () => {
-    try {
-      const filename = await exportToZip(editFamilyName, 'FullBackup', appData);
-      showToast(`📦 Exported ${filename}`);
-    } catch (err: any) {
-      showToast(`❌ Export failed: ${err.message}`);
-    }
-  };
-
-  // Import Zip / JSON
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const res = await parseUploadedDataFile(file);
-    if (!res.success || !res.data) {
-      setImportStatus({ type: 'error', message: res.message });
-      return;
-    }
-
-    const { updatedData, summary } = mergeImportedData(
-      appData,
-      res.type || 'full',
-      res.data
-    );
-
-    onUpdateAppData(updatedData);
-    setImportStatus({
-      type: 'success',
-      message: `Imported: ${summary}`
-    });
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  // Save customized meal schedules
+  // Save meal schedules
   const handleSaveMealSchedules = (schedules: MealScheduleConfig[]) => {
-    onUpdateAppData({
-      ...appData,
-      mealSchedules: schedules
-    });
+    onUpdateAppData({ ...appData, mealSchedules: schedules });
     showToast('✅ Saved meal schedules');
   };
 
-  // Reset to Starter Data (preserves auth profile, members, settings, and full 3,000+ recipe library)
+  // Reset to Starter Data
   const handleResetSampleData = () => {
-    if (
-      window.confirm(
-        'Restore defaults for meal plan, grocery list, and starter recipes? Your profile and members will remain intact.'
-      )
-    ) {
+    if (window.confirm('Restore defaults for meal plan, grocery list, and starter recipes? Your profile and members will remain intact.')) {
       const fresh = getInitialAppData(appData.currentProfile);
       const systemDishes = getCachedSystemRecipes();
       const mergedDishes = mergeSystemWithUserDishes(fresh.dishes, systemDishes);
-
       onUpdateAppData({
         ...appData,
         dishes: mergedDishes,
@@ -296,13 +232,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         pantryIngredients: DEFAULT_PANTRY_INGREDIENTS,
         mealSchedules: DEFAULT_MEAL_SCHEDULES
       });
-      setImportStatus({ type: 'success', message: 'Restored defaults.' });
+      showToast('✅ Restored defaults');
     }
   };
 
   return (
-    <div className="flex-1 pb-28 pt-3 px-4 space-y-4 max-w-md mx-auto w-full bg-[#F7F4EF] dark:bg-[#1A1714]">
-      {/* Toast Notification */}
+    <div className="flex-1 pb-32 pt-4 px-4 space-y-4 max-w-md mx-auto w-full">
+      {/* Toast */}
       {toastMsg && (
         <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
           <CheckCircle2 className="w-4 h-4 text-[#FFD13B] dark:text-[#2D2640]" />
@@ -310,480 +246,255 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       )}
 
-      {/* Edit Profile & Photo Avatar Card */}
-      <form onSubmit={handleSaveProfile} className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-[#EDE8DF] dark:border-[#38332E]">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
-            <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-              {language === 'zh-CN' ? '个人档案与空间' : 'Profile'}
-            </h3>
-          </div>
+      {/* ─── My Profile ─── */}
+      <SectionCard
+        title={language === 'zh-CN' ? '个人档案' : 'My Profile'}
+        action={
           <button
             type="button"
             onClick={onOpenProfileModal}
-            className="text-[11px] font-semibold text-[#7A6E64] dark:text-[#9A9088] hover:text-[#2D2640] dark:hover:text-[#F0EDE8] hover:underline cursor-pointer"
+            className="inline-flex items-center gap-0.5 rounded-lg bg-[#F5F0E8] px-2.5 py-1 text-[11px] font-semibold text-[#2D2640] dark:bg-[#201C18] dark:text-[#F0EDE8] transition cursor-pointer"
           >
-            {t('settings.switchMemberBtn')}
+            <span>{t('settings.switchMemberBtn')}</span>
+            <ChevronRight className="h-3.5 w-3.5" />
           </button>
-        </div>
-
-        {/* Member Photo Avatar Upload */}
-        <div className="flex items-center gap-4">
-          <input
-            type="file"
-            ref={avatarInputRef}
-            accept="image/*"
-            onChange={handleAvatarUpload}
-            className="hidden"
-          />
-
-          <div className="relative shrink-0">
-            {editAvatarUrl ? (
-              <img
-                src={editAvatarUrl}
-                alt="Member Avatar"
-                className="w-14 h-14 rounded-2xl object-cover border border-[#EDE8DF] dark:border-[#38332E] shadow-xs"
-              />
-            ) : (
-              <div className="w-14 h-14 rounded-2xl bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#F0EDE8] font-bold text-lg flex items-center justify-center border border-[#EDE8DF] dark:border-[#38332E] shadow-xs">
-                {editMemberName.charAt(0).toUpperCase()}
-              </div>
-            )}
-            
-            <button
-              type="button"
-              onClick={() => avatarInputRef.current?.click()}
-              className="absolute -bottom-1 -right-1 p-1.5 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all cursor-pointer"
-              title={language === 'zh-CN' ? '上传头像' : 'Upload Photo'}
-            >
-              <Camera className="w-3 h-3" />
-            </button>
-          </div>
-
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center gap-1.5">
+        }
+      >
+        <form onSubmit={handleSaveProfile} className="space-y-3">
+          <div className="flex items-center gap-3">
+            <input type="file" ref={avatarInputRef} accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+            <div className="relative shrink-0">
+              {editAvatarUrl ? (
+                <img
+                  src={editAvatarUrl}
+                  alt="Member Avatar"
+                  className="h-12 w-12 rounded-full object-cover border border-[#EDE8DF] dark:border-[#3A332C]"
+                />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFD13B] text-lg font-bold text-[#2D2640]">
+                  {editMemberName.charAt(0).toUpperCase()}
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="text-xs font-semibold bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer px-3 py-1"
+                className="absolute -bottom-0.5 -right-0.5 p-1 bg-[#2D2640] text-white rounded-full shadow-xs hover:opacity-90 transition cursor-pointer"
+                title={language === 'zh-CN' ? '上传头像' : 'Upload Photo'}
               >
-                {language === 'zh-CN' ? '上传头像' : 'Upload Photo'}
+                <Camera className="w-3 h-3" />
               </button>
-              {editAvatarUrl && (
-                <button
-                  type="button"
-                  onClick={() => setEditAvatarUrl('')}
-                  className="p-1.5 text-[#B8AFA4] dark:text-[#5A5450] hover:text-rose-600 rounded-lg transition cursor-pointer"
-                  title="Remove photo"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <input
+                type="text"
+                required
+                value={editMemberName}
+                onChange={(e) => setEditMemberName(e.target.value)}
+                placeholder="Member name"
+                className="w-full text-[14px] font-bold px-3 py-1.5 rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] text-[#2D2640] placeholder:text-[#C4B0A5] focus:outline-none focus:border-[#A0867A] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
+              />
+              <div className="mt-1 flex items-center gap-2">
+                <span className="inline-block rounded-full bg-[#FAF7F2] px-2 py-0.5 text-[11px] font-medium text-[#8A7A70] dark:bg-[#201C18] dark:text-[#9A8A7E]">
+                  {familyName}
+                </span>
+                {editAvatarUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setEditAvatarUrl('')}
+                    className="text-[11px] text-rose-500 hover:underline cursor-pointer"
+                  >
+                    {language === 'zh-CN' ? '删除照片' : 'Remove photo'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Family & Member Name Inputs */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <div>
-            <label className="block text-[10px] font-bold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider mb-1">
-              {t('settings.currentFamily')}
-            </label>
-            <input
-              type="text"
-              required
-              value={editFamilyName}
-              onChange={(e) => setEditFamilyName(e.target.value)}
-              className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-[#E8E0D5] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-2xs"
-            />
-          </div>
+          <button
+            type="submit"
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#2D2640]/10 bg-[#FFD13B] py-2 text-[12.5px] font-semibold text-[#2D2640] transition-transform active:scale-95 cursor-pointer shadow-xs"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>{t('common.save')}</span>
+          </button>
+        </form>
+      </SectionCard>
 
-          <div>
-            <label className="block text-[10px] font-bold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider mb-1">
-              {t('settings.currentMember')}
-            </label>
-            <input
-              type="text"
-              required
-              value={editMemberName}
-              onChange={(e) => setEditMemberName(e.target.value)}
-              className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-[#E8E0D5] dark:border-[#38332E] bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-2xs"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full py-2 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5"
-        >
-          <Save className="w-3.5 h-3.5" />
-          <span>{t('common.save')}</span>
-        </button>
-      </form>
-
-      {/* Family Members Management Card */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-[#EDE8DF] dark:border-[#38332E]">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
-            <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-              {language === 'zh-CN' ? `家庭成员 (${appData.familyMembers.length})` : `Family Members (${appData.familyMembers.length})`}
-            </h3>
-          </div>
-        </div>
-
-        {/* Member List */}
+      {/* ─── Family & Allergies (Merged) ─── */}
+      <SectionCard
+        title={language === 'zh-CN' ? `家庭成员与过敏保护 (${appData.familyMembers.length})` : `Family & Allergies (${appData.familyMembers.length} members)`}
+        action={
+          <button
+            type="button"
+            onClick={() => setIsPersonalisationOpen(true)}
+            className="inline-flex items-center gap-0.5 rounded-lg bg-[#F5F0E8] px-2.5 py-1 text-[11px] font-semibold text-[#2D2640] dark:bg-[#201C18] dark:text-[#F0EDE8] transition cursor-pointer"
+          >
+            <span>{language === 'zh-CN' ? '偏好设置' : 'Configure'}</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        }
+      >
         <div className="space-y-2">
-          {appData.familyMembers.map((member) => {
-            const isCurrentUser = member === currentMember;
+          {appData.familyMembers.map((m) => {
+            const isUser = m === currentMember;
+            const prefs = appData.memberProfiles?.[m];
+            const allergies = prefs?.allergies || [];
+            const allergyCount = allergies.length;
+
             return (
               <div
-                key={member}
-                className="flex items-center justify-between p-2 rounded-xl bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#EDE8DF] dark:border-[#38332E]"
+                key={m}
+                className="flex items-center justify-between rounded-xl bg-[#FAF7F2] px-3 py-2.5 dark:bg-[#201C18]"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <div
-                    className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
-                      isCurrentUser ? 'bg-[#FFD13B] text-[#2D2640] shadow-sm' : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#F0EDE8]'
-                    }`}
-                  >
-                    {member.charAt(0).toUpperCase()}
-                  </div>
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[13px] font-bold text-[#2D2640] dark:bg-[#28231E] dark:text-[#F0EDE8] shrink-0 border border-[#EDE8DF] dark:border-[#3A332C]">
+                    {m.charAt(0).toUpperCase()}
+                  </span>
                   <div className="min-w-0">
-                    <span className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] block truncate">{member}</span>
-                    {isCurrentUser && (
-                      <span className="text-[9px] text-[#2D6A4A] dark:text-[#4CAF82] font-bold flex items-center gap-1">
-                        <UserCheck className="w-2.5 h-2.5" />
-                        {language === 'zh-CN' ? '当前登录' : 'Active User'}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[13.5px] font-medium text-[#4A3F35] dark:text-[#F0EDE8] truncate">
+                        {m}
                       </span>
+                      {isUser && (
+                        <span className="rounded-full bg-[#FFD13B] px-1.5 py-0.2 text-[10px] font-bold text-[#2D2640]">
+                          {language === 'zh-CN' ? '当前' : 'You'}
+                        </span>
+                      )}
+                    </div>
+                    {allergies.length > 0 && (
+                      <p className="text-[10px] text-[#8A7A70] dark:text-[#9A8A7E] truncate mt-0.5">
+                        {allergies.slice(0, 3).map((id) => {
+                          const def = getAllergenById(id);
+                          return language === 'zh-CN' ? def?.nameZh || id : def?.nameEn || id;
+                        }).join(', ')}
+                        {allergies.length > 3 && ` +${allergies.length - 3}`}
+                      </p>
                     )}
                   </div>
                 </div>
 
-                {!isCurrentUser && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveMember(member)}
-                    className="p-1 text-[#B8AFA4] dark:text-[#5A5450] hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition cursor-pointer"
-                    title={`Remove ${member}`}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {allergyCount > 0 ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-[#E05050] dark:bg-rose-500/10">
+                      <AlertTriangle className="h-3 w-3" />
+                      {allergyCount} {language === 'zh-CN' ? '项忌口' : allergyCount === 1 ? 'allergy' : 'allergies'}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#EBF5EE] px-2 py-0.5 text-[11px] font-semibold text-[#4E9E72]">
+                      <Check className="h-3 w-3" strokeWidth={3} />
+                      {language === 'zh-CN' ? '无过敏' : 'No allergies'}
+                    </span>
+                  )}
+
+                  {!isUser && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMember(m)}
+                      className="p-1 text-[#C4B0A5] hover:text-rose-600 rounded-lg transition cursor-pointer"
+                      title={`Remove ${m}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
 
-        {/* Add Member Form */}
-        <form onSubmit={handleAddMember} className="pt-1 flex gap-2">
+        {/* Add Member form */}
+        <form onSubmit={handleAddMember} className="mt-3 flex gap-2">
           <input
-            type="text"
-            placeholder={language === 'zh-CN' ? '输入新成员姓名...' : 'Add family member...'}
+            placeholder={language === 'zh-CN' ? '添加家庭成员...' : 'Add family member...'}
             value={newMemberNameInput}
             onChange={(e) => setNewMemberNameInput(e.target.value)}
-            className="flex-1 px-3 py-2 text-xs font-semibold rounded-xl bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-2xs"
+            className="flex-1 rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] px-3 py-2 text-[13px] text-[#2D2640] placeholder:text-[#C4B0A5] focus:border-[#A0867A] focus:outline-none dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
           />
           <button
             type="submit"
             disabled={!newMemberNameInput.trim()}
-            className="px-3.5 py-2 bg-[#FFD13B] hover:bg-[#FFC200] disabled:opacity-40 text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all cursor-pointer"
+            className="flex items-center gap-1 rounded-xl border border-[#2D2640]/10 bg-[#FFD13B] px-3 py-2 text-[12px] font-semibold text-[#2D2640] transition-transform active:scale-95 disabled:opacity-40 cursor-pointer shadow-xs"
           >
-            <UserPlus className="w-4 h-4" />
+            <Plus className="h-4 w-4" strokeWidth={2.6} />
+            <span>{language === 'zh-CN' ? '添加' : 'Add'}</span>
           </button>
         </form>
-      </div>
 
-      {/* Family Personalisation & Allergies Card */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-[#EDE8DF] dark:border-[#38332E]">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-amber-500" />
-            <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-              {language === 'zh-CN' ? '个性化口味与全家过敏保护' : 'Personalisation & Allergies'}
-            </h3>
-          </div>
+        {/* Safety Mode Banner */}
+        <div className="mt-3 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-[#EBF5EE] px-3 py-2.5 dark:from-amber-500/10 dark:to-[#4E9E72]/10">
+          <ShieldCheck className="h-4 w-4 shrink-0 text-[#4E9E72]" />
+          <p className="text-[12px] font-medium text-[#4A3F35] dark:text-[#F0EDE8] flex-1">
+            {appData.familyPersonalisation?.strictAllergyFilter !== false
+              ? (language === 'zh-CN' ? '全家安全模式已开启 — 菜谱将自动排除过敏原。' : 'Family Safety Mode is on — allergens are filtered from recipes.')
+              : (language === 'zh-CN' ? '安全模式已关闭' : 'Safety Mode Off')}
+          </p>
+        </div>
+      </SectionCard>
+
+      {/* ─── Meal Schedules ─── */}
+      <SectionCard
+        title={t('planner.manageSchedules')}
+        action={
           <button
             type="button"
-            onClick={() => setIsPersonalisationOpen(true)}
-            className="text-xs font-bold bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer px-3 py-1 flex items-center gap-1 shadow-2xs"
+            onClick={() => setIsScheduleSettingsOpen(true)}
+            className="inline-flex items-center gap-0.5 rounded-lg bg-[#F5F0E8] px-2.5 py-1 text-[11px] font-semibold text-[#2D2640] dark:bg-[#201C18] dark:text-[#F0EDE8] transition cursor-pointer"
           >
-            <Sliders className="w-3 h-3 text-[#7A6E64] dark:text-[#9A9088]" />
-            <span>{language === 'zh-CN' ? '设置' : 'Configure'}</span>
+            <span>{language === 'zh-CN' ? '配置餐段' : 'Configure'}</span>
+            <ChevronRight className="h-3.5 w-3.5" />
           </button>
-        </div>
+        }
+      >
+        <p className="text-[13px] text-[#8A7A70] dark:text-[#9A8A7E]">
+          {language === 'zh-CN' ? '自定义每日餐饮餐段 (如早/午/晚/加餐) 及生效星期。' : 'Choose which meal slots appear on your planner each day.'}
+        </p>
+      </SectionCard>
 
-        <div className="space-y-2">
-          {appData.familyMembers.map((member) => {
-            const prefs = appData.memberProfiles?.[member];
-            const allergies = prefs?.allergies || [];
-            const cuisines = prefs?.favoriteCuisines || [];
-
-            return (
-              <div
-                key={member}
-                className="p-2.5 rounded-xl bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#EDE8DF] dark:border-[#38332E] space-y-1.5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] flex items-center gap-1.5">
-                    <span>👤 {member}</span>
-                    {member === currentMember && (
-                      <span className="text-[10px] text-[#9A8A7E] dark:text-[#7A6E64] font-normal">({language === 'zh-CN' ? '当前' : 'You'})</span>
-                    )}
-                  </span>
-                  {allergies.length > 0 ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">
-                      ⚠️ {allergies.length} {language === 'zh-CN' ? '项忌口' : 'Allergies'}
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border border-[#A8D8BC] dark:border-[#1D4A2A] px-2 py-0.5 rounded-full">
-                      ✓ {language === 'zh-CN' ? '无过敏' : 'No Allergies'}
-                    </span>
-                  )}
-                </div>
-
-                {allergies.length > 0 && (
-                  <div className="flex items-center gap-1 flex-wrap">
-                    {allergies.map((algId) => {
-                      const def = getAllergenById(algId);
-                      return (
-                        <span
-                          key={algId}
-                          className="text-[10px] font-bold bg-white dark:bg-[#252220] text-[#2D2640] dark:text-[#F0EDE8] border border-[#EDE8DF] dark:border-[#38332E] px-2 py-0.5 rounded-lg shadow-2xs"
-                        >
-                          {def?.emoji || '⚠️'} {language === 'zh-CN' ? def?.nameZh || algId : def?.nameEn || algId}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {cuisines.length > 0 && (
-                  <div className="text-[10px] text-[#9A8A7E] dark:text-[#7A6E64] truncate">
-                    <span>{language === 'zh-CN' ? '偏好菜系: ' : 'Tastes: '}</span>
-                    <span className="font-semibold text-[#3D3530] dark:text-[#D0C8C0]">{cuisines.join(', ')}</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Family Safe Mode Status Indicator */}
-        <div className="bg-gradient-to-r from-amber-50 to-[#E8F5ED] p-2.5 rounded-xl border border-amber-200/60 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#2D6A4A] dark:text-[#4CAF82] shrink-0" />
-            <span className="text-[11px] font-bold text-[#2D2640] dark:text-[#F0EDE8]">
-              {appData.familyPersonalisation?.strictAllergyFilter !== false
-                ? (language === 'zh-CN' ? '全家安全模式已开启（自动隐藏过敏菜）' : 'Family Safety Mode Active')
-                : (language === 'zh-CN' ? '安全模式已关闭' : 'Safety Mode Off')}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsPersonalisationOpen(true)}
-            className="text-[10px] font-bold text-[#3D3530] dark:text-[#D0C8C0] hover:underline cursor-pointer"
-          >
-            {language === 'zh-CN' ? '调整' : 'Change'}
-          </button>
-        </div>
-      </div>
-
-      {/* Family PIN & Cloud Sync Security Card */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-[#EDE8DF] dark:border-[#38332E]">
-          <div className="flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
-            <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-              {language === 'zh-CN' ? '家庭 PIN 码与云同步' : 'Family PIN & Cloud Sync'}
-            </h3>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setIsChangingPin(!isChangingPin);
-              setPinChangeMsg(null);
-            }}
-            className="text-xs font-semibold bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer px-2.5 py-1"
-          >
-            {isChangingPin ? (language === 'zh-CN' ? '取消' : 'Cancel') : (language === 'zh-CN' ? '修改 PIN' : 'Change PIN')}
-          </button>
-        </div>
-
-        <p className="text-xs text-[#9A8A7E] dark:text-[#7A6E64]">
-          {language === 'zh-CN'
-            ? '所有家庭成员使用相同的 4 位数字 PIN 码同步菜谱和计划。'
-            : 'All family members use your 4-digit PIN to sync recipes and meal plans.'}
+      {/* ─── Family PIN & Cloud Sync ─── */}
+      <SectionCard title={language === 'zh-CN' ? '家庭 PIN 码与云同步' : 'Family PIN & Cloud Sync'}>
+        <p className="mb-3 text-[13px] text-[#8A7A70] dark:text-[#9A8A7E]">
+          {language === 'zh-CN' ? '所有家庭成员使用相同的 4 位数字 PIN 码同步菜谱和计划。' : 'Protect your family plan with a PIN and keep everything synced across devices.'}
         </p>
 
         {pinChangeMsg && (
-          <div
-            className={`p-2.5 rounded-xl text-xs font-semibold ${
-              pinChangeMsg.isError
-                ? 'bg-rose-50 border border-rose-200 text-rose-700'
-                : 'bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border border-[#A8D8BC] dark:border-[#1D4A2A]'
-            }`}
-          >
+          <div className={`mb-3 p-2.5 rounded-xl text-xs font-semibold ${pinChangeMsg.isError ? 'bg-rose-50 border border-rose-200 text-rose-700' : 'bg-emerald-50 border border-emerald-200 text-emerald-700'}`}>
             {pinChangeMsg.text}
           </div>
         )}
 
-        {isChangingPin && (
-          <form onSubmit={handleUpdateFamilyPin} className="space-y-2.5 pt-1">
+        {isChangingPin ? (
+          <form onSubmit={handleUpdateFamilyPin} className="space-y-2.5 mb-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[10px] font-bold text-[#7A6E64] dark:text-[#9A9088] uppercase mb-1">
-                  {language === 'zh-CN' ? '当前 PIN' : 'Current PIN'}
-                </label>
-                <input
-                  type="password"
-                  inputMode="numeric"
-                  pattern="[0-9]{4}"
-                  maxLength={4}
-                  required
-                  placeholder="e.g. 1234"
-                  value={currentPinInput}
-                  onChange={(e) => setCurrentPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  className="w-full text-xs font-bold px-3 py-2 rounded-xl bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] tracking-widest"
-                />
+                <label className="block text-[10px] font-semibold text-[#8A7A70] uppercase mb-1">{language === 'zh-CN' ? '当前 PIN' : 'Current PIN'}</label>
+                <input type="password" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} required placeholder="1234"
+                  value={currentPinInput} onChange={(e) => setCurrentPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] tracking-widest text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-[#7A6E64] dark:text-[#9A9088] uppercase mb-1">
-                  {language === 'zh-CN' ? '新 PIN' : 'New PIN'}
-                </label>
-                <input
-                  type="password"
-                  inputMode="numeric"
-                  pattern="[0-9]{4}"
-                  maxLength={4}
-                  required
-                  placeholder="e.g. 1234"
-                  value={newPinInput}
-                  onChange={(e) => setNewPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  className="w-full text-xs font-bold px-3 py-2 rounded-xl bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] tracking-widest"
-                />
+                <label className="block text-[10px] font-semibold text-[#8A7A70] uppercase mb-1">{language === 'zh-CN' ? '新 PIN' : 'New PIN'}</label>
+                <input type="password" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} required placeholder="5678"
+                  value={newPinInput} onChange={(e) => setNewPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] tracking-widest text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]" />
               </div>
             </div>
-            <button
-              type="submit"
-              disabled={!currentPinInput || !newPinInput}
-              className="w-full py-2 bg-[#FFD13B] hover:bg-[#FFC200] disabled:opacity-40 text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              <KeyRound className="w-3.5 h-3.5" />
+            <button type="submit" disabled={!currentPinInput || !newPinInput}
+              className="w-full py-2 bg-[#FFD13B] border border-[#2D2640]/10 disabled:opacity-40 text-[#2D2640] font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer">
               <span>{language === 'zh-CN' ? '保存新 PIN 码' : 'Update Family PIN'}</span>
             </button>
           </form>
-        )}
-      </div>
+        ) : null}
 
-      {/* Meal Schedule Customization Trigger */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
-            <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-              {t('planner.manageSchedules')}
-            </h3>
-          </div>
+        <div className="flex gap-2">
           <button
-            onClick={() => setIsScheduleSettingsOpen(true)}
-            className="text-xs font-semibold bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer px-3 py-1.5 active:scale-95"
+            type="button"
+            onClick={() => { setIsChangingPin(!isChangingPin); setPinChangeMsg(null); }}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#E8DDD5] bg-[#F5F0E8] py-2.5 text-[12.5px] font-semibold text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8] transition cursor-pointer"
           >
-            {language === 'zh-CN' ? '设置餐段' : 'Configure'}
+            <Lock className="h-4 w-4" />
+            <span>{isChangingPin ? (language === 'zh-CN' ? '取消' : 'Cancel') : (language === 'zh-CN' ? '修改 PIN' : 'Change PIN')}</span>
           </button>
-        </div>
-        <p className="text-xs text-[#9A8A7E] dark:text-[#7A6E64]">
-          {language === 'zh-CN' ? '自定义每日餐饮餐段 (如早/午/晚/加餐) 及生效星期。' : 'Configure weekday and weekend meals.'}
-        </p>
-      </div>
-
-      {/* Backup & Restore Section */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center gap-2">
-          <Share2 className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
-          <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-            {t('settings.backupRestoreTitle')}
-          </h3>
-        </div>
-        <p className="text-xs text-[#9A8A7E] dark:text-[#7A6E64]">
-          {language === 'zh-CN' ? '导出或导入家庭全套菜谱、排餐计划及储藏室数据。' : 'Export or import your family meal plans and recipes.'}
-        </p>
-
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <button
-            onClick={handleExportFullZip}
-            className="flex items-center justify-center gap-1.5 py-2.5 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>{t('settings.exportZipBtn')}</span>
-          </button>
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".zip,.json"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center justify-center gap-1.5 py-2.5 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer text-xs font-semibold active:scale-95"
-          >
-            <FileArchive className="w-3.5 h-3.5 text-[#9A8A7E] dark:text-[#7A6E64]" />
-            <span>{t('settings.importZipBtn')}</span>
-          </button>
-        </div>
-
-        {/* Import Feedback */}
-        {importStatus.type && (
-          <div
-            className={`p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
-              importStatus.type === 'success'
-                ? 'bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border border-[#A8D8BC] dark:border-[#1D4A2A]'
-                : 'bg-rose-50 text-rose-800 border border-rose-200'
-            }`}
-          >
-            {importStatus.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-[#2D6A4A] dark:text-[#4CAF82] shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-            )}
-            <span>{importStatus.message}</span>
-          </div>
-        )}
-      </div>
-
-      {/* PWA Home Screen Instructions */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-2">
-        <div className="flex items-center gap-2">
-          <Smartphone className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
-          <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-            {language === 'zh-CN' ? '添加到手机主屏幕' : 'Install App'}
-          </h3>
-        </div>
-        <div className="text-xs text-[#9A8A7E] dark:text-[#7A6E64] space-y-1">
-          <p>• <strong>iPhone (Safari)</strong>: {language === 'zh-CN' ? '分享按钮 → "添加到主屏幕"' : 'Share → "Add to Home Screen"'}</p>
-          <p>• <strong>Android (Chrome)</strong>: {language === 'zh-CN' ? '右上角菜单 ⋮ → "安装应用"' : 'Menu ⋮ → "Install App"'}</p>
-        </div>
-      </div>
-
-      {/* Account & Logout Card */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <LogOut className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
-            <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-              {language === 'zh-CN' ? '账号与退出' : 'Account'}
-            </h3>
-          </div>
-          <span className="text-[10px] font-bold text-[#9A8A7E] dark:text-[#7A6E64] bg-[#F5F0E8] dark:bg-[#2E2A26] px-2 py-0.5 rounded-md">
-            {editFamilyName}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={async () => {
@@ -803,195 +514,102 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }
               }
             }}
-            className="py-2.5 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#2D2640]/10 bg-[#FFD13B] py-2.5 text-[12.5px] font-semibold text-[#2D2640] transition-transform active:scale-95 cursor-pointer shadow-xs"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-[#7A6E64] dark:text-[#9A9088]" />
-            <span>{language === 'zh-CN' ? '从云端强制同步' : 'Force Sync'}</span>
+            <RefreshCw className="h-4 w-4" />
+            <span>{language === 'zh-CN' ? '立即同步' : 'Force Sync'}</span>
           </button>
+        </div>
+      </SectionCard>
 
-          {onLogout && (
+      {/* ─── Language ─── */}
+      <SectionCard title={t('settings.languageTitle')}>
+        <div className="flex rounded-full border border-[#EDE8DF] bg-[#FAF7F2] p-1 dark:border-[#3A332C] dark:bg-[#201C18]">
+          {[
+            { id: 'en', label: 'English' },
+            { id: 'zh-CN', label: '中文' }
+          ].map((lang) => (
             <button
+              key={lang.id}
               type="button"
               onClick={() => {
-                if (window.confirm(language === 'zh-CN' ? `确定要退出 ${editFamilyName} 吗？` : `Log out of ${editFamilyName}?`)) {
-                  onLogout();
-                }
+                setLanguage(lang.id as any);
+                showToast(lang.id === 'en' ? 'Language switched to English' : '语言已切换为简体中文');
               }}
-              className="py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs"
-            >
-              <LogOut className="w-3.5 h-3.5 shrink-0" />
-              <span>{language === 'zh-CN' ? '退出登录' : 'Log Out'}</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Language Preferences — user-specific */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
-            <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-              {t('settings.languageTitle')}
-            </h3>
-          </div>
-          <span className="text-[10px] font-semibold text-[#9A8A7E] dark:text-[#7A6E64] bg-[#F5F0E8] dark:bg-[#2E2A26] px-2 py-0.5 rounded-md">
-            {t('common.justForYou')}
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-[#2D2640] dark:text-[#F0EDE8]">
-              {language === 'zh-CN' ? '🇨🇳 简体中文' : '🇺🇸 English'}
-            </p>
-            <p className="text-[11px] text-[#9A8A7E] dark:text-[#7A6E64] mt-0.5">
-              {t('settings.languageDesc')}
-            </p>
-          </div>
-
-          <div className="flex items-center p-1 bg-[#F5F0E8] dark:bg-[#2E2A26] rounded-xl border border-[#EDE8DF] dark:border-[#38332E] gap-1">
-            <button
-              type="button"
-              onClick={() => {
-                setLanguage('en');
-                showToast('Language switched to English');
-              }}
-              className={`text-xs font-bold px-2.5 py-1 rounded-lg transition cursor-pointer ${
-                language === 'en'
-                  ? 'bg-white dark:bg-[#252220] text-[#2D2640] dark:text-[#F0EDE8] shadow-sm border border-[#EDE8DF] dark:border-[#38332E]'
-                  : 'text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8]'
+              className={`flex-1 rounded-full py-1.5 text-[12.5px] font-semibold transition-colors cursor-pointer ${
+                language === lang.id
+                  ? 'bg-[#FFD13B] text-[#2D2640]'
+                  : 'text-[#8A7A70] dark:text-[#9A8A7E]'
               }`}
             >
-              English
+              {lang.label}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setLanguage('zh-CN');
-                showToast('语言已切换为简体中文');
-              }}
-              className={`text-xs font-bold px-2.5 py-1 rounded-lg transition cursor-pointer ${
-                language === 'zh-CN'
-                  ? 'bg-white dark:bg-[#252220] text-[#2D2640] dark:text-[#F0EDE8] shadow-sm border border-[#EDE8DF] dark:border-[#38332E]'
-                  : 'text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8]'
-              }`}
-            >
-              中文
-            </button>
-          </div>
+          ))}
         </div>
-      </div>
+      </SectionCard>
 
-      {/* Display Preferences — user-specific */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-3">
+      {/* ─── Display ─── */}
+      <SectionCard title={t('settings.displayTitle')}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {isDarkMode ? (
-              <Moon className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
+              <Moon className="h-4 w-4 text-[#8A7A70] dark:text-[#9A8A7E]" />
             ) : (
-              <Sun className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
+              <Sun className="h-4 w-4 text-[#8A7A70]" />
             )}
-            <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-              {t('settings.displayTitle')}
-            </h3>
-          </div>
-          <span className="text-[10px] font-semibold text-[#9A8A7E] dark:text-[#7A6E64] bg-[#F5F0E8] dark:bg-[#2E2A26] px-2 py-0.5 rounded-md">
-            {t('common.justForYou')}
-          </span>
-        </div>
-
-        {/* Dark Mode Toggle Row */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-[#2D2640] dark:text-[#F0EDE8]">
+            <span className="text-[13.5px] font-medium text-[#4A3F35] dark:text-[#F0EDE8]">
               {isDarkMode ? t('settings.darkModeTitle') : t('settings.lightModeTitle')}
-            </p>
-            <p className="text-[11px] text-[#9A8A7E] dark:text-[#7A6E64] mt-0.5">
-              {isDarkMode ? t('settings.darkModeDesc') : t('settings.lightModeDesc')}
-            </p>
+            </span>
           </div>
-
-          {/* Toggle Switch with Centered Sun / Moon Icon */}
           <button
             type="button"
             role="switch"
             aria-checked={isDarkMode}
             onClick={handleToggleDarkMode}
-            className={`relative inline-flex items-center h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none ${
-              isDarkMode
-                ? 'bg-[#FFD13B] border-[#FFD13B]'
-                : 'bg-[#F5F0E8] dark:bg-[#2E2A26] border-[#EDE8DF] dark:border-[#38332E]'
+            className={`relative h-7 w-12 rounded-full transition-colors cursor-pointer ${
+              isDarkMode ? 'bg-[#FFD13B]' : 'bg-[#E0D6CB]'
             }`}
           >
             <span
-              className={`pointer-events-none flex h-5 w-5 items-center justify-center rounded-full shadow-md transition-transform duration-200 ease-in-out ${
-                isDarkMode
-                  ? 'translate-x-5.5 bg-[#2D2640]'
-                  : 'translate-x-0.5 bg-white dark:bg-[#252220]'
+              className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${
+                isDarkMode ? 'translate-x-[22px]' : 'translate-x-0.5'
               }`}
-            >
-              {isDarkMode ? (
-                <Moon className="w-3 h-3 text-[#FFD13B] shrink-0" />
-              ) : (
-                <Sun className="w-3 h-3 text-amber-500 shrink-0" />
-              )}
-            </span>
+            />
           </button>
         </div>
-      </div>
+      </SectionCard>
 
-      {/* Reset Defaults */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-4 shadow-sm space-y-2">
-        <h3 className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] uppercase tracking-wider">
-          {t('settings.resetTitle')}
-        </h3>
-        <p className="text-xs text-[#9A8A7E] dark:text-[#7A6E64]">
-          {t('settings.resetDesc')}
-        </p>
+      {/* ─── Account ─── */}
+      <SectionCard title={language === 'zh-CN' ? '账号与退出' : 'Account'}>
+        {onLogout && (
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm(language === 'zh-CN' ? `确定要退出 ${familyName} 吗？` : `Log out of ${familyName}?`)) {
+                onLogout();
+              }
+            }}
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 py-2.5 text-[13px] font-semibold text-rose-600 dark:border-rose-500/25 dark:bg-rose-500/10 hover:bg-rose-100 transition cursor-pointer"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>{language === 'zh-CN' ? `退出登录 (${familyName})` : `Log Out (${familyName})`}</span>
+          </button>
+        )}
+      </SectionCard>
+
+      {/* ─── Reset Defaults (Preserves auth & 3000 recipes) ─── */}
+      <div className="pt-2 text-center">
         <button
+          type="button"
           onClick={handleResetSampleData}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F0E8] dark:bg-[#2E2A26] hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-700 dark:hover:text-rose-400 text-[#7A6E64] dark:text-[#9A9088] text-xs font-semibold transition-colors active:scale-95 cursor-pointer border border-[#EDE8DF] dark:border-[#38332E]"
+          className="inline-flex items-center gap-1 text-[11px] text-[#B8AFA4] hover:text-rose-500 transition cursor-pointer"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
+          <RotateCcw className="w-3 h-3" />
           <span>{t('settings.resetBtn')}</span>
         </button>
       </div>
 
-      {/* Family Personalisation Modal */}
-      <PersonalisationModal
-        isOpen={isPersonalisationOpen}
-        onClose={() => setIsPersonalisationOpen(false)}
-        currentMember={currentMember}
-        familyMembers={appData.familyMembers}
-        memberProfiles={appData.memberProfiles || {}}
-        familyPersonalisation={
-          appData.familyPersonalisation || {
-            strictAllergyFilter: true,
-            householdAllergies: [],
-            householdCuisines: [],
-            householdCategories: []
-          }
-        }
-        onSavePersonalisation={(updatedProfiles, updatedFamilyPers) => {
-          onUpdateAppData({
-            ...appData,
-            memberProfiles: updatedProfiles,
-            familyPersonalisation: updatedFamilyPers
-          });
-          showToast(language === 'zh-CN' ? '✅ 个性化设置已保存' : '✅ Personalisation saved');
-        }}
-        onAddFamilyMember={(name) => {
-          if (!appData.familyMembers.includes(name)) {
-            onUpdateAppData({
-              ...appData,
-              familyMembers: [...appData.familyMembers, name]
-            });
-          }
-        }}
-      />
-
-      {/* Meal Schedule Settings Modal */}
+      {/* ─── Modals ─── */}
       <MealScheduleSettingsModal
         isOpen={isScheduleSettingsOpen}
         onClose={() => setIsScheduleSettingsOpen(false)}
@@ -999,11 +617,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         onSaveMealSchedules={handleSaveMealSchedules}
       />
 
-      {/* Easter Egg Modal */}
-      <EasterEggModal
-        isOpen={showEasterEgg}
-        onConfirm={handleEasterEggConfirm}
+      <PersonalisationModal
+        isOpen={isPersonalisationOpen}
+        onClose={() => setIsPersonalisationOpen(false)}
+        currentMember={currentMember}
+        familyMembers={appData.familyMembers}
+        memberProfiles={appData.memberProfiles || {}}
+        familyPersonalisation={appData.familyPersonalisation ?? { strictAllergyFilter: true }}
+        onSavePersonalisation={(profiles, familyPrefs) => {
+          onUpdateAppData({ ...appData, memberProfiles: profiles, familyPersonalisation: familyPrefs });
+          showToast('✅ Personalisation saved');
+        }}
       />
+
+      <EasterEggModal isOpen={showEasterEgg} onConfirm={handleEasterEggConfirm} />
     </div>
   );
 };

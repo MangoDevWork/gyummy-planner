@@ -4,20 +4,16 @@ import { GROCERY_CATEGORIES } from '../../types';
 import { generateGroceryList } from '../../services/storage';
 import {
   Check,
-  RotateCcw,
-  ShoppingBag,
   CheckCircle2,
   Plus,
   Edit2,
   MessageSquareShare,
   Home,
-  Calendar,
   Sparkles,
-  ChevronDown
+  Calendar,
+  Trash2
 } from 'lucide-react';
-import {
-  copyGroceryListAsMessage
-} from '../../services/zipExportService';
+import { copyGroceryListAsMessage } from '../../services/zipExportService';
 import { matchPantryIngredient } from '../../services/pantryMatching';
 import { useLanguage } from '../../i18n/LanguageContext';
 
@@ -42,7 +38,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
   onTogglePantryItem
 }) => {
   const { language, t, formatCategory } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'pending' | 'checked' | 'all'>('pending');
+  const [filter, setFilter] = useState<'pending' | 'checked' | 'all'>('pending');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [showCelebration, setShowCelebration] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -98,8 +94,6 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
 
   const totalCount = items.length;
   const checkedCount = items.filter((i) => i.checked).length;
-  const inPantryCount = items.filter((i) => i.inPantry).length;
-  const pendingCount = totalCount - checkedCount;
   const progressPercent = totalCount === 0 ? 0 : Math.round((checkedCount / totalCount) * 100);
 
   // Toggle item checked
@@ -117,7 +111,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
     });
   };
 
-  // Generate / Regenerate List from Plan with dates
+  // Generate / Regenerate List from Plan
   const handleGenerate = (customStart?: string, customEnd?: string) => {
     const effectiveStart = customStart || rangeStart || defaultToday;
     const effectiveEnd = customEnd || rangeEnd || defaultNextWeek;
@@ -138,59 +132,119 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
       endDate: effectiveEnd,
       items: newItems
     });
-    setRangeStart(effectiveStart);
-    setRangeEnd(effectiveEnd);
-    showToast(`⚡ Generated ${newItems.length} items for ${effectiveStart} to ${effectiveEnd}!`);
+    setIsDateEditorOpen(false);
+    showToast(`🛒 Generated ${newItems.length} items from planned meals.`);
   };
 
-  const handleApplyPreset = (preset: 'this_week' | 'next_week' | 'next_7') => {
-    const today = new Date();
-    let startStr = '';
-    let endStr = '';
+  // Quick Date Presets
+  const handleApplyDatePreset = (preset: 'this_week' | 'next_week' | 'next_7_days') => {
+    const now = new Date();
+    let s = new Date();
+    let e = new Date();
 
-    if (preset === 'this_week' || preset === 'next_7') {
-      startStr = today.toISOString().split('T')[0];
-      const endD = new Date(today);
-      endD.setDate(today.getDate() + 6);
-      endStr = endD.toISOString().split('T')[0];
+    if (preset === 'this_week') {
+      const day = now.getDay();
+      const diff = (day + 6) % 7;
+      s.setDate(now.getDate() - diff);
+      e = new Date(s);
+      e.setDate(s.getDate() + 6);
     } else if (preset === 'next_week') {
-      const nextStart = new Date(today);
-      nextStart.setDate(today.getDate() + 7);
-      startStr = nextStart.toISOString().split('T')[0];
-      const nextEnd = new Date(today);
-      nextEnd.setDate(today.getDate() + 13);
-      endStr = nextEnd.toISOString().split('T')[0];
+      const day = now.getDay();
+      const diff = (day + 6) % 7;
+      s.setDate(now.getDate() - diff + 7);
+      e = new Date(s);
+      e.setDate(s.getDate() + 6);
+    } else if (preset === 'next_7_days') {
+      s = new Date(now);
+      e = new Date(now);
+      e.setDate(now.getDate() + 6);
     }
 
-    setRangeStart(startStr);
-    setRangeEnd(endStr);
-    handleGenerate(startStr, endStr);
+    const sISO = s.toISOString().split('T')[0];
+    const eISO = e.toISOString().split('T')[0];
+    setRangeStart(sISO);
+    setRangeEnd(eISO);
+    handleGenerate(sISO, eISO);
   };
 
-  const handleRegenerate = () => {
-    handleGenerate();
+  // Toggle Pantry
+  const handleTogglePantry = (item: GroceryItem) => {
+    const match = matchPantryIngredient(item.name, pantryIngredients);
+    let nextPantry: string[];
+
+    if (match.inPantry && match.matchedPantryItem) {
+      nextPantry = pantryIngredients.filter((p) => p.toLowerCase() !== match.matchedPantryItem?.toLowerCase());
+      showToast(`Removed "${item.name}" from Pantry.`);
+    } else {
+      nextPantry = [...pantryIngredients, item.name.trim()];
+      showToast(`🏡 Added "${item.name}" to Home Pantry!`);
+    }
+
+    const updated = items.map((i) => {
+      const isThisMatch = matchPantryIngredient(i.name, nextPantry);
+      return {
+        ...i,
+        inPantry: isThisMatch.inPantry,
+        pantrySubstituteNote: isThisMatch.substituteNote
+      };
+    });
+
+    onUpdateGroceryList({
+      ...groceryList,
+      items: updated
+    });
+    onTogglePantryItem?.(item.name);
   };
 
-  // Manual Item Add
+  // Delete item
+  const handleDeleteItem = (id: string) => {
+    const itemToDelete = items.find((i) => i.id === id);
+    if (!itemToDelete) return;
+
+    const newUndoStack = [
+      ...(undoStack || []),
+      {
+        id: `undo_${Date.now()}`,
+        timestamp: Date.now(),
+        description: `Delete ${itemToDelete.name}`,
+        items: [...items]
+      }
+    ];
+
+    onUpdateGroceryList({
+      ...groceryList,
+      items: items.filter((i) => i.id !== id),
+      undoStack: newUndoStack
+    });
+    showToast(`Deleted "${itemToDelete.name}".`);
+  };
+
+  // Done shopping button action
+  const handleDoneShopping = () => {
+    if (checkedCount === 0) {
+      showToast(language === 'zh-CN' ? '尚未勾选已购物品。' : 'No items checked yet.');
+      return;
+    }
+    setShowCelebration(true);
+  };
+
+  // Add Manual Item
   const handleAddManualItem = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanName = manualName.trim();
-    if (!cleanName) return;
+    if (!manualName.trim()) return;
 
-    const pantryMatch = matchPantryIngredient(cleanName, pantryIngredients);
-
+    const match = matchPantryIngredient(manualName.trim(), pantryIngredients);
     const newItem: GroceryItem = {
-      id: `groc_manual_${Date.now()}`,
-      name: cleanName,
-      amount: manualAmount !== '' ? Number(manualAmount) : null,
-      unit: manualUnit,
+      id: `manual_${Date.now()}`,
+      name: manualName.trim(),
+      amount: typeof manualAmount === 'number' ? manualAmount : 1,
+      unit: manualUnit.trim() || 'pcs',
       category: manualCategory,
       checked: false,
-      inPantry: pantryMatch.inPantry,
-      pantrySubstituteNote: pantryMatch.substituteNote,
-      sourceDishes: ['Manual Add'],
-      isManual: true,
-      dateRange: { start: startDate, end: endDate }
+      inPantry: match.inPantry,
+      pantrySubstituteNote: match.substituteNote,
+      sourceDishes: [language === 'zh-CN' ? '手动添加' : 'Manual Item'],
+      isManual: true
     };
 
     onUpdateGroceryList({
@@ -201,23 +255,17 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
     setManualName('');
     setManualAmount('');
     setIsManualAddOpen(false);
-    showToast(`Added "${cleanName}" to grocery list!`);
+    showToast(`Added "${newItem.name}"`);
   };
 
-  // Start Inline Edit
-  const handleStartEdit = (item: GroceryItem) => {
-    setEditingItemId(item.id);
-    setEditingAmount(item.amount !== null ? item.amount : '');
-    setEditingUnit(item.unit || '');
-  };
-
-  const handleSaveEdit = (id: string) => {
+  // Save inline edit
+  const handleSaveInlineEdit = (id: string) => {
     const updated = items.map((item) => {
       if (item.id === id) {
         return {
           ...item,
-          amount: editingAmount !== '' ? Number(editingAmount) : null,
-          unit: editingUnit.trim()
+          amount: typeof editingAmount === 'number' ? editingAmount : item.amount,
+          unit: editingUnit.trim() || item.unit
         };
       }
       return item;
@@ -230,594 +278,481 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
     setEditingItemId(null);
   };
 
-  // Done Clearing with Snapshot Undo
-  const handleDoneShopping = () => {
-    const checkedItems = items.filter((i) => i.checked);
-    if (checkedItems.length === 0) {
-      showToast('⚠️ No items are checked off yet.');
-      return;
-    }
-
-    const snapshot = {
-      id: `snap_${Date.now()}`,
-      timestamp: Date.now(),
-      description: `Cleared ${checkedItems.length} purchased items`,
-      items: [...items]
-    };
-
-    const remainingItems = items.filter((i) => !i.checked);
-
-    setShowCelebration(true);
-    setTimeout(() => setShowCelebration(false), 2500);
-
-    onUpdateGroceryList({
-      ...groceryList,
-      items: remainingItems,
-      undoStack: [snapshot, ...undoStack.slice(0, 4)]
-    });
-
-    showToast(`🎉 Cleared ${checkedItems.length} items! Tap Undo to restore.`);
-  };
-
-  // Undo Snapshot
-  const handleUndo = () => {
-    if (undoStack.length === 0) return;
-    const [latest, ...rest] = undoStack;
-
-    onUpdateGroceryList({
-      ...groceryList,
-      items: latest.items,
-      undoStack: rest
-    });
-
-    showToast('⏪ Restored grocery checklist snapshot!');
-  };
-
-  // Copy as Text Message
-  const handleCopyAsMessage = async () => {
+  // Share list
+  const handleShareList = async () => {
     const res = await copyGroceryListAsMessage(items, startDate, endDate, language);
     if (res.success) {
-      showToast(language === 'zh-CN' ? '📋 已复制格式化采购清单到剪贴板！' : '📋 Copied formatted grocery list to clipboard!');
+      showToast(language === 'zh-CN' ? '📋 已复制采购清单到剪贴板！' : '📋 Copied grocery list to clipboard!');
     } else {
-      showToast(`❌ ${res.text}`);
+      showToast(`⚠️ ${res.text}`);
     }
   };
 
-  // Filter items for display
-  const displayItems = items.filter((item) => {
-    const matchTab =
-      activeTab === 'all' ||
-      (activeTab === 'pending' && !item.checked) ||
-      (activeTab === 'checked' && item.checked);
-
-    const matchCat = selectedCategory === 'All' || item.category === selectedCategory;
-
-    return matchTab && matchCat;
+  // Filtered items
+  const filteredItems = items.filter((item) => {
+    if (filter === 'pending' && item.checked) return false;
+    if (filter === 'checked' && !item.checked) return false;
+    if (selectedCategory !== 'All' && item.category !== selectedCategory) return false;
+    return true;
   });
 
-  // Group by category
-  const groupedByCategory = displayItems.reduce((acc, item) => {
-    const cat = item.category || 'Other';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(item);
-    return acc;
-  }, {} as Record<string, GroceryItem[]>);
+  // Group filtered items by category
+  const groupedCategories = useMemo(() => {
+    const map = new Map<GroceryCategory, GroceryItem[]>();
+    filteredItems.forEach((item) => {
+      const cat = item.category || 'Other';
+      if (!map.has(cat)) map.set(cat, []);
+      map.get(cat)!.push(item);
+    });
+    return Array.from(map.entries()).map(([category, catItems]) => ({
+      category,
+      items: catItems
+    }));
+  }, [filteredItems]);
 
   return (
-    <div className="flex-1 pb-28 pt-3 px-4 space-y-4 max-w-md mx-auto w-full bg-[#F7F4EF] dark:bg-[#1A1714]">
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
-          <CheckCircle2 className="w-4 h-4 text-[#A8D8BC] dark:text-[#4CAF82]" />
-          <span>{toastMsg}</span>
-        </div>
-      )}
-
-      {/* Celebration Overlay Banner */}
-      {showCelebration && (
-        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center animate-in fade-in zoom-in-95 duration-300">
-          <div className="bg-white/95 dark:bg-[#252220]/95 backdrop-blur-md border border-[#EDE8DF] dark:border-[#38332E] p-6 rounded-2xl text-center shadow-2xl space-y-2">
-            <div className="text-4xl animate-bounce">🎉 🛒 🌟</div>
-            <h3 className="text-base font-bold text-[#2D2640] dark:text-[#F0EDE8]">All Done Shopping!</h3>
-            <p className="text-xs text-[#7A6E64] dark:text-[#9A9088]">Items purchased and cleared cleanly</p>
-          </div>
-        </div>
-      )}
-
-      {/* Date Range Generator Bar */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl shadow-sm p-3.5 space-y-2.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#3D3530] dark:text-[#D0C8C0]" />
-            <h3 className="text-[11px] font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider">
-              {t('grocery.planPeriodTitle')}
-            </h3>
-          </div>
-          <span className="text-[10px] font-bold text-[#7A6E64] dark:text-[#9A9088] bg-[#F5F0E8] dark:bg-[#2E2A26] px-2 py-0.5 rounded-md">
-            {t('planner.scheduledMealsCount', { count: plannedMealsInRange })}
-          </span>
-        </div>
-
-        {/* Presets + Date Inputs */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <button
-            type="button"
-            onClick={() => handleApplyPreset('this_week')}
-            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition active:scale-95 cursor-pointer"
-          >
-            {t('planner.thisWeek')}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleApplyPreset('next_week')}
-            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition active:scale-95 cursor-pointer"
-          >
-            {t('planner.nextWeek')}
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsDateEditorOpen(!isDateEditorOpen)}
-            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition active:scale-95 cursor-pointer flex items-center gap-1"
-          >
-            <span>{rangeStart} → {rangeEnd}</span>
-            <ChevronDown className="w-3 h-3 text-[#B8AFA4] dark:text-[#5A5450]" />
-          </button>
-        </div>
-
-        {/* Custom Date Inputs if opened */}
-        {isDateEditorOpen && (
-          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#EDE8DF] dark:border-[#38332E] animate-in fade-in">
-            <div>
-              <label className="block text-[10px] font-bold text-[#9A8A7E] dark:text-[#7A6E64] uppercase">{language === 'zh-CN' ? '开始日期' : 'Start Date'}</label>
-              <input
-                type="date"
-                value={rangeStart}
-                onChange={(e) => setRangeStart(e.target.value)}
-                className="w-full text-xs font-bold px-2.5 py-1.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] shadow-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-[#9A8A7E] dark:text-[#7A6E64] uppercase">{language === 'zh-CN' ? '结束日期' : 'End Date'}</label>
-              <input
-                type="date"
-                value={rangeEnd}
-                onChange={(e) => setRangeEnd(e.target.value)}
-                className="w-full text-xs font-bold px-2.5 py-1.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] shadow-sm"
-              />
-            </div>
+    <div className="relative">
+      <div className="px-4 pb-32 pt-4 max-w-md mx-auto">
+        {/* Toast */}
+        {toastMsg && (
+          <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#2D2640] dark:bg-[#F0EDE8] text-white dark:text-[#2D2640] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
+            <CheckCircle2 className="w-4 h-4 text-[#FFD13B] dark:text-[#2D2640]" />
+            <span>{toastMsg}</span>
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => handleGenerate()}
-          className="w-full py-2 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-[#2D2640] fill-[#2D2640]" />
-          <span>{t('grocery.generateBtn')}</span>
-        </button>
-      </div>
-
-      {/* Progress & Overview Card */}
-      <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl shadow-sm p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-[#FFD13B] text-[#2D2640] flex items-center justify-center shadow-sm">
-              <ShoppingBag className="w-5 h-5" />
-            </div>
+        {/* Week Selector + Generate Card */}
+        <div className="mb-4 rounded-2xl border border-[#EDE8DF] bg-white p-4 shadow-sm dark:border-[#3A332C] dark:bg-[#28231E]">
+          <div className="mb-3 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-[#2D2640] dark:text-[#F0EDE8]">{t('nav.grocery')}</h2>
-              <div className="flex items-center gap-2 text-[11px] text-[#9A8A7E] dark:text-[#7A6E64] font-medium">
-                <span>
-                  {language === 'zh-CN'
-                    ? `剩余 ${pendingCount} 项 (共 ${totalCount} 项)`
-                    : `${pendingCount} remaining of ${totalCount} items`}
-                </span>
-                {inPantryCount > 0 && (
-                  <span className="text-[#2D6A4A] dark:text-[#4CAF82] font-semibold">
-                    • {language === 'zh-CN' ? `家中常备 ${inPantryCount} 种` : `${inPantryCount} in Pantry`}
-                  </span>
-                )}
-              </div>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-[#B8AFA4]">
+                {language === 'zh-CN' ? '生成采购范围' : 'Generating for'}
+              </p>
+              <p className="text-[14px] font-bold text-[#2D2640] dark:text-[#F0EDE8]">
+                {rangeStart && rangeEnd ? `${rangeStart} ~ ${rangeEnd}` : 'This Week'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-[#FAF7F2] px-2.5 py-1 text-[11px] font-medium text-[#8A7A70] dark:bg-[#201C18] dark:text-[#9A8A7E]">
+                {plannedMealsInRange} {language === 'zh-CN' ? '餐' : 'meals'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsDateEditorOpen(!isDateEditorOpen)}
+                className="p-1 text-[#8A7A70] hover:text-[#2D2640] rounded-lg transition cursor-pointer"
+                title="Change dates"
+              >
+                <Calendar className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
-          {/* Quick Actions (Copy As Message) */}
-          <div className="flex items-center gap-1">
+          {/* Date Picker Drawer */}
+          {isDateEditorOpen && (
+            <div className="mb-3 p-3 rounded-xl bg-[#FAF7F2] dark:bg-[#201C18] space-y-2.5 border border-[#EDE8DF] dark:border-[#3A332C]">
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleApplyDatePreset('this_week')}
+                  className="py-1 px-2 rounded-lg bg-white dark:bg-[#28231E] border border-[#EDE8DF] text-[11px] font-semibold text-[#2D2640] dark:text-[#F0EDE8] cursor-pointer"
+                >
+                  {language === 'zh-CN' ? '本周' : 'This Week'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleApplyDatePreset('next_week')}
+                  className="py-1 px-2 rounded-lg bg-white dark:bg-[#28231E] border border-[#EDE8DF] text-[11px] font-semibold text-[#2D2640] dark:text-[#F0EDE8] cursor-pointer"
+                >
+                  {language === 'zh-CN' ? '下周' : 'Next Week'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleApplyDatePreset('next_7_days')}
+                  className="py-1 px-2 rounded-lg bg-white dark:bg-[#28231E] border border-[#EDE8DF] text-[11px] font-semibold text-[#2D2640] dark:text-[#F0EDE8] cursor-pointer"
+                >
+                  {language === 'zh-CN' ? '未来7天' : '7 Days'}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <label className="block text-[10px] text-[#8A7A70] font-semibold uppercase mb-0.5">From</label>
+                  <input
+                    type="date"
+                    value={rangeStart}
+                    onChange={(e) => setRangeStart(e.target.value)}
+                    className="w-full px-2 py-1 rounded-lg border border-[#E8DDD5] bg-white text-xs text-[#2D2640]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-[#8A7A70] font-semibold uppercase mb-0.5">To</label>
+                  <input
+                    type="date"
+                    value={rangeEnd}
+                    onChange={(e) => setRangeEnd(e.target.value)}
+                    className="w-full px-2 py-1 rounded-lg border border-[#E8DDD5] bg-white text-xs text-[#2D2640]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2">
             <button
-              onClick={handleCopyAsMessage}
-              className="p-2 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer"
-              title="Copy formatted list to clipboard for messaging"
+              type="button"
+              onClick={() => handleGenerate()}
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-[#2D2640]/10 bg-[#FFD13B] py-2.5 text-[13px] font-semibold text-[#2D2640] transition-transform active:scale-95 cursor-pointer shadow-xs"
             >
-              <MessageSquareShare className="w-4 h-4" />
+              <Sparkles className="h-4 w-4" strokeWidth={2.4} />
+              <span>{language === 'zh-CN' ? '从排餐生成清单' : 'Generate Grocery List'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsManualAddOpen(true)}
+              className="px-3 rounded-xl border border-[#E8DDD5] bg-[#F5F0E8] dark:bg-[#201C18] text-[#2D2640] dark:text-[#F0EDE8] text-[12px] font-semibold flex items-center gap-1 transition cursor-pointer"
+              title="Add custom item"
+            >
+              <Plus className="h-4 w-4" />
+              <span>{language === 'zh-CN' ? '手动加' : 'Add'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleShareList}
+              className="p-2.5 rounded-xl border border-[#E8DDD5] bg-[#F5F0E8] dark:bg-[#201C18] text-[#2D2640] dark:text-[#F0EDE8] transition cursor-pointer"
+              title="Share as text"
+            >
+              <MessageSquareShare className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="space-y-1">
-          <div className="flex justify-between text-[11px] font-bold text-[#9A8A7E] dark:text-[#7A6E64]">
-            <span>{language === 'zh-CN' ? '采购进度' : 'Shopping Progress'}</span>
-            <span className="text-[#2D2640] dark:text-[#F0EDE8]">{progressPercent}%</span>
+        {totalCount > 0 && (
+          <div className="mb-4">
+            <div className="mb-1.5 flex items-center justify-between text-[12px]">
+              <span className="font-medium text-[#4A3F35] dark:text-[#F0EDE8]">
+                {checkedCount} of {totalCount} {language === 'zh-CN' ? '件物品已入车' : 'items in cart'}
+              </span>
+              <span className="font-semibold text-[#8A7A70] dark:text-[#9A8A7E]">{progressPercent}%</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-[#EDE6DB] dark:bg-[#201C18]">
+              <div
+                className="h-full rounded-full bg-[#FFD13B] transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
           </div>
-          <div className="w-full h-2 bg-[#F5F0E8] dark:bg-[#2E2A26] border border-[#EDE8DF] dark:border-[#38332E] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#FFD13B] transition-all duration-300 rounded-full"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
+        )}
 
-        {/* Top Control Bar: Manual Item Add & Done Action */}
-        <div className="flex items-center justify-between pt-1 gap-2">
-          <button
-            onClick={() => setIsManualAddOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer text-xs font-semibold active:scale-95 shadow-sm"
-          >
-            <Plus className="w-3.5 h-3.5 text-current" />
-            <span>{t('grocery.addBtn')}</span>
-          </button>
-
-          <div className="flex items-center gap-2">
-            {undoStack.length > 0 && (
-              <button
-                onClick={handleUndo}
-                className="flex items-center gap-1 text-xs font-semibold text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8] hover:bg-[#F7F4EF] dark:hover:bg-[#2E2A26] px-2.5 py-1.5 rounded-xl transition cursor-pointer"
-                title="Undo last done clearing"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>{language === 'zh-CN' ? '撤销' : 'Undo'}</span>
-              </button>
-            )}
-
+        {/* Filter Tabs Switcher */}
+        <div className="mb-4 flex rounded-full border border-[#EDE8DF] bg-white p-1 dark:border-[#3A332C] dark:bg-[#28231E]">
+          {[
+            { id: 'pending', label: language === 'zh-CN' ? '待采购' : 'To Buy' },
+            { id: 'checked', label: language === 'zh-CN' ? '已入车' : 'In Cart' },
+            { id: 'all', label: language === 'zh-CN' ? '全部' : 'All' }
+          ].map((t) => (
             <button
-              onClick={handleDoneShopping}
-              disabled={checkedCount === 0}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm disabled:opacity-40 transition active:scale-95 cursor-pointer text-xs"
-            >
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
-              <span>{language === 'zh-CN' ? `完成结算 (${checkedCount})` : `Done (${checkedCount})`}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Manual Item Add Form Modal */}
-      {isManualAddOpen && (
-        <form
-          onSubmit={handleAddManualItem}
-          className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl shadow-sm p-4 space-y-3 animate-in fade-in"
-        >
-          <div className="flex items-center justify-between pb-1 border-b border-[#EDE8DF] dark:border-[#38332E]">
-            <h3 className="text-[11px] font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider">
-              {t('grocery.addBtn')}
-            </h3>
-            <button
+              key={t.id}
               type="button"
-              onClick={() => setIsManualAddOpen(false)}
-              className="text-xs text-[#B8AFA4] dark:text-[#5A5450] hover:text-[#3D3530] dark:hover:text-[#D0C8C0] cursor-pointer"
-            >
-              {t('common.cancel')}
-            </button>
-          </div>
-
-          <div>
-            <input
-              type="text"
-              required
-              placeholder={t('grocery.addManualPlaceholder')}
-              value={manualName}
-              onChange={(e) => setManualName(e.target.value)}
-              autoFocus
-              className="w-full text-xs font-semibold px-3.5 py-2.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-sm"
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            <input
-              type="number"
-              step="any"
-              placeholder={language === 'zh-CN' ? '数量 (如 2)' : 'Qty (e.g. 2)'}
-              value={manualAmount}
-              onChange={(e) => setManualAmount(e.target.value === '' ? '' : Number(e.target.value))}
-              className="text-xs font-medium px-2 py-1.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] placeholder:text-[#C4B8A8] dark:placeholder:text-[#5A5048] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] text-center shadow-sm"
-            />
-
-            <select
-              value={manualUnit}
-              onChange={(e) => setManualUnit(e.target.value)}
-              className="text-xs font-medium px-2 py-1.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-sm"
-            >
-              {COMMON_UNITS.map((u) => (
-                <option key={u} value={u}>
-                  {u}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={manualCategory}
-              onChange={(e) => setManualCategory(e.target.value as GroceryCategory)}
-              className="text-xs font-medium px-1.5 py-1.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] rounded-xl text-[#2D2640] dark:text-[#F0EDE8] focus:outline-none focus:border-[#2D2640] dark:focus:border-[#F0EDE8] shadow-sm"
-            >
-              {GROCERY_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {formatCategory(cat)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-2.5 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all cursor-pointer text-xs"
-          >
-            {t('common.add')}
-          </button>
-        </form>
-      )}
-
-      {/* Filter Tabs & Category Selector */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="grid grid-cols-3 bg-[#F5F0E8] dark:bg-[#2E2A26] border border-[#EDE8DF] dark:border-[#38332E] p-1 rounded-xl flex-1">
-          <button
-            onClick={() => setActiveTab('pending')}
-            className={`py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-              activeTab === 'pending'
-                ? 'bg-white dark:bg-[#252220] text-[#2D2640] dark:text-[#F0EDE8] shadow-sm'
-                : 'text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8]'
-            }`}
-          >
-            {language === 'zh-CN' ? `待买 (${pendingCount})` : `To Buy (${pendingCount})`}
-          </button>
-          <button
-            onClick={() => setActiveTab('checked')}
-            className={`py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-              activeTab === 'checked'
-                ? 'bg-white dark:bg-[#252220] text-[#2D2640] dark:text-[#F0EDE8] shadow-sm'
-                : 'text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8]'
-            }`}
-          >
-            {language === 'zh-CN' ? `已买 (${checkedCount})` : `In Cart (${checkedCount})`}
-          </button>
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-              activeTab === 'all'
-                ? 'bg-white dark:bg-[#252220] text-[#2D2640] dark:text-[#F0EDE8] shadow-sm'
-                : 'text-[#9A8A7E] dark:text-[#7A6E64] hover:text-[#2D2640] dark:hover:text-[#F0EDE8]'
-            }`}
-          >
-            {language === 'zh-CN' ? `全部 (${totalCount})` : `All (${totalCount})`}
-          </button>
-        </div>
-
-        <button
-          onClick={handleRegenerate}
-          className="p-2.5 bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer shadow-sm"
-          title="Refresh items from Meal Plan"
-        >
-          <RotateCcw className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Category Pills */}
-      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
-        <button
-          onClick={() => setSelectedCategory('All')}
-          className={`text-xs px-3 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
-            selectedCategory === 'All'
-              ? 'bg-[#FFD13B] text-[#2D2640] font-bold shadow-sm'
-              : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] font-bold'
-          }`}
-        >
-          {formatCategory('All')}
-        </button>
-
-        {GROCERY_CATEGORIES.map((cat) => {
-          const count = items.filter((i) => i.category === cat).length;
-          if (count === 0) return null;
-          const isSelected = selectedCategory === cat;
-          return (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`text-xs px-3 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
-                isSelected
-                  ? 'bg-[#FFD13B] text-[#2D2640] font-bold shadow-sm'
-                  : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] font-bold'
+              onClick={() => setFilter(t.id as any)}
+              className={`flex-1 rounded-full py-1.5 text-[12.5px] font-semibold transition-colors cursor-pointer ${
+                filter === t.id
+                  ? 'bg-[#FFD13B] text-[#2D2640]'
+                  : 'text-[#8A7A70] dark:text-[#9A8A7E]'
               }`}
             >
-              {formatCategory(cat)} ({count})
+              {t.label}
             </button>
-          );
-        })}
-      </div>
-
-      {/* Items List Grouped by Category in Pure White #FFFFFF Cards */}
-      {displayItems.length === 0 ? (
-        <div className="bg-white dark:bg-[#252220] rounded-2xl p-8 text-center border border-dashed border-[#EDE8DF] dark:border-[#38332E] space-y-3 shadow-sm">
-          <CheckCircle2 className="w-8 h-8 text-[#B8AFA4] dark:text-[#5A5450] mx-auto opacity-60" />
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-[#2D2640] dark:text-[#F0EDE8]">
-              {totalCount === 0 ? t('grocery.emptyTitle') : activeTab === 'checked' ? (language === 'zh-CN' ? '购物车中暂无已勾选食材' : 'No items in cart') : (language === 'zh-CN' ? '所有食材均已完成采购！' : 'All items purchased!')}
-            </h4>
-            <p className="text-xs text-[#9A8A7E] dark:text-[#7A6E64]">
-              {totalCount === 0
-                ? t('grocery.emptySubtitle')
-                : (language === 'zh-CN' ? '在周计划中安排菜品，或直接点击上方一键生成。' : 'Plan recipes in your calendar or add manual items.')}
-            </p>
-          </div>
-          {totalCount === 0 && (
-            <button
-              onClick={handleRegenerate}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] font-extrabold border border-[#2D2640]/10 rounded-xl shadow-sm active:scale-[0.98] transition-all cursor-pointer text-xs"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>{t('grocery.generateThisWeek')}</span>
-            </button>
-          )}
+          ))}
         </div>
-      ) : (
-        <div className="space-y-4">
-          {Object.entries(groupedByCategory).map(([cat, catItems]) => (
-            <div key={cat} className="space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-[#7A6E64] dark:text-[#9A9088]">
-                  {formatCategory(cat)} ({catItems.length})
-                </h4>
-              </div>
 
-              <div className="bg-white dark:bg-[#252220] border border-[#EDE8DF] dark:border-[#38332E] rounded-2xl p-2 divide-y divide-[#EDE8DF] dark:divide-[#38332E] shadow-sm">
-                {catItems.map((item) => {
-                  const isEditing = editingItemId === item.id;
-                  const isInPantry = item.inPantry;
+        {/* Category Filter Chips */}
+        <div className="mb-4 flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          {['All', ...GROCERY_CATEGORIES].map((cat) => {
+            const isSel = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={`shrink-0 rounded-full px-3 py-1 text-[11.5px] font-semibold transition-colors cursor-pointer ${
+                  isSel
+                    ? 'bg-[#FFD13B] text-[#2D2640]'
+                    : 'border border-[#EDE8DF] bg-white text-[#8A7A70] dark:border-[#3A332C] dark:bg-[#28231E] dark:text-[#9A8A7E]'
+                }`}
+              >
+                {cat === 'All' ? (language === 'zh-CN' ? '全部品类' : 'All Categories') : formatCategory(cat as any)}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Groups */}
+        <div className="space-y-4">
+          {groupedCategories.map((group) => (
+            <section key={group.category}>
+              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#8A7A70] dark:text-[#9A8A7E]">
+                {formatCategory(group.category)}
+              </h2>
+              <div className="overflow-hidden rounded-2xl border border-[#EDE8DF] bg-white shadow-sm dark:border-[#3A332C] dark:bg-[#28231E]">
+                {group.items.map((item, idx) => {
+                  const isDone = item.checked;
+                  const isEditingThis = editingItemId === item.id;
+
+                  if (isEditingThis) {
+                    return (
+                      <div key={item.id} className="p-3 flex items-center gap-2 border-t border-[#EDE8DF] first:border-t-0">
+                        <input
+                          type="number"
+                          step="any"
+                          value={editingAmount}
+                          onChange={(e) => setEditingAmount(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                          className="w-16 px-2 py-1 text-xs rounded-lg border border-[#E8DDD5] bg-[#FAF7F2]"
+                        />
+                        <select
+                          value={editingUnit}
+                          onChange={(e) => setEditingUnit(e.target.value)}
+                          className="px-2 py-1 text-xs rounded-lg border border-[#E8DDD5] bg-[#FAF7F2]"
+                        >
+                          {COMMON_UNITS.map((u) => (
+                            <option key={u} value={u}>{u}</option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveInlineEdit(item.id)}
+                          className="px-2.5 py-1 rounded-lg bg-[#FFD13B] text-xs font-semibold text-[#2D2640]"
+                        >
+                          {t('common.save')}
+                        </button>
+                      </div>
+                    );
+                  }
 
                   return (
                     <div
                       key={item.id}
-                      onClick={() => !isEditing && handleToggleItem(item.id)}
-                      className={`p-3 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
-                        item.checked
-                          ? 'bg-white/60 dark:bg-[#252220]/60 opacity-50'
-                          : isInPantry
-                          ? 'bg-[#E8F5ED]/20 dark:bg-[#0D2E1A]/20 hover:bg-[#E8F5ED]/40 dark:hover:bg-[#0D2E1A]/40'
-                          : 'hover:bg-[#FAF7F2] dark:hover:bg-[#1E1B18]'
+                      className={`flex items-center gap-3 px-4 py-3 ${
+                        idx !== 0 ? 'border-t border-[#EDE8DF] dark:border-[#3A332C]' : ''
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        {/* Custom Checkbox */}
-                        <div
-                          className={`w-5 h-5 rounded-lg flex items-center justify-center transition-all shrink-0 ${
-                            item.checked
-                              ? 'bg-[#FFD13B] text-[#2D2640] border border-[#2D2640]/10 shadow-sm'
-                              : isInPantry
-                              ? 'border-2 border-[#A8D8BC] dark:border-[#1D4A2A] bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82]'
-                              : 'border border-[#EDE8DF] dark:border-[#38332E] bg-white dark:bg-[#252220]'
-                          }`}
-                          title={isInPantry ? 'Already in Pantry stock' : undefined}
-                        >
-                          {item.checked ? (
-                            <Check className="w-3.5 h-3.5 stroke-[3]" />
-                          ) : isInPantry ? (
-                            <Home className="w-3 h-3 text-current" />
-                          ) : null}
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span
-                              className={`text-xs font-bold truncate ${
-                                item.checked
-                                  ? 'line-through text-[#B8AFA4] dark:text-[#5A5450]'
-                                  : isInPantry
-                                  ? 'text-[#2D6A4A] dark:text-[#4CAF82] font-semibold'
-                                  : 'text-[#2D2640] dark:text-[#F0EDE8]'
-                              }`}
-                            >
-                              {item.name}
-                            </span>
-
-                            {/* Pantry Auto Half-Mark Badge with Substitute Notice */}
-                            {isInPantry && !item.checked && (
-                              <span className="text-[9px] font-extrabold tracking-wide bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border border-[#A8D8BC] dark:border-[#1D4A2A] px-1.5 py-0.5 rounded-md inline-flex items-center gap-1">
-                                <span>🏡</span>
-                                <span>{item.pantrySubstituteNote ? item.pantrySubstituteNote : 'In Pantry (Have at home)'}</span>
-                              </span>
-                            )}
-                          </div>
-                          
-                          {item.sourceDishes && item.sourceDishes.length > 0 && (
-                            <span className="text-[10px] text-[#B8AFA4] dark:text-[#5A5450] truncate block">
-                              For: {item.sourceDishes.join(', ')}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Quantity display & 1-Tap In-Pantry Action */}
-                      <div
-                        className="flex items-center gap-1.5 shrink-0 pl-2"
-                        onClick={(e) => e.stopPropagation()}
+                      {/* Checkbox button */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleItem(item.id)}
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-colors cursor-pointer ${
+                          isDone ? 'border-[#FFD13B] bg-[#FFD13B]' : 'border-[#D8CCC0]'
+                        }`}
+                        aria-label={isDone ? 'Uncheck' : 'Check off'}
                       >
-                        {/* 1-Tap "Have at Home" Pantry Toggle Shortcut */}
-                        {onTogglePantryItem && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onTogglePantryItem(item.name);
-                              // Also toggle local inPantry tag on item for immediate visual feedback
-                              const nextItems = items.map((it) => {
-                                if (it.id === item.id) {
-                                  return { ...it, inPantry: !it.inPantry };
-                                }
-                                return it;
-                              });
-                              onUpdateGroceryList({
-                                ...groceryList,
-                                items: nextItems
-                              });
-                              showToast(
-                                !isInPantry
-                                  ? (language === 'zh-CN' ? `🏡 已将 "${item.name}" 设为家中常备！` : `🏡 Added "${item.name}" to Home Pantry!`)
-                                  : (language === 'zh-CN' ? `已从家中常备移除 "${item.name}"` : `Removed "${item.name}" from Home Pantry.`)
-                              );
-                            }}
-                            className={`p-1.5 rounded-xl border transition active:scale-95 cursor-pointer ${
-                              isInPantry
-                                ? 'bg-[#E8F5ED] dark:bg-[#0D2E1A] border-[#A8D8BC] dark:border-[#1D4A2A] text-[#2D6A4A] dark:text-[#4CAF82] shadow-sm'
-                                : 'bg-[#F5F0E8] dark:bg-[#2E2A26] border-[#EDE8DF] dark:border-[#38332E] text-[#7A6E64] dark:text-[#9A9088] hover:bg-[#E8F5ED] dark:hover:bg-[#0D2E1A] hover:text-[#2D6A4A] dark:hover:text-[#4CAF82]'
-                            }`}
-                            title={isInPantry ? 'In Home Pantry (Tap to remove)' : 'Have at home? Tap to add to Pantry'}
-                          >
-                            <Home className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                        {isDone ? <Check className="h-3.5 w-3.5 text-[#2D2640]" strokeWidth={3} /> : null}
+                      </button>
 
-                        {isEditing ? (
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="number"
-                              step="any"
-                              value={editingAmount}
-                              onChange={(e) =>
-                                setEditingAmount(e.target.value === '' ? '' : Number(e.target.value))
-                              }
-                              className="w-14 text-xs font-bold px-1.5 py-1 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] text-[#2D2640] dark:text-[#F0EDE8] rounded-lg text-center"
-                            />
-                            <input
-                              type="text"
-                              value={editingUnit}
-                              onChange={(e) => setEditingUnit(e.target.value)}
-                              className="w-12 text-xs font-bold px-1.5 py-1 bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#E8E0D5] dark:border-[#38332E] text-[#2D2640] dark:text-[#F0EDE8] rounded-lg text-center"
-                            />
-                            <button
-                              onClick={() => handleSaveEdit(item.id)}
-                              className="p-1 bg-[#FFD13B] text-[#2D2640] border border-[#2D2640]/10 rounded-lg text-xs font-bold"
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => handleStartEdit(item)}
-                            className="flex items-center gap-1 text-xs font-semibold bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#2D2640] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#38332E] px-2 py-1 rounded-xl hover:bg-[#EDE8DF] dark:hover:bg-[#38332E] transition cursor-pointer"
-                            title="Edit quantity"
-                          >
-                            <span>
-                              {item.amount !== null ? `${item.amount} ` : ''}
-                              {item.unit || 'pcs'}
-                            </span>
-                            <Edit2 className="w-2.5 h-2.5 opacity-50" />
-                          </button>
-                        )}
+                      {/* Item Details */}
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={`text-[13.5px] font-medium ${
+                            isDone
+                              ? 'text-[#B8AFA4] line-through dark:text-[#5A5450]'
+                              : 'text-[#4A3F35] dark:text-[#F0EDE8]'
+                          }`}
+                        >
+                          {item.name}
+                        </p>
+                        <p className="text-[11px] text-[#8A7A70] dark:text-[#9A8A7E]">
+                          {item.amount !== null ? item.amount : ''} {item.unit}
+                        </p>
                       </div>
+
+                      {/* In Pantry Toggle Icon */}
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePantry(item)}
+                        className={`flex h-7 w-7 items-center justify-center rounded-lg transition cursor-pointer ${
+                          item.inPantry
+                            ? 'bg-[#EBF5EE] text-[#4E9E72]'
+                            : 'bg-[#FAF7F2] text-[#C4B0A5] hover:text-[#8A7A70] dark:bg-[#201C18]'
+                        }`}
+                        title={item.inPantry ? 'Already in Pantry (Click to toggle)' : 'Not in pantry (Click to mark in pantry)'}
+                      >
+                        <Home className="h-4 w-4" />
+                      </button>
+
+                      {/* Edit Qty */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingItemId(item.id);
+                          setEditingAmount(item.amount !== null ? item.amount : '');
+                          setEditingUnit(item.unit);
+                        }}
+                        className="p-1 text-[#C4B0A5] hover:text-[#2D2640] rounded-lg transition cursor-pointer"
+                        title="Edit quantity"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+
+                      {/* Delete item */}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="p-1 text-[#C4B0A5] hover:text-rose-500 rounded-lg transition cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   );
                 })}
               </div>
-            </div>
+            </section>
           ))}
+
+          {groupedCategories.length === 0 && (
+            <div className="py-12 text-center text-[13px] text-[#8A7A70] dark:text-[#9A8A7E] space-y-1">
+              <p>🛒 {language === 'zh-CN' ? '暂无待采购的物品。' : 'Nothing here yet.'}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Done Shopping Sticky Bottom Button */}
+      {checkedCount > 0 && (
+        <div className="fixed bottom-16 left-0 right-0 z-30 px-4 pointer-events-none">
+          <div className="max-w-md mx-auto pointer-events-auto">
+            <button
+              type="button"
+              onClick={handleDoneShopping}
+              className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-[#2D2640]/10 bg-[#FFD13B] py-3.5 text-[14px] font-semibold text-[#2D2640] shadow-lg transition-transform active:scale-95 cursor-pointer"
+            >
+              <Check className="h-4 w-4" strokeWidth={2.6} />
+              <span>{language === 'zh-CN' ? `完成采购 (${checkedCount} 件)` : `Done Shopping (${checkedCount} items)`}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Item Add Modal */}
+      {isManualAddOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
+          <form
+            onSubmit={handleAddManualItem}
+            className="bg-white dark:bg-[#28231E] w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-[#EDE8DF] dark:border-[#3A332C] space-y-3"
+          >
+            <h3 className="text-sm font-bold text-[#2D2640] dark:text-[#F0EDE8]">
+              {language === 'zh-CN' ? '手动添加采购物品' : 'Add Custom Grocery Item'}
+            </h3>
+
+            <div>
+              <label className="block text-[10px] font-semibold uppercase text-[#8A7A70] mb-1">Item Name</label>
+              <input
+                type="text"
+                required
+                autoFocus
+                value={manualName}
+                onChange={(e) => setManualName(e.target.value)}
+                placeholder="e.g. Avocado, Oat Milk"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-semibold uppercase text-[#8A7A70] mb-1">Amount</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={manualAmount}
+                  onChange={(e) => setManualAmount(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                  placeholder="1"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold uppercase text-[#8A7A70] mb-1">Unit</label>
+                <select
+                  value={manualUnit}
+                  onChange={(e) => setManualUnit(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
+                >
+                  {COMMON_UNITS.map((u) => (
+                    <option key={u} value={u}>{u}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-semibold uppercase text-[#8A7A70] mb-1">Category</label>
+              <select
+                value={manualCategory}
+                onChange={(e) => setManualCategory(e.target.value as GroceryCategory)}
+                className="w-full px-3 py-2 text-xs rounded-xl border border-[#E8DDD5] bg-[#FAF7F2] text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8]"
+              >
+                {GROCERY_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{formatCategory(c)}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsManualAddOpen(false)}
+                className="flex-1 py-2 text-xs font-semibold rounded-xl border border-[#EDE8DF] bg-white text-[#8A7A70] cursor-pointer"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="submit"
+                className="flex-1 py-2 text-xs font-semibold rounded-xl bg-[#FFD13B] border border-[#2D2640]/10 text-[#2D2640] cursor-pointer shadow-xs"
+              >
+                {language === 'zh-CN' ? '确认添加' : 'Add Item'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Celebration Modal */}
+      {showCelebration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-[#28231E] w-full max-w-sm rounded-3xl p-6 text-center space-y-4 shadow-2xl border border-[#EDE8DF] dark:border-[#3A332C]">
+            <div className="w-14 h-14 mx-auto rounded-full bg-[#EBF5EE] text-[#4E9E72] flex items-center justify-center text-2xl">
+              🎉
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-[#2D2640] dark:text-[#F0EDE8]">
+                {language === 'zh-CN' ? '采购大功告成！' : 'Shopping Complete!'}
+              </h3>
+              <p className="text-xs text-[#8A7A70] dark:text-[#9A8A7E] mt-1">
+                {language === 'zh-CN' ? `已成功采买 ${checkedCount} 种食材。要清除已购项目并更新清单吗？` : `You picked up ${checkedCount} items. Would you like to clear checked items?`}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowCelebration(false)}
+                className="flex-1 py-2 text-xs font-semibold rounded-xl border border-[#EDE8DF] bg-white text-[#8A7A70] cursor-pointer"
+              >
+                {language === 'zh-CN' ? '保留已购' : 'Keep in list'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onUpdateGroceryList({
+                    ...groceryList,
+                    items: items.filter((i) => !i.checked)
+                  });
+                  setShowCelebration(false);
+                  showToast('🧹 Cleared purchased items.');
+                }}
+                className="flex-1 py-2 text-xs font-semibold rounded-xl bg-[#FFD13B] border border-[#2D2640]/10 text-[#2D2640] cursor-pointer shadow-xs"
+              >
+                {language === 'zh-CN' ? '清除已购' : 'Clear checked'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
