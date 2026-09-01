@@ -394,6 +394,20 @@ export const DishesView: React.FC<DishesViewProps> = ({
                     <p className="text-[13.5px] font-bold leading-tight text-[#1E1B2E] truncate dark:text-[#F5F2EB]">
                       {loc.name}
                     </p>
+                    
+                    {/* Allergen warning tag on Family Cookbook card */}
+                    {(() => {
+                      const risk = memberProfiles ? checkDishAllergenRisk(recipe, memberProfiles, familyMembers) : { hasRisk: false, affectedMembers: [] };
+                      if (!risk.hasRisk || !risk.affectedMembers || risk.affectedMembers.length === 0) return null;
+                      return (
+                        <div className="mt-1">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 text-[9.5px] font-bold text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 truncate max-w-full">
+                            ⚠️ {risk.affectedMembers.map((m) => `${m.memberName} (${m.allergens.join(', ')})`).join(', ')}
+                          </span>
+                        </div>
+                      );
+                    })()}
+
                     <p className="mt-1 text-[11px] text-[#786F66] dark:text-[#A39C90] flex items-center gap-1">
                       <Clock className="w-3 h-3 text-[#A89F95]" />
                       <span>{recipe.prepTimeMinutes || 20} min</span>
@@ -412,7 +426,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
           {displayedDishes.map((recipe) => {
             const loc = getLocalizedDish(recipe, language);
             const isInCookbook = recipe.isFamilyRecipe !== false;
-            const risk = memberProfiles ? checkDishAllergenRisk(recipe, memberProfiles, familyMembers) : { hasRisk: false };
+            const risk = memberProfiles ? checkDishAllergenRisk(recipe, memberProfiles, familyMembers) : { hasRisk: false, affectedMembers: [] };
 
             return (
               <div
@@ -449,9 +463,9 @@ export const DishesView: React.FC<DishesViewProps> = ({
                       >
                         {loc.name}
                       </p>
-                      {risk.hasRisk && (
-                        <span className="shrink-0 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-[#E05050] dark:bg-rose-950/40">
-                          Allergen
+                      {risk.hasRisk && risk.affectedMembers && risk.affectedMembers.length > 0 && (
+                        <span className="shrink-0 inline-flex items-center gap-1 rounded-md bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50">
+                          ⚠️ {risk.affectedMembers.map((m) => `${m.memberName}: ${m.allergens.join(', ')}`).join('; ')}
                         </span>
                       )}
                     </div>
