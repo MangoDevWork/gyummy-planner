@@ -7,14 +7,16 @@ import {
   Heart,
   ChevronDown,
   ShieldCheck,
-  BookmarkCheck
+  BookmarkCheck,
+  BookOpen,
+  CheckCircle2
 } from 'lucide-react';
 import { DishDetailModal } from './DishDetailModal';
 import { DishFormModal } from './DishFormModal';
 import { loadMasterSystemRecipes } from '../../services/systemRecipesService';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedDish, searchMatchesLocalizedDish } from '../../services/dataLocalizationService';
-import { checkDishAllergenRisk } from '../../services/personalisationService';
+import { checkDishAllergenRisk, getAllergenById } from '../../services/personalisationService';
 
 interface DishesViewProps {
   familyName: string;
@@ -137,6 +139,16 @@ export const DishesView: React.FC<DishesViewProps> = ({
   const [systemRecipes, setSystemRecipes] = useState<Dish[]>([]);
   const [visibleCount, setVisibleCount] = useState<number>(INITIAL_BATCH_SIZE);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // Animated flying icon state
+  const [flyingDish, setFlyingDish] = useState<{ id: string; name: string; x: number; y: number } | null>(null);
+  const [isCookbookPulsing, setIsCookbookPulsing] = useState(false);
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3000);
+  };
 
   const currentMember = currentProfile?.memberName || '';
 
@@ -234,20 +246,82 @@ export const DishesView: React.FC<DishesViewProps> = ({
     return dishes.filter((d) => d.isFamilyRecipe !== false).length;
   }, [dishes]);
 
+  // Helper to format human-friendly allergen names
+  const formatAllergenList = (allergens: string[]) => {
+    return allergens.map((a) => {
+      const def = getAllergenById(a);
+      if (def) {
+        return language === 'zh-CN' ? def.nameZh : def.nameEn;
+      }
+      // Convert raw snake_case like "cow_milk" -> "Milk"
+      return a.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    }).join(', ');
+  };
+
+  // Add to Cookbook with flying animation & feedback
+  const handleAddToCookbook = (e: React.MouseEvent, dish: Dish) => {
+    e.stopPropagation();
+    if (!onToggleFamilyRecipe) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    setFlyingDish({
+      id: dish.id,
+      name: dish.name,
+      x: rect.left + rect.width / 2,
+      y: rect.top
+    });
+
+    onToggleFamilyRecipe(dish.id);
+    setIsCookbookPulsing(true);
+    showToast(language === 'zh-CN' ? `📖 已加入家庭菜谱：${dish.name}` : `📖 Added "${dish.name}" to Family Cookbook!`);
+
+    setTimeout(() => {
+      setFlyingDish(null);
+      setTimeout(() => setIsCookbookPulsing(false), 600);
+    }, 800);
+  };
+
   return (
-    <div className="px-4 pb-28 pt-4 max-w-md mx-auto">
-      {/* Scope Switcher */}
+    <div className="px-4 pb-28 pt-4 max-w-md mx-auto relative">
+      {/* Toast Feedback */}
+      {toastMsg && (
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#1E1B2E] dark:bg-[#F5F2EB] text-white dark:text-[#1E1B2E] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce">
+          <CheckCircle2 className="w-4 h-4 text-[#FFD13B] dark:text-[#1E1B2E]" />
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
+      {/* Floating Flying Animation Element */}
+      {flyingDish && (
+        <div
+          className="fixed pointer-events-none z-50 text-2xl flex items-center justify-center animate-out transition-all duration-700 ease-in-out"
+          style={{
+            left: `${flyingDish.x}px`,
+            top: `${flyingDish.y}px`,
+            transform: 'translate(-50%, -50%) scale(0.6)',
+            animation: 'flyToCookbook 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards'
+          }}
+        >
+          <div className="bg-[#FFD13B] text-[#1E1B2E] p-2 rounded-2xl shadow-2xl border border-white flex items-center gap-1 text-xs font-bold">
+            <BookOpen className="w-4 h-4" />
+            <span>+1</span>
+          </div>
+        </div>
+      )}
+
+      {/* Scope Switcher with Book icon & feedback pulse */}
       <div className="mb-4 flex rounded-full border border-[#EDE8DF] bg-white p-1 dark:border-[#3D362E] dark:bg-[#2A2520] shadow-2xs">
         <button
           type="button"
           onClick={() => setScope('family')}
-          className={`flex-1 rounded-full py-2 text-[12.5px] font-bold transition-all cursor-pointer ${
+          className={`flex-1 flex items-center justify-center gap-1.5 rounded-full py-2 text-[12.5px] font-bold transition-all cursor-pointer ${
             scope === 'family'
               ? 'bg-[#FFD13B] text-[#1E1B2E] shadow-xs'
               : 'text-[#786F66] hover:text-[#1E1B2E] dark:text-[#A39C90] dark:hover:text-[#F5F2EB]'
-          }`}
+          } ${isCookbookPulsing ? 'scale-105 ring-2 ring-[#FFD13B] transition-transform duration-300' : ''}`}
         >
-          {language === 'zh-CN' ? `家庭菜谱 (${familySavedCount})` : `Family Cookbook (${familySavedCount})`}
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>{language === 'zh-CN' ? `家庭菜谱 (${familySavedCount})` : `Family Cookbook (${familySavedCount})`}</span>
         </button>
         <button
           type="button"
@@ -258,7 +332,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
               : 'text-[#786F66] hover:text-[#1E1B2E] dark:text-[#A39C90] dark:hover:text-[#F5F2EB]'
           }`}
         >
-          {language === 'zh-CN' ? '3,000+ 菜谱库' : 'Recipe Library'}
+          <span>{language === 'zh-CN' ? '3,000+ 菜谱库' : 'Recipe Library'}</span>
         </button>
       </div>
 
@@ -274,7 +348,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
         />
       </div>
 
-      {/* Filter Row: Safe for Family, Cuisine Dropdown, Sort Dropdown */}
+      {/* Filter Row */}
       <div className="mb-3 flex items-center gap-2 flex-wrap">
         <button
           type="button"
@@ -402,7 +476,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                       return (
                         <div className="mt-1">
                           <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 text-[9.5px] font-bold text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 truncate max-w-full">
-                            ⚠️ {risk.affectedMembers.map((m) => `${m.memberName} (${m.allergens.join(', ')})`).join(', ')}
+                            ⚠️ {risk.affectedMembers.map((m) => `${m.memberName}: ${formatAllergenList(m.allergens)}`).join('; ')}
                           </span>
                         </div>
                       );
@@ -421,7 +495,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
           </div>
         </div>
       ) : (
-        /* ─── Recipe Library Scope: Enticing, Addictive Discovery List ─── */
+        /* ─── Recipe Library Scope: Neatly structured, never overflowing ─── */
         <div className="space-y-3">
           {displayedDishes.map((recipe) => {
             const loc = getLocalizedDish(recipe, language);
@@ -431,14 +505,14 @@ export const DishesView: React.FC<DishesViewProps> = ({
             return (
               <div
                 key={recipe.id}
-                className="rounded-2xl border border-[#EDE8DF] bg-white p-3 shadow-xs dark:border-[#3D362E] dark:bg-[#2A2520] hover:border-[#FFD13B]/60 transition-all"
+                className="rounded-2xl border border-[#EDE8DF] bg-white p-3 shadow-xs dark:border-[#3D362E] dark:bg-[#2A2520] hover:border-[#FFD13B]/60 transition-all overflow-hidden"
               >
-                <div className="flex gap-3 items-center">
+                <div className="flex gap-3 items-start">
                   {/* Recipe Image / Thumbnail */}
                   <button
                     type="button"
                     onClick={() => setSelectedDish(recipe)}
-                    className="w-20 h-20 shrink-0 rounded-xl bg-[#FAF8F5] dark:bg-[#221E1A] overflow-hidden flex items-center justify-center cursor-pointer border border-[#F0ECE1] dark:border-[#383129] relative group"
+                    className="w-22 h-22 shrink-0 rounded-2xl bg-[#FAF8F5] dark:bg-[#221E1A] overflow-hidden flex items-center justify-center cursor-pointer border border-[#F0ECE1] dark:border-[#383129] relative group mt-0.5"
                     aria-label={`Open ${loc.name}`}
                   >
                     {recipe.imageUrl ? (
@@ -455,23 +529,27 @@ export const DishesView: React.FC<DishesViewProps> = ({
                     )}
                   </button>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-1.5">
-                      <p
-                        onClick={() => setSelectedDish(recipe)}
-                        className="text-[14px] font-bold leading-tight text-[#1E1B2E] text-pretty dark:text-[#F5F2EB] cursor-pointer hover:text-[#FFC720] transition-colors"
-                      >
-                        {loc.name}
-                      </p>
-                      {risk.hasRisk && risk.affectedMembers && risk.affectedMembers.length > 0 && (
-                        <span className="shrink-0 inline-flex items-center gap-1 rounded-md bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50">
-                          ⚠️ {risk.affectedMembers.map((m) => `${m.memberName}: ${m.allergens.join(', ')}`).join('; ')}
-                        </span>
-                      )}
-                    </div>
+                  <div className="min-w-0 flex-1 flex flex-col justify-between">
+                    {/* Title */}
+                    <p
+                      onClick={() => setSelectedDish(recipe)}
+                      className="text-[14px] font-bold leading-snug text-[#1E1B2E] line-clamp-2 dark:text-[#F5F2EB] cursor-pointer hover:text-[#FFC720] transition-colors"
+                    >
+                      {loc.name}
+                    </p>
 
-                    <div className="mt-1 flex items-center gap-2 text-[11px] text-[#786F66] dark:text-[#A39C90] flex-wrap">
-                      <span className="px-1.5 py-0.2 rounded-md bg-[#FAF8F5] dark:bg-[#221E1A] font-medium border border-[#EDE8DF] dark:border-[#3D362E]">
+                    {/* Allergen Warning Banner (Wrapped neatly without clipping) */}
+                    {risk.hasRisk && risk.affectedMembers && risk.affectedMembers.length > 0 && (
+                      <div className="mt-1">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 max-w-full text-wrap leading-tight">
+                          ⚠️ {risk.affectedMembers.map((m) => `${m.memberName}: ${formatAllergenList(m.allergens)}`).join('; ')}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Metadata tags */}
+                    <div className="mt-1.5 flex items-center gap-2 text-[11px] text-[#786F66] dark:text-[#A39C90] flex-wrap">
+                      <span className="px-1.5 py-0.2 rounded-md bg-[#FAF8F5] dark:bg-[#221E1A] font-semibold border border-[#EDE8DF] dark:border-[#3D362E]">
                         {recipe.cuisine ? formatCuisine(recipe.cuisine) : formatCategory(recipe.category)}
                       </span>
                       <span className="inline-flex items-center gap-1">
@@ -481,13 +559,13 @@ export const DishesView: React.FC<DishesViewProps> = ({
                       <span>{recipe.ingredients.length} {language === 'zh-CN' ? '种食材' : 'ingr.'}</span>
                     </div>
 
-                    {/* Single Clean Button: Add to Cookbook */}
+                    {/* Single Clean Button: Add to Cookbook (No double plus) */}
                     <div className="mt-2.5">
                       {onToggleFamilyRecipe && (
                         <button
                           type="button"
-                          onClick={() => onToggleFamilyRecipe(recipe.id)}
-                          className={`inline-flex items-center justify-center gap-1 rounded-xl px-3.5 py-1.5 text-[11.5px] font-bold transition-all cursor-pointer ${
+                          onClick={(e) => handleAddToCookbook(e, recipe)}
+                          className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-1.5 text-[11.5px] font-bold transition-all cursor-pointer ${
                             isInCookbook
                               ? 'border border-[#FFD13B]/50 bg-[#FFF8E6] text-[#7A5C00] dark:bg-[#2A2000] dark:text-[#FFD13B]'
                               : 'border border-[#1E1B2E]/10 bg-[#FFD13B] text-[#1E1B2E] hover:bg-[#FFC720] shadow-2xs active:scale-95'
@@ -501,7 +579,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                           ) : (
                             <>
                               <Plus className="h-3.5 w-3.5" strokeWidth={2.6} />
-                              <span>{language === 'zh-CN' ? '+ 加入家庭菜谱' : '+ Add to Cookbook'}</span>
+                              <span>{language === 'zh-CN' ? '加入家庭菜谱' : 'Add to Cookbook'}</span>
                             </>
                           )}
                         </button>

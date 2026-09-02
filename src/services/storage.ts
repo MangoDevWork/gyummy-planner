@@ -87,21 +87,24 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
       return initial;
     }
 
-    // Merge master ingredients so all 6,000+ system ingredients are always available
-    if (!parsed.masterIngredients || parsed.masterIngredients.length < DEFAULT_MASTER_INGREDIENTS.length) {
-      const existingIngMap = new Map<string, MasterIngredient>();
-      (parsed.masterIngredients || []).forEach((ing) => existingIngMap.set(ing.name.toLowerCase().trim(), ing));
+    // Upgrade and sync master ingredients to clean consolidated database
+    const customUserIngredients = (parsed.masterIngredients || []).filter((i) => i.id.startsWith('custom_ing_'));
+    const cleanMasterMap = new Map<string, MasterIngredient>();
+    
+    // Seed default master database
+    DEFAULT_MASTER_INGREDIENTS.forEach((ing) => {
+      cleanMasterMap.set(ing.name.toLowerCase().trim(), ing);
+    });
+    
+    // Add user custom ingredients
+    customUserIngredients.forEach((customIng) => {
+      const key = customIng.name.toLowerCase().trim();
+      if (!cleanMasterMap.has(key)) {
+        cleanMasterMap.set(key, customIng);
+      }
+    });
 
-      const mergedMaster = [...(parsed.masterIngredients || [])];
-      DEFAULT_MASTER_INGREDIENTS.forEach((defaultIng) => {
-        const key = defaultIng.name.toLowerCase().trim();
-        if (!existingIngMap.has(key)) {
-          mergedMaster.push(defaultIng);
-          existingIngMap.set(key, defaultIng);
-        }
-      });
-      parsed.masterIngredients = mergedMaster;
-    }
+    parsed.masterIngredients = Array.from(cleanMasterMap.values());
 
     if (!parsed.pantryIngredients || parsed.pantryIngredients.length === 0) {
       parsed.pantryIngredients = DEFAULT_PANTRY_INGREDIENTS;

@@ -265,3 +265,19 @@
 .dark textarea::placeholder {
   color: var(--text-muted) !important;
 }
+
+@keyframes flyToCookbook {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate(-50%, -120px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -240px) scale(0.4);
+  }
+}
+
