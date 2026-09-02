@@ -607,8 +607,23 @@ export const DishesView: React.FC<DishesViewProps> = ({
 
       {/* Empty State */}
       {filteredDishes.length === 0 && (
-        <div className="py-12 text-center text-[13px] text-[#786F66] dark:text-[#A39C90] space-y-1 bg-white dark:bg-[#2A2520] rounded-2xl border border-dashed border-[#EDE8DF] dark:border-[#3D362E] p-6">
-          <p>🍳 {language === 'zh-CN' ? '未找到符合条件的菜谱' : 'No recipes matched your search.'}</p>
+        <div className="py-10 text-center text-[13px] text-[#786F66] dark:text-[#A39C90] space-y-3 bg-white dark:bg-[#2A2520] rounded-2xl border border-dashed border-[#EDE8DF] dark:border-[#3D362E] p-6">
+          {safeOnly && activeDataset.length > 0 ? (
+            <>
+              <p className="font-semibold text-rose-600 dark:text-rose-400">
+                🛡️ {language === 'zh-CN' ? '当前已存菜谱均含有家庭成员的过敏原，已被“全家无过敏”过滤隐藏。' : 'All recipes contain allergens for your family and are hidden by the "Safe for family" filter.'}
+              </p>
+              <button
+                type="button"
+                onClick={() => setSafeOnly(false)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#FFD13B] px-4 py-2 text-xs font-bold text-[#1E1B2E] shadow-2xs transition active:scale-95 cursor-pointer"
+              >
+                {language === 'zh-CN' ? '关闭过敏过滤，查看全部菜谱' : 'Disable Safe Filter to Show All Recipes'}
+              </button>
+            </>
+          ) : (
+            <p>🍳 {language === 'zh-CN' ? '未找到符合条件的菜谱' : 'No recipes matched your search.'}</p>
+          )}
         </div>
       )}
 

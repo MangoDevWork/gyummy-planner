@@ -1,5 +1,5 @@
 import type { AppData, Dish, GroceryCategory, GroceryItem, MasterIngredient, MealPlan, UserProfile } from '../types';
-import { getInitialAppData, DEFAULT_MEAL_SCHEDULES, DEFAULT_PANTRY_INGREDIENTS } from './seedData';
+import { getInitialAppData, INITIAL_DISHES, DEFAULT_MEAL_SCHEDULES, DEFAULT_PANTRY_INGREDIENTS } from './seedData';
 import { DEFAULT_MASTER_INGREDIENTS } from './masterIngredients';
 import { matchPantryIngredient } from './pantryMatching';
 import { STARTER_RECIPE_TRANSLATIONS, getLocalizedDish } from './dataLocalizationService';
@@ -113,6 +113,26 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
     // Migration for mealSchedules / legacy mealSlots
     if (!parsed.mealSchedules || parsed.mealSchedules.length === 0) {
       parsed.mealSchedules = (parsed as any).mealSlots || DEFAULT_MEAL_SCHEDULES;
+    }
+
+    // Ensure family dishes exist and restore starter cookbook dishes if missing
+    if (!parsed.dishes || parsed.dishes.length === 0) {
+      parsed.dishes = INITIAL_DISHES;
+    } else {
+      const hasFamilyRecipes = parsed.dishes.some((d) => d.isFamilyRecipe !== false);
+      if (!hasFamilyRecipes) {
+        const dishMap = new Map<string, Dish>();
+        parsed.dishes.forEach((d) => dishMap.set(d.id, d));
+        INITIAL_DISHES.forEach((initDish) => {
+          const existing = dishMap.get(initDish.id);
+          if (existing) {
+            existing.isFamilyRecipe = true;
+          } else {
+            dishMap.set(initDish.id, { ...initDish, isFamilyRecipe: true });
+          }
+        });
+        parsed.dishes = Array.from(dishMap.values());
+      }
     }
 
     // Hydrate translations on known starter dishes if missing
