@@ -3,6 +3,7 @@ import type { UserProfile } from '../../types';
 import { Home, Check, ArrowRight, Camera, Trash2, LogOut, KeyRound, Loader2, UserPlus, X } from 'lucide-react';
 import { compressImage } from '../../services/imageUtils';
 import { EasterEggModal } from '../common/EasterEggModal';
+import { LegalTermsModal } from '../common/LegalTermsModal';
 import { verifyOrCreateFamily, DEFAULT_FAMILY_PIN } from '../../services/firebase';
 
 interface AuthModalProps {
@@ -37,6 +38,7 @@ export function AuthModal({
 
   // Easter Egg State
   const [showEasterEgg, setShowEasterEgg] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
   const [pendingProfileData, setPendingProfileData] = useState<{
     profile: UserProfile;
     updatedMembers: string[];
@@ -492,6 +494,17 @@ export function AuthModal({
                     )}
                   </button>
                 </div>
+
+                <p className="text-[10px] text-center text-[#9A8A7E] dark:text-[#7A6E64] pt-1">
+                  By continuing, you agree to Gyummy's{' '}
+                  <button
+                    type="button"
+                    onClick={() => setShowLegalModal(true)}
+                    className="underline font-semibold text-[#2D2640] dark:text-[#F0EDE8] hover:text-[#FFD13B] cursor-pointer"
+                  >
+                    Terms & Health Disclaimer
+                  </button>
+                </p>
               </form>
             )}
           </div>
@@ -502,6 +515,13 @@ export function AuthModal({
       <EasterEggModal
         isOpen={showEasterEgg}
         onConfirm={handleEasterEggConfirm}
+      />
+
+      {/* Legal Terms & Health Disclaimer Modal */}
+      <LegalTermsModal
+        isOpen={showLegalModal}
+        onClose={() => setShowLegalModal(false)}
+        initialTab="allergies"
       />
     </>
   );

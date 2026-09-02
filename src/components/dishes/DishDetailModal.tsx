@@ -19,6 +19,7 @@ import { exportToZip } from '../../services/zipExportService';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedDish, formatDisplayIngredientName } from '../../services/dataLocalizationService';
 import { checkDishAllergenRisk, getAllergenById } from '../../services/personalisationService';
+import { LegalTermsModal } from '../common/LegalTermsModal';
 
 interface DishDetailModalProps {
   dish: Dish | null;
@@ -60,6 +61,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
   const { language, t, formatCategory, formatCuisine } = useLanguage();
   const [servingMultiplier, setServingMultiplier] = useState(1);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
+  const [showLegalModal, setShowLegalModal] = useState(false);
 
   if (!isOpen || !dish) return null;
 
@@ -244,6 +246,19 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
                     ? `含有 ${allergenRisk.dishAllergens.map((id) => getAllergenById(id)?.nameZh || id).join(', ')} — ${allergenRisk.affectedMembers.map((m) => m.memberName).join('、')} 对此过敏。`
                     : `Contains ${allergenRisk.dishAllergens.map((id) => getAllergenById(id)?.nameEn || id).join(', ')} — ${allergenRisk.affectedMembers.map((m) => m.memberName).join(', ')} allergic.`}
                 </p>
+                <p className="text-[10px] text-rose-500/80 dark:text-rose-400/80 mt-1 flex items-center gap-1">
+                  <span>ℹ️ {language === 'zh-CN' ? '算法估算仅供参考，切勿替代物理包装检查' : 'Algorithmic estimate only. Always verify product packaging.'}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowLegalModal(true);
+                    }}
+                    className="underline font-bold hover:text-rose-700 dark:hover:text-rose-200 cursor-pointer"
+                  >
+                    {language === 'zh-CN' ? '免责声明' : 'Disclaimer'}
+                  </button>
+                </p>
               </div>
             </div>
           )}
@@ -383,6 +398,13 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
         </div>
 
       </div>
+
+      {/* Legal Terms & Health Disclaimer Modal */}
+      <LegalTermsModal
+        isOpen={showLegalModal}
+        onClose={() => setShowLegalModal(false)}
+        initialTab="allergies"
+      />
     </div>
   );
 };

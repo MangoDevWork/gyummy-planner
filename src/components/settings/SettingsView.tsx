@@ -16,12 +16,15 @@ import {
   RefreshCw,
   AlertTriangle,
   Check,
-  ChevronRight
+  ChevronRight,
+  Scale,
+  ShieldAlert
 } from 'lucide-react';
 import { updateFamilyPinFromSettings, fetchFamilyCloudData } from '../../services/firebase';
 import { mergeAppData } from '../../services/mergeSyncService';
 import { MealScheduleSettingsModal } from './MealScheduleSettingsModal';
 import { PersonalisationModal } from '../personalisation/PersonalisationModal';
+import { LegalTermsModal } from '../common/LegalTermsModal';
 import { getAllergenById } from '../../services/personalisationService';
 import { compressImage } from '../../services/imageUtils';
 import { EasterEggModal } from '../common/EasterEggModal';
@@ -88,6 +91,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   // Easter Egg State
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [pendingProfileUpdate, setPendingProfileUpdate] = useState<UserProfile | null>(null);
+
+  // Legal Terms Modal State
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [legalInitialTab, setLegalInitialTab] = useState<'allergies' | 'recipes' | 'terms' | 'privacy'>('allergies');
 
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -594,6 +601,55 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       </SectionCard>
 
+      {/* ─── Legal & Disclaimers ─── */}
+      <SectionCard title={language === 'zh-CN' ? '法律条款与免责声明' : 'Legal & Disclaimers'}>
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => {
+              setLegalInitialTab('allergies');
+              setIsLegalModalOpen(true);
+            }}
+            className="flex w-full items-center justify-between rounded-xl border border-[#EDE8DF] bg-[#FAF8F5] p-3 text-left transition hover:border-[#FFD13B]/70 dark:border-[#3D362E] dark:bg-[#221E1A] cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5">
+              <ShieldAlert className="h-4 w-4 text-rose-500" />
+              <div>
+                <p className="text-[13px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB]">
+                  {language === 'zh-CN' ? '过敏与健康免责声明' : 'Allergen & Health Disclaimer'}
+                </p>
+                <p className="text-[11px] text-[#A89F95]">
+                  {language === 'zh-CN' ? '算法估算说明、非医疗建议及责任豁免' : 'Algorithmic estimations, not medical advice'}
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-[#A89F95]" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setLegalInitialTab('terms');
+              setIsLegalModalOpen(true);
+            }}
+            className="flex w-full items-center justify-between rounded-xl border border-[#EDE8DF] bg-[#FAF8F5] p-3 text-left transition hover:border-[#FFD13B]/70 dark:border-[#3D362E] dark:bg-[#221E1A] cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5">
+              <Scale className="h-4 w-4 text-[#FFD13B]" />
+              <div>
+                <p className="text-[13px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB]">
+                  {language === 'zh-CN' ? '服务条款与食品安全说明' : 'Terms of Service & Food Safety'}
+                </p>
+                <p className="text-[11px] text-[#A89F95]">
+                  {language === 'zh-CN' ? '澳大利亚法及国际适用条款、责任限制' : 'Australian & International terms, liability limits'}
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-[#A89F95]" />
+          </button>
+        </div>
+      </SectionCard>
+
       {/* ─── Account ─── */}
       <SectionCard title={language === 'zh-CN' ? '账号与退出' : 'Account'}>
         {onLogout && (
@@ -646,6 +702,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       />
 
       <EasterEggModal isOpen={showEasterEgg} onConfirm={handleEasterEggConfirm} />
+
+      <LegalTermsModal
+        isOpen={isLegalModalOpen}
+        onClose={() => setIsLegalModalOpen(false)}
+        initialTab={legalInitialTab}
+      />
     </div>
   );
 };
