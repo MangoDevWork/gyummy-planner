@@ -73,8 +73,8 @@ export const ALLERGEN_TAXONOMY: AllergenDefinition[] = [
     commonSourcesEn: 'Peanut butter, peanut flour, peanut oil, satay sauce, crushed peanuts',
     commonSourcesZh: '花生酱, 花生粉, 花生油, 沙爹酱, 熟花生碎',
     keywords: [
-      'peanut', 'peanuts', 'peanut butter', 'peanut oil', 'groundnut', 'arachis',
-      '花生', '花生酱', '花生油', '花生碎', '落花生', '沙爹'
+      'peanut', 'peanuts', 'peanut butter', 'peanut oil', 'peanut flour', 'satay', 'satay sauce', 'sate', 'groundnut', 'arachis',
+      '花生', '花生酱', '花生油', '花生碎', '落花生', '沙爹', '沙爹酱', '沙茶酱'
     ]
   },
   {
@@ -85,13 +85,13 @@ export const ALLERGEN_TAXONOMY: AllergenDefinition[] = [
     category: 'major',
     categoryEn: 'Major Allergen',
     categoryZh: '主要过敏原',
-    commonSourcesEn: 'Almonds, cashews, hazelnuts, walnuts, pecans, pistachios, pine nuts, macadamia',
-    commonSourcesZh: '杏仁, 腰果, 榛子, 核桃, 碧根果, 开心果, 松子, 夏威夷果, 坚果碎, 坚果酱',
+    commonSourcesEn: 'Almonds, cashews, hazelnuts, walnuts, pecans, pistachios, pine nuts, macadamia, pesto',
+    commonSourcesZh: '杏仁, 腰果, 榛子, 核桃, 碧根果, 开心果, 松子, 夏威夷果, 坚果碎, 坚果酱, 青酱',
     keywords: [
       'tree nut', 'tree nuts', 'nut', 'nuts', 'almond', 'almonds', 'cashew', 'cashews', 'hazelnut', 'hazelnuts',
       'walnut', 'walnuts', 'pecan', 'pecans', 'pistachio', 'pistachios', 'pine nut', 'pine nuts',
-      'macadamia', 'brazil nut', 'chestnut', 'chestnuts', 'praline', 'marzipan',
-      '坚果', '树坚果', '杏仁', '腰果', '核桃', '榛子', '开心果', '碧根果', '松子', '夏威夷果', '板栗', '栗子', '巴西坚果'
+      'macadamia', 'brazil nut', 'chestnut', 'chestnuts', 'praline', 'marzipan', 'pesto', 'nutella', 'frangipane',
+      '坚果', '树坚果', '杏仁', '腰果', '核桃', '榛子', '开心果', '碧根果', '松子', '夏威夷果', '板栗', '栗子', '巴西坚果', '青酱', '松子酱'
     ],
     negatives: ['nutmeg', 'water chestnut', 'coconut', '肉豆蔻', '马蹄', '荸荠', '椰子', '椰浆', 'peanut', '花生']
   },
@@ -103,12 +103,12 @@ export const ALLERGEN_TAXONOMY: AllergenDefinition[] = [
     category: 'major',
     categoryEn: 'Major Allergen',
     categoryZh: '主要过敏原',
-    commonSourcesEn: 'Shrimp, prawns, crab, lobster, crayfish, shrimp paste, shrimp powder',
-    commonSourcesZh: '虾, 鲜虾, 虾仁, 大虾, 螃蟹, 蟹肉, 龙虾, 小龙虾, 虾酱, 虾皮, 虾米',
+    commonSourcesEn: 'Shrimp, prawns, crab, lobster, crayfish, shrimp paste, shrimp powder, belacan, xo sauce',
+    commonSourcesZh: '虾, 鲜虾, 虾仁, 大虾, 螃蟹, 蟹肉, 龙虾, 小龙虾, 虾酱, 虾皮, 虾米, 马拉盏',
     keywords: [
       'shrimp', 'shrimps', 'prawn', 'prawns', 'crab', 'crabs', 'crab meat', 'lobster', 'crayfish',
-      'shrimp paste', 'dried shrimp', 'scampi',
-      '虾', '鲜虾', '虾仁', '大虾', '基围虾', '河虾', '海虾', '蟹', '螃蟹', '青蟹', '大闸蟹', '蟹肉', '龙虾', '小龙虾', '虾皮', '虾米', '虾酱', '甲壳'
+      'shrimp paste', 'dried shrimp', 'scampi', 'belacan', 'sambal belacan', 'xo sauce',
+      '虾', '鲜虾', '虾仁', '大虾', '基围虾', '河虾', '海虾', '蟹', '螃蟹', '青蟹', '大闸蟹', '蟹肉', '龙虾', '小龙虾', '虾皮', '虾米', '虾酱', '甲壳', 'XO酱', '马拉盏'
     ]
   },
   {
@@ -119,12 +119,12 @@ export const ALLERGEN_TAXONOMY: AllergenDefinition[] = [
     category: 'major',
     categoryEn: 'Major Allergen',
     categoryZh: '主要过敏原',
-    commonSourcesEn: 'Salmon, tuna, cod, halibut, seabass, fish sauce, dashi, anchovy, bonito flakes',
-    commonSourcesZh: '三文鱼, 鳕鱼, 金枪鱼, 鲈鱼, 鱼露, 鱼汤, 柴鱼高汤, 鳀鱼, 鲣鱼节',
+    commonSourcesEn: 'Salmon, tuna, cod, halibut, seabass, fish sauce, dashi, anchovy, bonito flakes, worcestershire sauce',
+    commonSourcesZh: '三文鱼, 鳕鱼, 金枪鱼, 鲈鱼, 鱼露, 鱼汤, 柴鱼高汤, 鳀鱼, 鲣鱼节, 辣酱油',
     keywords: [
       'fish', 'finned fish', 'salmon', 'tuna', 'cod', 'halibut', 'seabass', 'sea bass', 'tilapia', 'trout',
-      'snapper', 'mackerel', 'anchovy', 'anchovies', 'bonito', 'dashi', 'fish sauce', 'fish fillet', 'surimi',
-      '鱼', '鱼肉', '鱼片', '三文鱼', '金枪鱼', '鳕鱼', '鲈鱼', '罗非鱼', '比目鱼', '鲷鱼', '鲭鱼', '带鱼', '鳀鱼', '鱼露', '柴鱼', '木鱼花', '鱼丸'
+      'snapper', 'mackerel', 'anchovy', 'anchovies', 'bonito', 'dashi', 'fish sauce', 'fish fillet', 'surimi', 'worcestershire',
+      '鱼', '鱼肉', '鱼片', '三文鱼', '金枪鱼', '鳕鱼', '鲈鱼', '罗非鱼', '比目鱼', '鲷鱼', '鲭鱼', '带鱼', '鳀鱼', '鱼露', '柴鱼', '木鱼花', '鱼丸', '鱼糕'
     ]
   },
   {
@@ -135,12 +135,12 @@ export const ALLERGEN_TAXONOMY: AllergenDefinition[] = [
     category: 'major',
     categoryEn: 'Major Allergen',
     categoryZh: '主要过敏原',
-    commonSourcesEn: 'Flour, bread, pasta, noodles, semolina, seitan, soy sauce, panko breadcrumbs',
+    commonSourcesEn: 'Flour, bread, pasta, noodles, semolina, seitan, soy sauce, panko breadcrumbs, roux',
     commonSourcesZh: '面粉, 面包, 吐司, 意面, 面条, 饺子皮, 馄饨皮, 面筋, 面包糠, 含小麦酱油',
     keywords: [
       'wheat', 'gluten', 'flour', 'all-purpose flour', 'bread flour', 'cake flour', 'plain flour',
       'bread', 'toast', 'pasta', 'spaghetti', 'fettuccine', 'noodle', 'noodles', 'ramen', 'udon',
-      'semolina', 'seitan', 'breadcrumbs', 'panko', 'couscous', 'spelt',
+      'semolina', 'seitan', 'breadcrumbs', 'panko', 'couscous', 'spelt', 'roux',
       '小麦', '面粉', '中筋面粉', '高筋面粉', '低筋面粉', '生粉面粉', '面包', '吐司', '意大利面', '意面', '面条', '拉面', '乌冬面', '云吞面', '挂面', '面包糠', '面筋', '麸质'
     ],
     negatives: ['rice noodle', 'glass noodle', 'gluten free', 'gluten-free', '米粉', '粉丝', '河粉', '无麸质']
@@ -157,8 +157,8 @@ export const ALLERGEN_TAXONOMY: AllergenDefinition[] = [
     commonSourcesZh: '豆腐, 豆干, 豆皮, 毛豆, 豆浆, 生抽, 老抽, 酱油, 味噌, 豆瓣酱, 腐竹',
     keywords: [
       'soy', 'soya', 'soybean', 'soybeans', 'tofu', 'silken tofu', 'firm tofu', 'edamame',
-      'soy sauce', 'light soy sauce', 'dark soy sauce', 'miso', 'tempeh', 'doubanjiang', 'chili bean paste',
-      '大豆', '黄豆', '豆腐', '老豆腐', '嫩豆腐', '豆皮', '腐竹', '豆干', '毛豆', '豆浆', '酱油', '生抽', '老抽', '味噌', '豆瓣酱', '豆豉', '豆制品'
+      'soy sauce', 'light soy sauce', 'dark soy sauce', 'miso', 'tempeh', 'doubanjiang', 'chili bean paste', 'tamari', 'shoyu',
+      '大豆', '黄豆', '豆腐', '老豆腐', '嫩豆腐', '豆皮', '腐竹', '豆干', '毛豆', '豆浆', '酱油', '生抽', '老抽', '味噌', '豆瓣酱', '豆豉', '豆制品', '甜面酱'
     ]
   },
   {
@@ -172,7 +172,7 @@ export const ALLERGEN_TAXONOMY: AllergenDefinition[] = [
     commonSourcesEn: 'Sesame seeds, sesame oil, tahini, toasted sesame oil, hummus',
     commonSourcesZh: '白芝麻, 黑芝麻, 熟芝麻, 芝麻香油, 香油, 熟芝麻碎, 芝麻酱',
     keywords: [
-      'sesame', 'sesame seed', 'sesame seeds', 'sesame oil', 'toasted sesame oil', 'tahini', 'gomasio',
+      'sesame', 'sesame seed', 'sesame seeds', 'sesame oil', 'toasted sesame oil', 'tahini', 'gomasio', 'hummus', 'halva',
       '芝麻', '白芝麻', '黑芝麻', '熟芝麻', '芝麻油', '香油', '麻油', '芝麻酱'
     ]
   },
