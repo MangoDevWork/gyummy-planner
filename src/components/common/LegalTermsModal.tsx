@@ -177,7 +177,29 @@ export const LegalTermsModal: React.FC<LegalTermsModalProps> = ({
 
               <div>
                 <h4 className="font-bold text-[#1E1B2E] dark:text-[#F5F2EB] text-[13px] mb-1">
-                  {isZh ? '2. 责任限制与最高赔偿额' : '2. Limitation of Liability'}
+                  {isZh ? '2. 知识产权与商业版权保护' : '2. Intellectual Property & Commercial Proprietary Rights'}
+                </h4>
+                <p>
+                  {isZh
+                    ? 'Gyummy 的所有原创源代码、前端交互设计、算法（包括过敏原检测引擎、双语分词索引、排餐调度逻辑）、品牌名称、LOGO 及视觉资产均为开发者独家拥有的知识产权，受澳大利亚、美国及国际知识产权与版权法保护（Copyright © 2026 Gyummy. All rights reserved）。未经开发者明确书面授权，任何第三方不得对本软件进行反向工程、反编译、爬取、转售或用于构建竞争性商业服务。'
+                    : 'All original source code, user interfaces, proprietary algorithms (including allergen detection engines, cross-lingual indexing, and scheduling engines), branding, logos, and visual assets of Gyummy are the exclusive intellectual property of the developer and protected by Australian, US, and international copyright and intellectual property laws (Copyright © 2026 Gyummy. All rights reserved). Unauthorized copying, scraping, reverse engineering, or resale of the service is strictly prohibited.'}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-[#1E1B2E] dark:text-[#F5F2EB] text-[13px] mb-1">
+                  {isZh ? '3. 版权保护与 DMCA 避风港下架流程' : '3. Copyright Takedown Notice & DMCA Safe Harbor'}
+                </h4>
+                <p>
+                  {isZh
+                    ? 'Gyummy 严格尊重他人知识产权。若任何权利人认为应用中的任何菜谱、文字或图片涉嫌侵犯其合法版权，请发送通知至法定联络邮箱 gilbert.choy.official@gmail.com（包含侵权内容链接与权属证明），开发者将在核实后依据 DMCA 及法定避风港原则及时进行下架或修正处理。'
+                    : 'Gyummy respects intellectual property rights. If you believe any recipe, text, or image on the platform infringes upon your copyright, please submit a written takedown notice with proof of ownership to gilbert.choy.official@gmail.com. We will promptly investigate and remove or modify verified infringing content pursuant to applicable DMCA and statutory Safe Harbor provisions.'}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-[#1E1B2E] dark:text-[#F5F2EB] text-[13px] mb-1">
+                  {isZh ? '4. 责任限制与最高赔偿额' : '4. Limitation of Liability'}
                 </h4>
                 <p>
                   {isZh
@@ -188,7 +210,7 @@ export const LegalTermsModal: React.FC<LegalTermsModalProps> = ({
 
               <div>
                 <h4 className="font-bold text-[#1E1B2E] dark:text-[#F5F2EB] text-[13px] mb-1">
-                  {isZh ? '3. 适用法律与管辖权 (澳大利亚与国际规范)' : '3. Governing Law & Jurisdiction'}
+                  {isZh ? '5. 适用法律与管辖权 (澳大利亚与国际规范)' : '5. Governing Law & Jurisdiction'}
                 </h4>
                 <p>
                   {isZh
