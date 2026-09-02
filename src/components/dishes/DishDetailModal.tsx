@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { exportToZip } from '../../services/zipExportService';
 import { useLanguage } from '../../i18n/LanguageContext';
-import { getLocalizedDish } from '../../services/dataLocalizationService';
+import { getLocalizedDish, formatDisplayIngredientName } from '../../services/dataLocalizationService';
 import { checkDishAllergenRisk, getAllergenById } from '../../services/personalisationService';
 
 interface DishDetailModalProps {
@@ -296,7 +296,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
                             : 'text-[#4A3F35] dark:text-[#F0EDE8]'
                         }`}
                       >
-                        {ing.name}
+                        {formatDisplayIngredientName(ing.name)}
                       </span>
                     </div>
 

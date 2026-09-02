@@ -7,7 +7,7 @@ let isLoadingPromise: Promise<Dish[]> | null = null;
 
 const INDEXED_DB_NAME = 'GyummySystemDB';
 const INDEXED_DB_STORE = 'system_recipes';
-const INDEXED_DB_VERSION = 2;
+const INDEXED_DB_VERSION = 4;
 
 /**
  * Open IndexedDB for offline persistent storage of large system recipes
@@ -20,9 +20,10 @@ function openRecipeDatabase(): Promise<IDBDatabase> {
     const request = indexedDB.open(INDEXED_DB_NAME, INDEXED_DB_VERSION);
     request.onupgradeneeded = () => {
       const db = request.result;
-      if (!db.objectStoreNames.contains(INDEXED_DB_STORE)) {
-        db.createObjectStore(INDEXED_DB_STORE, { keyPath: 'id' });
+      if (db.objectStoreNames.contains(INDEXED_DB_STORE)) {
+        db.deleteObjectStore(INDEXED_DB_STORE);
       }
+      db.createObjectStore(INDEXED_DB_STORE, { keyPath: 'id' });
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);

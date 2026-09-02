@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import type { MasterIngredient } from '../../types';
 import { GROCERY_CATEGORIES } from '../../types';
-import { Search, Edit3, Plus, Trash2, CheckCircle2, Home } from 'lucide-react';
+import { Search, Edit3, Plus, Trash2, CheckCircle2, Home, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedMasterIngredient } from '../../services/dataLocalizationService';
 
@@ -20,7 +20,6 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
   onUpdatePantryIngredients
 }) => {
   const { language, formatCategory } = useLanguage();
-  // Default to showing stocked pantry items first per user request!
   const [viewScope, setViewScope] = useState<'pantry' | 'all'>('pantry');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -28,6 +27,9 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
   const [editableList, setEditableList] = useState<MasterIngredient[]>(ingredients);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [categoryLimits, setCategoryLimits] = useState<Record<string, number>>({});
+  const [visibleLimit, setVisibleLimit] = useState(60);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -54,24 +56,24 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
   };
 
   // Filter ingredients based on viewScope (pantry vs all)
-  const filtered = activeList.filter((item) => {
-    const loc = getLocalizedMasterIngredient(item, language);
-    const q = searchQuery.toLowerCase().trim();
-    const matchesSearch = !q || item.name.toLowerCase().includes(q) || loc.name.toLowerCase().includes(q);
-    const matchesCat = selectedCategory === 'All' || item.category === selectedCategory;
-    const isItemInPantry = pantryIngredients.some((p) => p.toLowerCase() === item.name.toLowerCase().trim() || p.toLowerCase() === loc.name.toLowerCase().trim());
-    
-    // When in 'pantry' viewScope, only show in-pantry items
-    if (viewScope === 'pantry' && !isItemInPantry) return false;
-
-    return matchesSearch && matchesCat;
-  });
+  const filtered = useMemo(() => {
+    return activeList.filter((item) => {
+      const loc = getLocalizedMasterIngredient(item, language);
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch = !q || item.name.toLowerCase().includes(q) || loc.name.toLowerCase().includes(q);
+      const matchesCat = selectedCategory === 'All' || item.category === selectedCategory;
+      const isItemInPantry = pantryIngredients.some((p) => p.toLowerCase() === item.name.toLowerCase().trim() || p.toLowerCase() === loc.name.toLowerCase().trim());
+      
+      if (viewScope === 'pantry' && !isItemInPantry) return false;
+      return matchesSearch && matchesCat;
+    });
+  }, [activeList, searchQuery, selectedCategory, viewScope, pantryIngredients, language]);
 
   // Group filtered items by category
-  const groupedItems = React.useMemo(() => {
+  const groupedItems = useMemo(() => {
     const map = new Map<string, MasterIngredient[]>();
     filtered.forEach((item) => {
-      const cat = item.category || 'Other';
+      const cat = item.category || 'Produce';
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat)!.push(item);
     });
@@ -81,27 +83,25 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
     }));
   }, [filtered]);
 
-  const [visibleLimit, setVisibleLimit] = useState(40);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
   // Reset pagination on search or category filter change
   React.useEffect(() => {
-    setVisibleLimit(40);
+    setVisibleLimit(60);
+    setCategoryLimits({});
   }, [searchQuery, selectedCategory, viewScope]);
 
-  // Infinite scrolling intersection observer
+  // Infinite scrolling observer
   React.useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setVisibleLimit((prev) => prev + 30);
+          setVisibleLimit((prev) => prev + 60);
         }
       },
-      { threshold: 0.1, rootMargin: '200px' }
+      { threshold: 0.1, rootMargin: '300px' }
     );
     if (loadMoreRef.current) observer.observe(loadMoreRef.current);
     return () => observer.disconnect();
-  }, [filtered.length]);
+  }, [filtered.length, selectedCategory]);
 
   const handleEnterEditMode = () => {
     setEditableList(JSON.parse(JSON.stringify(ingredients)));
@@ -117,7 +117,6 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
   };
 
   const handleSaveEdit = () => {
-    // Basic validation: check for duplicates and empty names
     const names = new Set<string>();
     for (const item of editableList) {
       const cleanName = item.name.trim();
@@ -164,6 +163,13 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
     setEditableList((prev) => prev.filter((i) => i.id !== id));
   };
 
+  const handleExpandCategory = (cat: string) => {
+    setCategoryLimits((prev) => ({
+      ...prev,
+      [cat]: (prev[cat] || 40) + 60
+    }));
+  };
+
   const stockedCount = pantryIngredients.length;
 
   return (
@@ -177,7 +183,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
           </div>
         )}
 
-        {/* View Scope Switcher: In My Pantry vs Browse All */}
+        {/* View Scope Switcher */}
         <div className="mb-3 flex rounded-full border border-[#EDE8DF] bg-white p-1 dark:border-[#3D362E] dark:bg-[#2A2520] shadow-2xs">
           <button
             type="button"
@@ -200,7 +206,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                 : 'text-[#786F66] hover:text-[#1E1B2E] dark:text-[#A39C90] dark:hover:text-[#F5F2EB]'
             }`}
           >
-            <span>{language === 'zh-CN' ? '5,000+ 食材库' : 'Browse Ingredients'}</span>
+            <span>{language === 'zh-CN' ? '3,500+ 食材库' : 'Browse Ingredients'}</span>
           </button>
         </div>
 
@@ -213,7 +219,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
               placeholder={
                 viewScope === 'pantry'
                   ? (language === 'zh-CN' ? '在已有库存中搜索...' : 'Search your in-stock pantry...')
-                  : (language === 'zh-CN' ? '搜索 5,000+ 种食材...' : 'Search all ingredients...')
+                  : (language === 'zh-CN' ? '搜索 3,500+ 种食材...' : 'Search all ingredients...')
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -298,16 +304,35 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
         )}
 
         {/* Ingredients List */}
-        <div className="space-y-4">
+        <div className="space-y-5">
           {groupedItems.map(({ category, items }) => {
-            const displayItems = items.slice(0, visibleLimit);
+            const isSpecificCategory = selectedCategory !== 'All';
+            const catLimit = isSpecificCategory
+              ? visibleLimit
+              : (categoryLimits[category] || 35);
+
+            const displayItems = items.slice(0, catLimit);
+            const hasMoreInCategory = items.length > displayItems.length;
+
             if (displayItems.length === 0) return null;
 
             return (
               <section key={category} className="space-y-1.5">
-                <h3 className="px-1 text-[11px] font-semibold uppercase tracking-widest text-[#A89F95]">
-                  {formatCategory(category)} ({items.length})
-                </h3>
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-widest text-[#A89F95]">
+                    {formatCategory(category)} ({items.length})
+                  </h3>
+                  {!isSpecificCategory && hasMoreInCategory && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategory(category)}
+                      className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#7A5C00] dark:text-[#FFD13B] hover:underline cursor-pointer"
+                    >
+                      <span>{language === 'zh-CN' ? `查看全部 (${items.length})` : `View All (${items.length})`}</span>
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
 
                 <div className="divide-y divide-[#EDE8DF] rounded-2xl border border-[#EDE8DF] bg-white dark:divide-[#3D362E] dark:border-[#3D362E] dark:bg-[#2A2520] shadow-2xs overflow-hidden">
                   {displayItems.map((item) => {
@@ -359,7 +384,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                             : 'hover:bg-[#FAF8F5] dark:hover:bg-[#221E1A]'
                         }`}
                       >
-                        <div className="min-w-0 flex-1">
+                        <div className="min-w-0 flex-1 pr-2">
                           <p className={`text-[13px] font-semibold truncate ${
                             isInPantry
                               ? 'text-[#2D6A4A] dark:text-[#5ECB8D] font-bold'
@@ -372,9 +397,8 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                           </p>
                         </div>
 
-                        {/* In-Pantry Toggle Indicator Button */}
                         <span
-                          className={`flex h-7 w-7 items-center justify-center rounded-lg transition-transform active:scale-90 ${
+                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-transform active:scale-90 ${
                             isInPantry
                               ? 'bg-[#2D6A4A] text-white shadow-2xs'
                               : 'bg-[#FAF8F5] text-[#A89F95] border border-[#EDE8DF] dark:bg-[#221E1A] dark:border-[#3D362E]'
@@ -387,6 +411,19 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
                     );
                   })}
                 </div>
+
+                {!isSpecificCategory && hasMoreInCategory && (
+                  <div className="pt-1 text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleExpandCategory(category)}
+                      className="inline-flex items-center gap-1 rounded-full border border-[#EDE8DF] bg-white px-3.5 py-1 text-xs font-bold text-[#786F66] hover:bg-[#FAF8F5] dark:border-[#3D362E] dark:bg-[#2A2520] dark:text-[#A39C90] cursor-pointer shadow-2xs"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>{language === 'zh-CN' ? `展开更多 ${formatCategory(category)} (${items.length - displayItems.length} 余)` : `Load More ${formatCategory(category)} (+${items.length - displayItems.length})`}</span>
+                    </button>
+                  </div>
+                )}
               </section>
             );
           })}
@@ -427,10 +464,10 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({
             </div>
           )}
 
-          {/* Sentinel element for infinite scroll */}
-          {filtered.length > visibleLimit && (
-            <div ref={loadMoreRef} className="py-4 text-center text-xs text-[#786F66]">
-              Loading more ingredients...
+          {/* Sentinel element for infinite scroll in specific category view */}
+          {selectedCategory !== 'All' && filtered.length > visibleLimit && (
+            <div ref={loadMoreRef} className="py-4 text-center text-xs font-medium text-[#A89F95]">
+              {language === 'zh-CN' ? '正在加载更多食材...' : 'Loading more ingredients...'}
             </div>
           )}
         </div>

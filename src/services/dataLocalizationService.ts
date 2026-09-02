@@ -592,3 +592,25 @@ export function searchMatchesLocalizedDish(
   // Every token must match somewhere in the dish
   return rawTokens.every((token) => fullSearchString.includes(token));
 }
+
+/**
+ * Format and sanitize ingredient name for clean UI presentation
+ */
+export function formatDisplayIngredientName(rawName: string): string {
+  if (!rawName || typeof rawName !== 'string') return '';
+  let s = rawName.trim();
+  s = s.replace(/^[–—\-\*\•\d\.\/\s½⅓¼¾⅔⅛+]+/g, '');
+  if (/^emongrass/i.test(s)) s = s.replace(/^emongrass/i, 'Lemongrass');
+  if (/^arlic/i.test(s)) s = s.replace(/^arlic/i, 'Garlic');
+  if (/^amb shank/i.test(s)) s = s.replace(/^amb shank/i, 'Lamb Shank');
+  if (/^amb\s+/i.test(s)) s = s.replace(/^amb\s+/i, 'Lamb ');
+  s = s.replace(/\(\([^)]*\)\)/g, '');
+  s = s.replace(/\([^)]*\)/g, '');
+  s = s.replace(/,\s*(minced|chopped|diced|sliced|finely chopped|grated|peeled|drained|rinsed|shredded|crushed|to taste|optional|divided|at room temperature|melted|softened|beaten|for serving|to garnish|cut into.*|skinless.*|boneless.*|tenderised.*|for tenderising.*).*$/i, '');
+  s = s.replace(/^[\s,\-\.\/:\'"“”*#–—]+|[\s,\-\.\/:\'"“”*#–—]+$/g, '').trim();
+  if (s.length > 0 && !/[\u4e00-\u9fa5]/.test(s.charAt(0))) {
+    s = s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  return s || rawName;
+}
+
