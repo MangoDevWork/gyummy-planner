@@ -111,6 +111,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
   currentProfile,
   familyMembers = [],
   memberProfiles,
+  familyPersonalisation,
   dishes,
   masterIngredients,
   onSaveDish,
@@ -133,7 +134,18 @@ export const DishesView: React.FC<DishesViewProps> = ({
   const [selectedCuisine, setSelectedCuisine] = useState<string>('All Cuisines');
   const [selectedQuickFilter, setSelectedQuickFilter] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'timesPlanned' | 'prepTime' | 'name'>('timesPlanned');
-  const [safeOnly, setSafeOnly] = useState(false);
+  
+  // Auto-flag "Safe for family" if Family Safety Mode (strictAllergyFilter) is active
+  const [safeOnly, setSafeOnly] = useState<boolean>(() => {
+    return familyPersonalisation?.strictAllergyFilter !== false;
+  });
+
+  useEffect(() => {
+    if (familyPersonalisation?.strictAllergyFilter !== undefined) {
+      setSafeOnly(familyPersonalisation.strictAllergyFilter);
+    }
+  }, [familyPersonalisation?.strictAllergyFilter]);
+
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
   const [systemRecipes, setSystemRecipes] = useState<Dish[]>([]);
@@ -202,8 +214,8 @@ export const DishesView: React.FC<DishesViewProps> = ({
         }
       }
 
-      if (safeOnly && memberProfiles) {
-        const risk = checkDishAllergenRisk(dish, memberProfiles, familyMembers);
+      if (safeOnly) {
+        const risk = checkDishAllergenRisk(dish, memberProfiles, familyMembers, familyPersonalisation);
         if (risk.hasRisk) return false;
       }
 
@@ -471,7 +483,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
                     
                     {/* Allergen warning tag on Family Cookbook card */}
                     {(() => {
-                      const risk = memberProfiles ? checkDishAllergenRisk(recipe, memberProfiles, familyMembers) : { hasRisk: false, affectedMembers: [] };
+                      const risk = checkDishAllergenRisk(recipe, memberProfiles, familyMembers, familyPersonalisation);
                       if (!risk.hasRisk || !risk.affectedMembers || risk.affectedMembers.length === 0) return null;
                       return (
                         <div className="mt-1">
@@ -500,7 +512,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
           {displayedDishes.map((recipe) => {
             const loc = getLocalizedDish(recipe, language);
             const isInCookbook = recipe.isFamilyRecipe !== false;
-            const risk = memberProfiles ? checkDishAllergenRisk(recipe, memberProfiles, familyMembers) : { hasRisk: false, affectedMembers: [] };
+            const risk = checkDishAllergenRisk(recipe, memberProfiles, familyMembers, familyPersonalisation);
 
             return (
               <div
@@ -614,6 +626,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
         currentProfile={currentProfile}
         familyMembers={familyMembers}
         memberProfiles={memberProfiles}
+        familyPersonalisation={familyPersonalisation}
         onClose={() => setSelectedDish(null)}
         onEdit={(d) => {
           setSelectedDish(null);

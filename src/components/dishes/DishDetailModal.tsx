@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Dish, UserProfile, MemberPreferences } from '../../types';
+import type { Dish, UserProfile, MemberPreferences, FamilyPersonalisation } from '../../types';
 import {
   ArrowLeft,
   Clock,
@@ -26,6 +26,7 @@ interface DishDetailModalProps {
   currentProfile: UserProfile | null;
   familyMembers?: string[];
   memberProfiles?: Record<string, MemberPreferences>;
+  familyPersonalisation?: FamilyPersonalisation;
   onClose: () => void;
   onEdit: (dish: Dish) => void;
   onDelete: (dishId: string) => void;
@@ -46,6 +47,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
   currentProfile,
   familyMembers = [],
   memberProfiles,
+  familyPersonalisation,
   onClose,
   onEdit,
   onDelete,
@@ -96,7 +98,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
 
   // Allergen risk detection for family members
   const allergenRisk = memberProfiles
-    ? checkDishAllergenRisk(dish, memberProfiles, familyMembers)
+    ? checkDishAllergenRisk(dish, memberProfiles, familyMembers, familyPersonalisation)
     : { hasRisk: false, dishAllergens: [], affectedMembers: [] };
 
   const instructionSteps = typeof localized.instructions === 'string'

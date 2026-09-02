@@ -481,7 +481,8 @@ export function getFamilyAllergens(
 export function checkDishAllergenRisk(
   dish: Dish,
   memberProfiles?: Record<string, MemberPreferences>,
-  familyMembers: string[] = []
+  familyMembers: string[] = [],
+  familyPersonalisation?: FamilyPersonalisation
 ): {
   hasRisk: boolean;
   dishAllergens: string[];
@@ -489,21 +490,31 @@ export function checkDishAllergenRisk(
 } {
   const dishAllergens = detectDishAllergens(dish);
   const membersToCheck = familyMembers.length > 0 ? familyMembers : Object.keys(memberProfiles || {});
-  if (dishAllergens.length === 0 || !memberProfiles || membersToCheck.length === 0) {
+  
+  if (dishAllergens.length === 0) {
     return { hasRisk: false, dishAllergens, affectedMembers: [] };
   }
 
   const affectedMembers: { memberName: string; allergens: string[] }[] = [];
 
-  membersToCheck.forEach((member) => {
-    const prefs = memberProfiles[member];
-    if (prefs?.allergies && prefs.allergies.length > 0) {
-      const triggered = prefs.allergies.filter((alg) => dishAllergens.includes(alg));
-      if (triggered.length > 0) {
-        affectedMembers.push({ memberName: member, allergens: triggered });
+  if (memberProfiles && membersToCheck.length > 0) {
+    membersToCheck.forEach((member) => {
+      const prefs = memberProfiles[member];
+      if (prefs?.allergies && prefs.allergies.length > 0) {
+        const triggered = prefs.allergies.filter((alg) => dishAllergens.includes(alg));
+        if (triggered.length > 0) {
+          affectedMembers.push({ memberName: member, allergens: triggered });
+        }
       }
+    });
+  }
+
+  if (familyPersonalisation?.householdAllergies && familyPersonalisation.householdAllergies.length > 0) {
+    const triggeredHousehold = familyPersonalisation.householdAllergies.filter((alg) => dishAllergens.includes(alg));
+    if (triggeredHousehold.length > 0) {
+      affectedMembers.push({ memberName: 'Family Rule', allergens: triggeredHousehold });
     }
-  });
+  }
 
   return {
     hasRisk: affectedMembers.length > 0,
