@@ -508,6 +508,20 @@ export function AuthModal({
               </form>
             )}
           </div>
+
+          {/* Permanent Legal & Disclaimers Footer */}
+          <div className="px-4 py-2.5 bg-[#FAF7F2] dark:bg-[#1E1B18] border-t border-[#EDE8DF] dark:border-[#38332E] text-center shrink-0">
+            <p className="text-[10px] text-[#7A6E64] dark:text-[#9A9088]">
+              By continuing, you agree to our{' '}
+              <button
+                type="button"
+                onClick={() => setShowLegalModal(true)}
+                className="font-bold underline text-[#2D2640] dark:text-[#FFD13B] hover:text-amber-600 cursor-pointer"
+              >
+                Terms of Service & Health Disclaimer
+              </button>
+            </p>
+          </div>
         </div>
       </div>
 

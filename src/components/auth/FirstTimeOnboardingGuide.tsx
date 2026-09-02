@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowRight, Sparkles, ShoppingCart, Check } from 'lucide-react';
 import { MealScheduleSettingsModal } from '../settings/MealScheduleSettingsModal';
 import { PersonalisationModal } from '../personalisation/PersonalisationModal';
+import { LegalTermsModal } from '../common/LegalTermsModal';
 import type { MealScheduleConfig, MemberPreferences, FamilyPersonalisation } from '../../types';
 
 interface FirstTimeOnboardingGuideProps {
@@ -37,6 +38,7 @@ export const FirstTimeOnboardingGuide: React.FC<FirstTimeOnboardingGuideProps> =
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [isPersonalisationModalOpen, setIsPersonalisationModalOpen] = useState(true);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
 
   if (!isOpen) return null;
 
@@ -215,9 +217,27 @@ export const FirstTimeOnboardingGuide: React.FC<FirstTimeOnboardingGuideProps> =
               <span>Get Started 🚀</span>
               <ArrowRight className="w-4 h-4" />
             </button>
+
+            <p className="text-[10.5px] text-[#9A8A7E] dark:text-[#7A6E64] pt-1">
+              By using Gyummy, you agree to our{' '}
+              <button
+                type="button"
+                onClick={() => setShowLegalModal(true)}
+                className="underline font-bold text-[#2D2640] dark:text-[#FFD13B] hover:text-amber-600 cursor-pointer"
+              >
+                Terms of Service & Health Disclaimer
+              </button>
+            </p>
           </div>
         </div>
       )}
+
+      {/* Legal Terms & Health Disclaimer Modal */}
+      <LegalTermsModal
+        isOpen={showLegalModal}
+        onClose={() => setShowLegalModal(false)}
+        initialTab="allergies"
+      />
     </>
   );
 };
