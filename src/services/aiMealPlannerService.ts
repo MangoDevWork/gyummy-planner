@@ -101,6 +101,7 @@ export interface HeadcountRecommendation {
   descriptionZh: string;
   rolesSummaryEn: string;
   rolesSummaryZh: string;
+  rolesToFill: Array<'main_protein' | 'vegetable_side' | 'soup'>;
 }
 
 export function getHeadcountRecommendation(dinersCount: number): HeadcountRecommendation {
@@ -110,7 +111,8 @@ export function getHeadcountRecommendation(dinersCount: number): HeadcountRecomm
       descriptionEn: '1 Fast Meal (One-Pot or Quick Main)',
       descriptionZh: '1道便当快手菜 (一锅搞定)',
       rolesSummaryEn: '1 One-Pot / Main',
-      rolesSummaryZh: '1道快手主菜/焖饭'
+      rolesSummaryZh: '1道快手主菜/焖饭',
+      rolesToFill: ['main_protein']
     };
   } else if (dinersCount === 2) {
     return {
@@ -118,15 +120,17 @@ export function getHeadcountRecommendation(dinersCount: number): HeadcountRecomm
       descriptionEn: '2 Dishes: 1 Main Protein + 1 Vegetable Side',
       descriptionZh: '两菜搭配: 1主荤 + 1时蔬',
       rolesSummaryEn: '1 Main + 1 Veg Side',
-      rolesSummaryZh: '1大荤 + 1时蔬'
+      rolesSummaryZh: '1大荤 + 1时蔬',
+      rolesToFill: ['main_protein', 'vegetable_side']
     };
   } else if (dinersCount <= 4) {
     return {
       targetDishesCount: 3,
-      descriptionEn: '3 Dishes: 2 Mains + 1 Veg Side (or Soup)',
+      descriptionEn: '3 Dishes: 2 Mains + 1 Veg Side',
       descriptionZh: '三菜搭配: 2大荤/主菜 + 1时蔬',
       rolesSummaryEn: '2 Mains + 1 Veg Side',
-      rolesSummaryZh: '2大荤 + 1时蔬'
+      rolesSummaryZh: '2大荤 + 1时蔬',
+      rolesToFill: ['main_protein', 'vegetable_side', 'main_protein']
     };
   } else if (dinersCount <= 6) {
     return {
@@ -134,15 +138,26 @@ export function getHeadcountRecommendation(dinersCount: number): HeadcountRecomm
       descriptionEn: '4 Dishes: 2 Mains + 1 Veg + 1 Soup',
       descriptionZh: '四菜一汤: 2大荤 + 1时蔬 + 1靓汤',
       rolesSummaryEn: '2 Mains + 1 Veg + 1 Soup',
-      rolesSummaryZh: '2大荤 + 1时蔬 + 1靓汤'
+      rolesSummaryZh: '2大荤 + 1时蔬 + 1靓汤',
+      rolesToFill: ['main_protein', 'vegetable_side', 'main_protein', 'soup']
+    };
+  } else if (dinersCount <= 8) {
+    return {
+      targetDishesCount: 5,
+      descriptionEn: '5 Dishes: 3 Mains + 2 Veg (or Soup)',
+      descriptionZh: '五菜搭配: 3大荤 + 2时蔬 (含靓汤)',
+      rolesSummaryEn: '3 Mains + 2 Veg',
+      rolesSummaryZh: '3大荤 + 2时蔬',
+      rolesToFill: ['main_protein', 'vegetable_side', 'main_protein', 'vegetable_side', 'soup']
     };
   } else {
     return {
-      targetDishesCount: 5,
-      descriptionEn: '5 Dishes: 3 Mains + 2 Veg + 1 Soup',
-      descriptionZh: '五菜大宴: 3大荤 + 2时蔬 + 1靓汤',
-      rolesSummaryEn: '3 Mains + 2 Veg',
-      rolesSummaryZh: '3大荤 + 2时蔬'
+      targetDishesCount: 6,
+      descriptionEn: '6 Dishes: 3 Mains + 2 Veg + 1 Soup',
+      descriptionZh: '六菜一汤: 3大荤 + 2时蔬 + 1靓汤',
+      rolesSummaryEn: '3 Mains + 2 Veg + 1 Soup',
+      rolesSummaryZh: '3大荤 + 2时蔬 + 1靓汤',
+      rolesToFill: ['main_protein', 'vegetable_side', 'main_protein', 'vegetable_side', 'main_protein', 'soup']
     };
   }
 }
@@ -373,26 +388,39 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
     return score;
   };
 
-  // Helper to pick a candidate from a pool
+  // Helper to pick a candidate from a pool with automatic library fallback
   const pickFromPool = (
     pool: Dish[],
+    fallbackPool: Dish[],
     avoidIds: Set<string>,
     avoidProtein?: ProteinType,
     isWeekend: boolean = false
   ): Dish | null => {
-    const available = pool.filter((d) => !avoidIds.has(d.id));
-    if (available.length === 0) return null;
+    // 1. Try pool without chosen IDs
+    let available = pool.filter((d) => !avoidIds.has(d.id));
+
+    // 2. Fallback to system library if pool is exhausted
+    if (available.length === 0 && fallbackPool && fallbackPool.length > 0) {
+      available = fallbackPool.filter((d) => !avoidIds.has(d.id));
+    }
+
+    // 3. If unchosen is exhausted, relax avoidIds so dinner table is NEVER starved
+    if (available.length === 0) {
+      available = fallbackPool.length > 0 ? fallbackPool : pool;
+    }
+
+    if (!available || available.length === 0) return null;
 
     const scored = available.map((d) => {
       let sc = scoreDish(d, isWeekend);
       const prot = getPrimaryProteinCategory(d);
-      if (avoidProtein && prot === avoidProtein) sc -= 50;
+      if (avoidProtein && prot === avoidProtein) sc -= 60;
       return { dish: d, score: sc };
     });
 
     scored.sort((a, b) => b.score - a.score);
     const top = scored.slice(0, Math.min(3, scored.length));
-    const chosen = top[Math.floor(Math.random() * top.length)];
+    const chosen = top[Math.floor(Math.random() * top.length)] || scored[0];
     return chosen ? chosen.dish : null;
   };
 
@@ -459,51 +487,38 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
     previousProtein = selectedPrimary.protein;
 
     // STEP B: Multi-Dish Dinner Composition based on dinersCount
+    const headcountPlan = getHeadcountRecommendation(dinersCount);
     const dayDishes: Dish[] = [primaryDish];
-    const isOnePot = primaryDish.dishRole === 'one_pot_meal';
+    const tableProteins = new Set<ProteinType>([selectedPrimary.protein]);
 
-    if (isOnePot) {
-      // One-Pot Meal:
-      // If 1-2 diners: 1 dish is plenty.
-      // If 3+ diners: Add 1 vegetable side or soup to balance nutrition and appetite.
-      if (dinersCount >= 3) {
-        const vegPool = mode === 'easy_meals' && cbVegSides.length > 0 ? cbVegSides : safeVegSides;
-        const vegSide = pickFromPool(vegPool, chosenDishIds, undefined, isWeekend);
-        if (vegSide) {
-          dayDishes.push(vegSide);
-          chosenDishIds.add(vegSide.id);
-        }
-      }
-    } else {
-      // Component Meal (starts with main protein):
-      // 1. Add Vegetable Side (Dish 2 for 2+ diners)
-      if (dinersCount >= 2) {
-        const vegPool = mode === 'easy_meals' && cbVegSides.length > 0 ? cbVegSides : safeVegSides;
-        const vegSide = pickFromPool(vegPool, chosenDishIds, undefined, isWeekend);
-        if (vegSide) {
-          dayDishes.push(vegSide);
-          chosenDishIds.add(vegSide.id);
-        }
+    // Fulfill all companion dish roles required for this headcount
+    const remainingRoles = headcountPlan.rolesToFill.slice(1);
+
+    for (const role of remainingRoles) {
+      let pool: Dish[] = [];
+      let fallbackPool: Dish[] = [];
+
+      if (role === 'vegetable_side') {
+        pool = mode === 'easy_meals' && cbVegSides.length > 0 ? cbVegSides : safeVegSides;
+        fallbackPool = safeVegSides;
+      } else if (role === 'soup') {
+        pool = mode === 'easy_meals' && cbSoups.length > 0 ? cbSoups : safeSoups;
+        fallbackPool = safeSoups.length > 0 ? safeSoups : safeVegSides;
+      } else {
+        // main_protein
+        pool = mode === 'easy_meals' && cbMains.length > 0 ? cbMains : safeMains;
+        fallbackPool = safeMains;
       }
 
-      // 2. Add Second Main or Soup (Dish 3 for 3+ diners)
-      if (dinersCount >= 3) {
-        // If 4+ diners, bias towards 2nd protein; if 3 diners, pick 2nd protein or soup
-        const mainPool = mode === 'easy_meals' && cbMains.length > 2 ? cbMains : safeMains;
-        const secondaryMain = pickFromPool(mainPool, chosenDishIds, selectedPrimary.protein, isWeekend);
-        if (secondaryMain) {
-          dayDishes.push(secondaryMain);
-          chosenDishIds.add(secondaryMain.id);
-        }
-      }
+      // Avoid picking a protein already on the table
+      const avoidProtein = role === 'main_protein' ? Array.from(tableProteins)[0] : undefined;
+      const companionDish = pickFromPool(pool, fallbackPool, chosenDishIds, avoidProtein, isWeekend);
 
-      // 3. Add Soup or 2nd Veg Side (Dish 4 for 5+ diners)
-      if (dinersCount >= 5) {
-        const soupPool = mode === 'easy_meals' && cbSoups.length > 0 ? cbSoups : safeSoups;
-        const soup = pickFromPool(soupPool, chosenDishIds, undefined, isWeekend);
-        if (soup) {
-          dayDishes.push(soup);
-          chosenDishIds.add(soup.id);
+      if (companionDish) {
+        dayDishes.push(companionDish);
+        chosenDishIds.add(companionDish.id);
+        if (role === 'main_protein') {
+          tableProteins.add(getPrimaryProteinCategory(companionDish));
         }
       }
     }
@@ -534,10 +549,12 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
 
     // Dynamic combo structure description
     let comboStructure = `${dayDishes.length} Dishes`;
-    if (dayDishes.length === 1) comboStructure = '1-Dish Feast (One-Pot)';
+    if (dayDishes.length === 1) comboStructure = '1 Fast Meal (One-Pot)';
     else if (dayDishes.length === 2) comboStructure = '2 Dishes: 1 Main + 1 Veg';
     else if (dayDishes.length === 3) comboStructure = '3 Dishes: 2 Mains + 1 Veg';
-    else if (dayDishes.length >= 4) comboStructure = '4 Dishes: 2 Mains + 1 Veg + 1 Soup';
+    else if (dayDishes.length === 4) comboStructure = '4 Dishes: 2 Mains + 1 Veg + 1 Soup';
+    else if (dayDishes.length === 5) comboStructure = '5 Dishes: 3 Mains + 2 Veg / Soup';
+    else comboStructure = `${dayDishes.length} Dishes Family Feast`;
 
     // Reason Tag
     let reasonTag = '✨ Chef Discovery';
