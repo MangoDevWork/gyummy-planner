@@ -22,6 +22,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import {
   generateOfflineAiMealPlan,
   swapSingleMealDish,
+  swapWholeMealForDay,
   getHeadcountRecommendation,
   ACCOMPANIMENT_OPTIONS,
   type AiPlannerMode,
@@ -77,6 +78,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   const [planResult, setPlanResult] = useState<AiMealPlanResult | null>(null);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [swappingDishId, setSwappingDishId] = useState<string | null>(null);
+  const [swappingDate, setSwappingDate] = useState<string | null>(null);
   const [editingStapleDate, setEditingStapleDate] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -168,6 +170,46 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
         });
       }
       setSwappingDishId(null);
+    }, 120);
+  };
+
+  // Swap the entire dinner combination for a single day
+  const handleSwapWholeMeal = (meal: PlannedDayMeal) => {
+    if (!planResult) return;
+    setSwappingDate(meal.dateISO);
+
+    setTimeout(() => {
+      const updated = swapWholeMealForDay(
+        meal,
+        planResult.suggestions,
+        {
+          mode,
+          focus,
+          dinersCount,
+          durationDays,
+          startDateISO,
+          includedDays,
+          defaultStaple,
+          familyCookbookDishes,
+          allSystemDishes,
+          memberProfiles,
+          familyPersonalisation,
+          familyMembers,
+          recentMealPlan
+        }
+      );
+
+      if (updated) {
+        const nextSuggestions = planResult.suggestions.map((s) =>
+          s.dateISO === meal.dateISO ? updated : s
+        );
+
+        setPlanResult({
+          ...planResult,
+          suggestions: nextSuggestions
+        });
+      }
+      setSwappingDate(null);
     }, 120);
   };
 
@@ -622,11 +664,13 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                   return (
                     <div
                       key={meal.dateISO}
-                      className="rounded-2xl border border-[#EDE8DF] bg-white p-3.5 shadow-xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2.5"
+                      className={`rounded-2xl border border-[#EDE8DF] bg-white p-3.5 shadow-xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2.5 transition-all ${
+                        swappingDate === meal.dateISO ? 'opacity-40 scale-[0.98]' : ''
+                      }`}
                     >
                       {/* Day Header Row */}
-                      <div className="flex items-center justify-between border-b border-[#EDE8DF] pb-2 dark:border-[#38332E]">
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-between border-b border-[#EDE8DF] pb-2 dark:border-[#38332E] gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-black text-[#2D2640] dark:text-[#F0EDE8]">
                             {meal.dayName}
                           </span>
@@ -638,8 +682,22 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                           </span>
                         </div>
 
-                        <div className="text-[10px] text-[#8A7A70] dark:text-[#9A8A7E] font-bold">
-                          🔥 {meal.perPersonCalories} kcal/人
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="text-[10px] text-[#8A7A70] dark:text-[#9A8A7E] font-bold">
+                            🔥 {meal.perPersonCalories} {language === 'zh-CN' ? 'kcal / 人' : 'kcal / person'}
+                          </div>
+
+                          {/* Swap Whole Meal Button */}
+                          <button
+                            type="button"
+                            disabled={swappingDate === meal.dateISO || swappingDishId !== null}
+                            onClick={() => handleSwapWholeMeal(meal)}
+                            className="flex items-center gap-1 py-1 px-2.5 rounded-xl border border-[#EDE8DF] bg-[#FAF7F2] text-[10.5px] font-bold text-[#2D2640] hover:bg-[#FFD13B] hover:border-[#2D2640]/10 dark:border-[#38332E] dark:bg-[#1E1B18] dark:text-[#F0EDE8] transition cursor-pointer shrink-0"
+                            title={language === 'zh-CN' ? '重新生成当天的整套搭配' : 'Regenerate entire dinner combination for this day'}
+                          >
+                            <RotateCw className={`h-3 w-3 ${swappingDate === meal.dateISO ? 'animate-spin' : ''}`} />
+                            <span>{language === 'zh-CN' ? '换整餐' : 'Swap Meal'}</span>
+                          </button>
                         </div>
                       </div>
 

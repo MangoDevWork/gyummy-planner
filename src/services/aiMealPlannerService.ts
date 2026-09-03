@@ -691,3 +691,48 @@ export function swapSingleMealDish(
 }
 
 export const swapSingleMealSuggestion = swapSingleMealDish;
+
+/**
+ * Swap the entire dinner combination for a day (all dishes + staple accompaniment)
+ */
+export function swapWholeMealForDay(
+  existingMeal: PlannedDayMeal,
+  allSuggestions: PlannedDayMeal[],
+  options: AiPlannerOptions
+): PlannedDayMeal | null {
+  // Exclude dishes on other days from being re-selected
+  const otherDayDishIds = new Set(
+    allSuggestions
+      .filter((s) => s.dateISO !== existingMeal.dateISO)
+      .flatMap((s) => s.dishes.map((d) => d.id))
+  );
+
+  // Also temporarily avoid the dishes currently in this meal to ensure a completely fresh combo
+  existingMeal.dishes.forEach((d) => otherDayDishIds.add(d.id));
+
+  const singleDayResult = generateOfflineAiMealPlan({
+    ...options,
+    durationDays: 1,
+    startDateISO: existingMeal.dateISO,
+    includedDays: [existingMeal.dayOfWeek],
+    recentMealPlan: {
+      ...options.recentMealPlan,
+      _swapAvoidance: {
+        slot_dinner: {
+          dishIds: Array.from(otherDayDishIds)
+        }
+      }
+    }
+  });
+
+  if (singleDayResult.suggestions.length === 0) return null;
+
+  const newMeal = singleDayResult.suggestions[0];
+  return {
+    ...newMeal,
+    dateISO: existingMeal.dateISO,
+    dayOfWeek: existingMeal.dayOfWeek,
+    dayName: existingMeal.dayName,
+    reasonTag: '🔄 Swapped Meal'
+  };
+}
