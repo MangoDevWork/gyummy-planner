@@ -10,8 +10,7 @@ import {
   Home,
   Sparkles,
   Calendar,
-  Trash2,
-  Store
+  Trash2
 } from 'lucide-react';
 import { copyGroceryListAsMessage } from '../../services/zipExportService';
 import { matchPantryIngredient } from '../../services/pantryMatching';
@@ -402,18 +401,6 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
               <MessageSquareShare className="h-4 w-4" />
             </button>
           </div>
-
-          {totalCount > 0 && (
-            <button
-              type="button"
-              onClick={() => setIsSupermarketModalOpen(true)}
-              className="w-full mt-2.5 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00703C] to-[#E01A22] text-white py-2.5 text-xs font-black shadow-xs hover:opacity-95 active:scale-[0.98] transition cursor-pointer"
-            >
-              <Store className="h-4 w-4" />
-              <span>🍏 Woolworths & Coles ❤️</span>
-              <span>{language === 'zh-CN' ? '直通澳洲超市采购 (已排除储藏室)' : 'Send to Supermarket (Auto-Exclude Pantry)'}</span>
-            </button>
-          )}
         </div>
 
         {/* Progress Bar */}
