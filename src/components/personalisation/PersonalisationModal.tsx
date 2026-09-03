@@ -55,6 +55,25 @@ const DIETARY_OPTIONS: { id: DietaryPreference; label: string; labelZh: string }
   { id: 'Low-Carb', label: 'Low-Carb / Keto', labelZh: '低碳 / 生酮' }
 ];
 
+export const COMMON_DISLIKED_INGREDIENTS = [
+  { id: 'cilantro', labelEn: 'Cilantro / Coriander', labelZh: '香菜 / 芫荽', emoji: '🌿' },
+  { id: 'mushrooms', labelEn: 'Mushrooms', labelZh: '香菇 / 菌菇', emoji: '🍄' },
+  { id: 'eggplant', labelEn: 'Eggplant', labelZh: '茄子', emoji: '🍆' },
+  { id: 'bitter_melon', labelEn: 'Bitter Melon', labelZh: '苦瓜', emoji: '🥒' },
+  { id: 'celery', labelEn: 'Celery', labelZh: '芹菜', emoji: '🫚' },
+  { id: 'raw_onions', labelEn: 'Raw Onions', labelZh: '生洋葱', emoji: '🧅' },
+  { id: 'bell_pepper', labelEn: 'Bell Peppers', labelZh: '彩椒 / 青椒', emoji: '🫑' },
+  { id: 'organ_meats', labelEn: 'Organ Meats', labelZh: '动物内脏', emoji: '🥩' },
+  { id: 'seafood', labelEn: 'Seafood', labelZh: '海鲜 / 鱼腥', emoji: '🦐' }
+];
+
+export const SPICE_LEVELS: { id: 'none' | 'mild' | 'medium' | 'spicy'; labelEn: string; labelZh: string; emoji: string }[] = [
+  { id: 'none', labelEn: 'No Spice', labelZh: '完全不辣', emoji: '🟢' },
+  { id: 'mild', labelEn: 'Mild', labelZh: '微辣', emoji: '🟡' },
+  { id: 'medium', labelEn: 'Medium', labelZh: '中辣', emoji: '🟠' },
+  { id: 'spicy', labelEn: 'Hot & Spicy', labelZh: '麻辣过瘾', emoji: '🔥' }
+];
+
 const CATEGORY_TABS: { id: AllergenCategory; labelEn: string; labelZh: string; icon: string }[] = [
   { id: 'major', labelEn: 'Major (Big 9)', labelZh: '主要过敏原', icon: '🥛' },
   { id: 'regional', labelEn: 'Regional', labelZh: '贝类与谷物', icon: '🦪' },
@@ -152,6 +171,30 @@ export const PersonalisationModal: React.FC<PersonalisationModalProps> = ({
         ...activePrefs,
         dietaryPreferences: updated,
         allergies
+      }
+    });
+  };
+
+  const handleToggleDisliked = (ingredientId: string) => {
+    const current = activePrefs.dislikedIngredients || [];
+    const exists = current.includes(ingredientId);
+    const updated = exists ? current.filter((id) => id !== ingredientId) : [...current, ingredientId];
+
+    setLocalProfiles({
+      ...localProfiles,
+      [activeMember]: {
+        ...activePrefs,
+        dislikedIngredients: updated
+      }
+    });
+  };
+
+  const handleToggleIsChild = (isChild: boolean) => {
+    setLocalProfiles({
+      ...localProfiles,
+      [activeMember]: {
+        ...activePrefs,
+        isChild
       }
     });
   };
@@ -337,6 +380,32 @@ export const PersonalisationModal: React.FC<PersonalisationModalProps> = ({
               </div>
             </div>
 
+            {/* Member Role: Adult vs Child */}
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => handleToggleIsChild(false)}
+                className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition cursor-pointer ${
+                  !activePrefs.isChild
+                    ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
+                    : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E]'
+                }`}
+              >
+                🧑 {language === 'zh-CN' ? '成人' : 'Adult'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleIsChild(true)}
+                className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition cursor-pointer ${
+                  activePrefs.isChild
+                    ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
+                    : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E]'
+                }`}
+              >
+                👶 {language === 'zh-CN' ? '儿童' : 'Kid'}
+              </button>
+            </div>
+
             {/* Quick Dietary Preset Pills */}
             <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
               {DIETARY_OPTIONS.slice(0, 3).map((diet) => {
@@ -477,8 +546,42 @@ export const PersonalisationModal: React.FC<PersonalisationModalProps> = ({
             </div>
           </div>
 
-          {/* Section 3: Household Safety Policy */}
-          <div className="bg-gradient-to-r from-amber-50/70 to-[#E8F5ED]/70 dark:from-[#2A1E00]/70 dark:to-[#0D2E1A]/70 p-3.5 rounded-2xl border border-amber-200/70 dark:border-amber-900/40 space-y-2 shadow-sm">
+          {/* Section: Disliked Ingredients / "Hard No's" */}
+          <div className="space-y-2 bg-white dark:bg-[#252220] p-3.5 rounded-2xl border border-[#EDE8DF] dark:border-[#38332E] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-extrabold text-[#7A6E64] dark:text-[#9A9088] uppercase tracking-wider">
+                🚫 {language === 'zh-CN' ? `${activeMember} 忌口 / 不吃食材` : `Disliked Ingredients for ${activeMember}`}
+              </span>
+              <span className="text-[10px] text-[#B8AFA4] dark:text-[#5A5450]">
+                {language === 'zh-CN' ? '点击屏蔽（AI排餐时避开）' : 'AI avoids these'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {COMMON_DISLIKED_INGREDIENTS.map((item) => {
+                const isSelected = activePrefs.dislikedIngredients?.includes(item.id);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleToggleDisliked(item.id)}
+                    className={`text-xs font-bold px-2.5 py-1.5 rounded-xl border transition cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                      isSelected
+                        ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-900 ring-1 ring-rose-300'
+                        : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E] hover:bg-[#EDE8DF] dark:hover:bg-[#38332E]'
+                    }`}
+                  >
+                    <span>{item.emoji}</span>
+                    <span>{language === 'zh-CN' ? item.labelZh : item.labelEn}</span>
+                    {isSelected && <span className="text-rose-500 font-black text-xs">✕</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section 3: Household Safety & Taste Policy */}
+          <div className="bg-gradient-to-r from-amber-50/70 to-[#E8F5ED]/70 dark:from-[#2A1E00]/70 dark:to-[#0D2E1A]/70 p-3.5 rounded-2xl border border-amber-200/70 dark:border-amber-900/40 space-y-3 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#2D6A4A] dark:text-[#4CAF82]" />
@@ -506,6 +609,66 @@ export const PersonalisationModal: React.FC<PersonalisationModalProps> = ({
                 ? `开启后，在菜谱搜索和周计划排餐时，系统将自动隐藏任何含有全家（${householdAllergyCount}项）过敏原的菜肴。`
                 : `When enabled, Gyummy will automatically filter out any recipe containing any family member's allergens (${householdAllergyCount} total).`}
             </p>
+
+            {/* Household Spice Tolerance */}
+            <div className="pt-2 border-t border-amber-200/50 dark:border-amber-900/40 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8]">
+                  🌶️ {language === 'zh-CN' ? '全家吃辣偏好' : 'Household Spice Level'}
+                </span>
+                <span className="text-[10px] text-[#7A6E64] dark:text-[#9A9088]">
+                  {language === 'zh-CN' ? 'AI推荐时控制辣度' : 'Sets AI spice ceiling'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {SPICE_LEVELS.map((spice) => {
+                  const isCurrent = (localFamilyPersonalisation.spiceTolerance || 'mild') === spice.id;
+                  return (
+                    <button
+                      key={spice.id}
+                      type="button"
+                      onClick={() =>
+                        setLocalFamilyPersonalisation({
+                          ...localFamilyPersonalisation,
+                          spiceTolerance: spice.id
+                        })
+                      }
+                      className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center justify-center gap-1 shadow-2xs ${
+                        isCurrent
+                          ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
+                          : 'bg-white/80 dark:bg-[#252220] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E]'
+                      }`}
+                    >
+                      <span>{spice.emoji}</span>
+                      <span>{language === 'zh-CN' ? spice.labelZh : spice.labelEn}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Cooking for Kids Toggle */}
+            <div className="pt-2 border-t border-amber-200/50 dark:border-amber-900/40 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8]">
+                  👶 {language === 'zh-CN' ? '家中有小孩（优先推荐儿童友好菜）' : 'Cooking for children (Kid-friendly focus)'}
+                </span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(localFamilyPersonalisation.cookingForKids)}
+                  onChange={(e) =>
+                    setLocalFamilyPersonalisation({
+                      ...localFamilyPersonalisation,
+                      cookingForKids: e.target.checked
+                    })
+                  }
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-[#EDE8DF] dark:bg-[#38332E] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#EDE8DF] dark:after:border-[#38332E] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#FFD13B]"></div>
+              </label>
+            </div>
           </div>
         </div>
 

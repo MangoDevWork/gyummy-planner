@@ -36,9 +36,17 @@ export const FirstTimeOnboardingGuide: React.FC<FirstTimeOnboardingGuideProps> =
   onGoToRecipeLibrary
 }) => {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [isPersonalisationModalOpen, setIsPersonalisationModalOpen] = useState(true);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
+
+  // Express Setup State
+  const [expressSpice, setExpressSpice] = useState<'none' | 'mild' | 'medium' | 'spicy'>(
+    familyPersonalisation?.spiceTolerance || 'mild'
+  );
+  const [expressKids, setExpressKids] = useState<boolean>(
+    Boolean(familyPersonalisation?.cookingForKids)
+  );
+  const [showDetailedAllergyModal, setShowDetailedAllergyModal] = useState(false);
 
   if (!isOpen) return null;
 
@@ -47,7 +55,19 @@ export const FirstTimeOnboardingGuide: React.FC<FirstTimeOnboardingGuideProps> =
     updatedFamilyPersonalisation: FamilyPersonalisation
   ) => {
     onSavePersonalisation(updatedProfiles, updatedFamilyPersonalisation);
-    setIsPersonalisationModalOpen(false);
+    setShowDetailedAllergyModal(false);
+    setIsScheduleModalOpen(true);
+    setStep(2);
+  };
+
+  const handleExpressContinue = () => {
+    const updatedFamily: FamilyPersonalisation = {
+      ...familyPersonalisation,
+      spiceTolerance: expressSpice,
+      cookingForKids: expressKids,
+      strictAllergyFilter: familyPersonalisation?.strictAllergyFilter ?? true
+    };
+    onSavePersonalisation(memberProfiles, updatedFamily);
     setIsScheduleModalOpen(true);
     setStep(2);
   };
@@ -65,22 +85,142 @@ export const FirstTimeOnboardingGuide: React.FC<FirstTimeOnboardingGuideProps> =
 
   return (
     <>
-      {/* Step 1: Personalisation & Allergy Declaration Modal */}
+      {/* Step 1: Express Kitchen Setup Card */}
       {step === 1 && (
-        <PersonalisationModal
-          isOpen={isPersonalisationModalOpen}
-          onClose={() => {
-            setIsPersonalisationModalOpen(false);
-            setIsScheduleModalOpen(true);
-            setStep(2);
-          }}
-          currentMember={currentMember}
-          familyMembers={familyMembers}
-          memberProfiles={memberProfiles}
-          familyPersonalisation={familyPersonalisation}
-          onSavePersonalisation={handleFinishPersonalisation}
-          onAddFamilyMember={onAddFamilyMember}
-        />
+        <>
+          {showDetailedAllergyModal ? (
+            <PersonalisationModal
+              isOpen={true}
+              onClose={() => setShowDetailedAllergyModal(false)}
+              currentMember={currentMember}
+              familyMembers={familyMembers}
+              memberProfiles={memberProfiles}
+              familyPersonalisation={{
+                ...familyPersonalisation,
+                spiceTolerance: expressSpice,
+                cookingForKids: expressKids
+              }}
+              onSavePersonalisation={handleFinishPersonalisation}
+              onAddFamilyMember={onAddFamilyMember}
+            />
+          ) : (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+              <div className="bg-white dark:bg-[#252220] w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-[#EDE8DF] dark:border-[#38332E] space-y-4 text-center relative animate-in zoom-in-95 duration-300">
+                {/* Onboarding Step Badge */}
+                <div className="inline-flex items-center gap-1.5 bg-[#FFD13B] text-[#2D2640] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm border border-[#2D2640]/10">
+                  <Sparkles className="w-3 h-3 fill-[#2D2640]" />
+                  <span>Step 1 of 4: Family Kitchen Setup</span>
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-[#2D2640] dark:text-[#F0EDE8] leading-snug">
+                    Welcome to Gyummy! 🍲
+                  </h3>
+                  <p className="text-xs text-[#7A6E64] dark:text-[#9A9088]">
+                    Set up your family kitchen in 15 seconds.
+                  </p>
+                </div>
+
+                {/* Form Controls */}
+                <div className="space-y-3 text-left">
+                  {/* Spice Level */}
+                  <div className="bg-[#FAF7F2] dark:bg-[#1E1B18] p-3 rounded-2xl border border-[#EDE8DF] dark:border-[#38332E] space-y-1.5">
+                    <label className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] block">
+                      🌶️ Household Spice Preference
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { id: 'mild', label: 'Mild / None', emoji: '🟢' },
+                        { id: 'medium', label: 'Medium', emoji: '🟡' },
+                        { id: 'spicy', label: 'Spicy 🔥', emoji: '🔴' }
+                      ].map((s) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => setExpressSpice(s.id as any)}
+                          className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition cursor-pointer text-center ${
+                            expressSpice === s.id
+                              ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
+                              : 'bg-white dark:bg-[#252220] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E]'
+                          }`}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Cooking for Kids */}
+                  <div className="bg-[#FAF7F2] dark:bg-[#1E1B18] p-3 rounded-2xl border border-[#EDE8DF] dark:border-[#38332E] space-y-1.5">
+                    <label className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] block">
+                      👶 Cooking for children / kids?
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setExpressKids(true)}
+                        className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition cursor-pointer text-center ${
+                          expressKids
+                            ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
+                            : 'bg-white dark:bg-[#252220] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E]'
+                        }`}
+                      >
+                        👶 Yes, Kid-Friendly
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setExpressKids(false)}
+                        className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition cursor-pointer text-center ${
+                          !expressKids
+                            ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
+                            : 'bg-white dark:bg-[#252220] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E]'
+                        }`}
+                      >
+                        🧑 Adults Only
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Medical Allergies Choice */}
+                  <div className="bg-[#FAF7F2] dark:bg-[#1E1B18] p-3 rounded-2xl border border-[#EDE8DF] dark:border-[#38332E] flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8]">
+                        🛡️ Food Allergies?
+                      </p>
+                      <p className="text-[10.5px] text-[#9A8A7E] dark:text-[#7A6E64]">
+                        {Object.values(memberProfiles).some((p) => p?.allergies && p.allergies.length > 0)
+                          ? `${Object.values(memberProfiles).reduce((acc, p) => acc + (p.allergies?.length || 0), 0)} allergies set`
+                          : 'None declared yet'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowDetailedAllergyModal(true)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-[#252220] text-[#2D2640] dark:text-[#F0EDE8] border border-[#EDE8DF] dark:border-[#38332E] hover:border-[#FFD13B] transition cursor-pointer shadow-2xs"
+                    >
+                      + Manage
+                    </button>
+                  </div>
+                </div>
+
+                {/* Friendly Note for Detailed Personalisation */}
+                <div className="bg-[#FFF8E6] dark:bg-[#2A1E00] border border-[#FFD13B]/40 rounded-xl p-2.5 text-left">
+                  <p className="text-[10.5px] text-[#7A5C00] dark:text-[#FFD13B] leading-relaxed">
+                    💡 <strong>Tip:</strong> You can fine-tune member tastes, hated ingredients (like cilantro or mushrooms) & dietary goals anytime in <strong>Settings &gt; Personalisation</strong>.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleExpressContinue}
+                  className="w-full py-2.5 bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] text-xs font-extrabold rounded-2xl shadow-sm border border-[#2D2640]/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Continue to Meal Schedule ➔</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Step 2: Meal Schedule Settings Modal */}

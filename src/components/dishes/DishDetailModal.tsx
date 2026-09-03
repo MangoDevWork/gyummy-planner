@@ -103,9 +103,13 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
     ? checkDishAllergenRisk(dish, memberProfiles, familyMembers, familyPersonalisation)
     : { hasRisk: false, dishAllergens: [], affectedMembers: [] };
 
-  const instructionSteps = typeof localized.instructions === 'string'
-    ? localized.instructions.split('\n').map((s) => s.trim()).filter(Boolean)
-    : (typeof dish.instructions === 'string' ? dish.instructions.split('\n').map((s) => s.trim()).filter(Boolean) : []);
+  const instructionSteps = (dish.stepList && dish.stepList.length > 0)
+    ? dish.stepList
+    : (typeof localized.instructions === 'string'
+      ? localized.instructions.split('\n\n').flatMap((p) => p.split('\n')).map((s) => s.trim().replace(/^\d+[\.\)]\s*/, '')).filter(Boolean)
+      : (typeof dish.instructions === 'string'
+        ? dish.instructions.split('\n\n').flatMap((p) => p.split('\n')).map((s) => s.trim().replace(/^\d+[\.\)]\s*/, '')).filter(Boolean)
+        : []));
 
   return (
     <div className="fixed inset-0 z-50 flex justify-center bg-black/40 backdrop-blur-sm">
@@ -184,6 +188,25 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
               <span className="inline-block rounded-full bg-white/80 dark:bg-[#28231E]/80 px-2.5 py-0.5 text-[11px] font-semibold text-[#8A7A70] dark:text-[#9A8A7E] backdrop-blur shadow-2xs">
                 {dish.cuisine ? formatCuisine(dish.cuisine) : formatCategory(dish.category)}
               </span>
+              {dish.dishRole && (
+                <span className="inline-block rounded-full bg-white/80 dark:bg-[#28231E]/80 px-2 py-0.5 text-[10px] font-bold text-[#2D2640] dark:text-[#F0EDE8] backdrop-blur shadow-2xs">
+                  {dish.dishRole === 'one_pot_meal' ? (language === 'zh-CN' ? '🍲 一锅端/主食' : '🍲 One-Pot Meal') :
+                   dish.dishRole === 'main_protein' ? (language === 'zh-CN' ? '🥩 主菜荤菜' : '🥩 Main Dish') :
+                   dish.dishRole === 'vegetable_side' ? (language === 'zh-CN' ? '🥗 素菜配菜' : '🥗 Side Dish') :
+                   dish.dishRole === 'soup' ? (language === 'zh-CN' ? '🥣 靓汤' : '🥣 Soup') :
+                   (language === 'zh-CN' ? '🥫 酱料/调味' : '🥫 Sauce')}
+                </span>
+              )}
+              {dish.spiceLevel && dish.spiceLevel > 0 ? (
+                <span className="inline-block rounded-full bg-amber-100/90 dark:bg-amber-950/80 px-2 py-0.5 text-[10px] font-bold text-amber-900 dark:text-amber-300 backdrop-blur shadow-2xs">
+                  {dish.spiceLevel === 1 ? '🟡 微辣' : dish.spiceLevel === 2 ? '🟠 中辣' : '🔥 麻辣'}
+                </span>
+              ) : null}
+              {dish.kidFriendly && (
+                <span className="inline-block rounded-full bg-[#E8F5ED] dark:bg-[#0D2E1A] px-2 py-0.5 text-[10px] font-bold text-[#2D6A4A] dark:text-[#4CAF82] border border-[#A8D8BC]/50 backdrop-blur shadow-2xs">
+                  👶 {language === 'zh-CN' ? '儿童友好' : 'Kid-Friendly'}
+                </span>
+              )}
               {isInFamilyCookbook && (
                 <span className="inline-block rounded-full bg-[#FFF3D6] dark:bg-[#2A1E00] px-2 py-0.5 text-[10px] font-bold text-[#7A5C00] dark:text-[#FFD13B] border border-[#FFD13B]/40">
                   {language === 'zh-CN' ? '家庭菜谱' : 'In Cookbook'}

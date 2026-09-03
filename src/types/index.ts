@@ -52,6 +52,15 @@ export interface LocalizedDishContent {
   ingredients?: { id: string; name: string }[];
 }
 
+export interface NutritionInfo {
+  calories: number; // kcal per serving
+  protein: number;  // grams
+  carbs: number;    // grams
+  fat: number;      // grams
+  fiber?: number;   // grams
+  sodium?: number;  // mg
+}
+
 export interface Dish {
   id: string;
   canonicalId?: string; // Identifier to link translations / variants together
@@ -62,7 +71,10 @@ export interface Dish {
   servings: number;
   ingredients: Ingredient[];
   prepTimeMinutes?: number;
+  cookTimeMinutes?: number;
+  totalTimeMinutes?: number;
   instructions?: string;
+  stepList?: string[];
   imageEmoji?: string;
   imageUrl?: string; // Base64 compressed image URL for recipe photo
   tags?: string[];
@@ -71,6 +83,13 @@ export interface Dish {
   timesPlanned?: number;        // Total number of times this dish has been scheduled in meal plans
   lastPlannedAt?: string;       // Date YYYY-MM-DD when this recipe was last scheduled
   allergens?: string[];         // Detected allergen identifiers (e.g. 'peanuts', 'cow_milk', 'shellfish_crustacean')
+  nutrition?: NutritionInfo;    // Per-serving nutritional values
+  dishRole?: 'one_pot_meal' | 'main_protein' | 'vegetable_side' | 'soup' | 'sauce_condiment';
+  spiceLevel?: 0 | 1 | 2 | 3;
+  kidFriendly?: boolean;
+  cleanupEffort?: 'one_pot' | 'standard' | 'multi_equipment';
+  cookingMethod?: string;
+  freezerFriendly?: boolean;
   createdAt: string;
   updatedAt: string;
   translations?: Partial<Record<'en' | 'zh-CN', LocalizedDishContent>>;
@@ -143,6 +162,7 @@ export type DietaryPreference =
 export interface MemberPreferences {
   allergies: string[];            // Allergen IDs declared for this member
   dislikedIngredients?: string[]; // Specific ingredients this member dislikes
+  isChild?: boolean;              // True if this member is a child / kid
   favoriteCuisines?: string[];    // e.g. ['Chinese', 'Japanese', 'Italian']
   favoriteCategories?: string[];  // e.g. ['Dinner', 'Quick Meals']
   dietaryPreferences?: DietaryPreference[];
@@ -150,6 +170,9 @@ export interface MemberPreferences {
 
 export interface FamilyPersonalisation {
   strictAllergyFilter: boolean;     // Automatically filter out any recipe with a family allergen
+  spiceTolerance?: 'none' | 'mild' | 'medium' | 'spicy'; // Household spice baseline (default: 'mild')
+  cookingForKids?: boolean;         // Prioritize mild, universally kid-friendly dishes
+  weeknightSpeed?: 'quick' | 'standard'; // Prefer <= 25m meals on weeknights
   householdAllergies?: string[];    // Additional family-wide excluded allergens
   householdCuisines?: string[];     // Family top cuisine choices
   householdCategories?: string[];   // Family top meal categories
