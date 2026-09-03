@@ -111,6 +111,15 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
         ? dish.instructions.split('\n\n').flatMap((p) => p.split('\n')).map((s) => s.trim().replace(/^\d+[\.\)]\s*/, '')).filter(Boolean)
         : []));
 
+  const nutrition = dish.nutrition || {
+    calories: dish.dishRole === 'one_pot_meal' ? 520 : dish.dishRole === 'vegetable_side' ? 120 : dish.dishRole === 'soup' ? 180 : 410,
+    protein: dish.dishRole === 'one_pot_meal' ? 28 : dish.dishRole === 'vegetable_side' ? 4 : dish.dishRole === 'soup' ? 12 : 36,
+    carbs: dish.dishRole === 'one_pot_meal' ? 58 : dish.dishRole === 'vegetable_side' ? 12 : dish.dishRole === 'soup' ? 15 : 14,
+    fat: dish.dishRole === 'one_pot_meal' ? 16 : dish.dishRole === 'vegetable_side' ? 5 : dish.dishRole === 'soup' ? 7 : 18,
+    fiber: 3,
+    sodium: 520
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex justify-center bg-black/40 backdrop-blur-sm">
       <div className="flex h-full w-full max-w-[448px] flex-col bg-[#F8F5F0] dark:bg-[#1C1917] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
@@ -256,7 +265,75 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Allergen Warning Banner */}
+          {/* Macro Nutrition Summary Card */}
+          <div className="rounded-2xl border border-[#EDE8DF] bg-white p-3.5 shadow-xs dark:border-[#3A332C] dark:bg-[#28231E]">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs">⚡</span>
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
+                  {language === 'zh-CN' ? '每份营养估算' : 'Nutrition (Per Serving)'}
+                </span>
+              </div>
+              {currentServings !== baseServings && (
+                <span className="text-[10px] font-semibold text-[#9A8A7E] dark:text-[#7A6E64]">
+                  {language === 'zh-CN' ? `按 ${currentServings} 份 (~${Math.round(nutrition.calories * currentServings)} kcal)` : `Batch: ~${Math.round(nutrition.calories * currentServings)} kcal`}
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              {/* Calories */}
+              <div className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#EDE8DF] dark:border-[#38332E]">
+                <span className="text-[14px] font-black text-[#2D2640] dark:text-[#F0EDE8] leading-none">
+                  {nutrition.calories}
+                </span>
+                <span className="text-[9px] font-bold text-[#9A8A7E] dark:text-[#7A6E64] uppercase tracking-wider mt-1">
+                  kcal
+                </span>
+              </div>
+
+              {/* Protein */}
+              <div className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#EDE8DF] dark:border-[#38332E]">
+                <span className="text-[14px] font-black text-[#2D6A4A] dark:text-[#4CAF82] leading-none">
+                  {nutrition.protein}g
+                </span>
+                <span className="text-[9px] font-bold text-[#9A8A7E] dark:text-[#7A6E64] uppercase tracking-wider mt-1">
+                  {language === 'zh-CN' ? '蛋白质' : 'Protein'}
+                </span>
+              </div>
+
+              {/* Carbs */}
+              <div className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#EDE8DF] dark:border-[#38332E]">
+                <span className="text-[14px] font-black text-[#B8860B] dark:text-[#FFD13B] leading-none">
+                  {nutrition.carbs}g
+                </span>
+                <span className="text-[9px] font-bold text-[#9A8A7E] dark:text-[#7A6E64] uppercase tracking-wider mt-1">
+                  {language === 'zh-CN' ? '碳水' : 'Carbs'}
+                </span>
+              </div>
+
+              {/* Fat */}
+              <div className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-[#FAF7F2] dark:bg-[#1E1B18] border border-[#EDE8DF] dark:border-[#38332E]">
+                <span className="text-[14px] font-black text-[#C25E34] dark:text-[#E2875C] leading-none">
+                  {nutrition.fat}g
+                </span>
+                <span className="text-[9px] font-bold text-[#9A8A7E] dark:text-[#7A6E64] uppercase tracking-wider mt-1">
+                  {language === 'zh-CN' ? '脂肪' : 'Fat'}
+                </span>
+              </div>
+            </div>
+
+            {(nutrition.fiber || nutrition.sodium) && (
+              <div className="mt-2 pt-2 border-t border-[#EDE8DF]/70 dark:border-[#38332E]/70 flex items-center justify-between text-[10px] text-[#9A8A7E] dark:text-[#7A6E64] px-1">
+                {nutrition.fiber ? (
+                  <span>🌱 {language === 'zh-CN' ? '膳食纤维' : 'Fiber'}: ~{nutrition.fiber}g</span>
+                ) : <span />}
+                {nutrition.sodium ? (
+                  <span>🧂 {language === 'zh-CN' ? '钠' : 'Sodium'}: ~{nutrition.sodium}mg</span>
+                ) : null}
+              </div>
+            )}
+          </div>
           {allergenRisk.hasRisk && (
             <div className="flex items-start gap-2.5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 dark:border-rose-500/25 dark:bg-rose-500/10 animate-in fade-in">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#E05050]" />

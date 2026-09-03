@@ -185,6 +185,17 @@ export const INITIAL_DISHES: Dish[] = [
     instructions: '1. Cut scallions into 2-inch segments.\n2. Heat vegetable oil in a pan over low heat; gently fry scallions for 10-12 minutes until crispy and golden brown.\n3. Remove browned scallions. Pour light soy sauce, dark soy sauce, and sugar into the fragrant oil; simmer for 1 min.\n4. Cook fresh wheat noodles in boiling water for 3 minutes, then drain thoroughly.\n5. Toss noodles with the scallion oil sauce and top with the crispy scallions.',
     favoritedByMembers: [],
     isFamilyRecipe: true,
+    dishRole: 'one_pot_meal',
+    spiceLevel: 0,
+    kidFriendly: true,
+    nutrition: {
+      calories: 480,
+      protein: 12,
+      carbs: 68,
+      fat: 18,
+      fiber: 3,
+      sodium: 580
+    },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ingredients: [
@@ -208,6 +219,17 @@ export const INITIAL_DISHES: Dish[] = [
     instructions: '1. Finely mince lemongrass, garlic, and shallots.\n2. Mix with fish sauce, brown sugar, soy sauce, and black pepper into a marinade.\n3. Coat pork chops and let marinate for at least 15 minutes.\n4. Heat skillet with oil over medium-high heat. Sear pork for 4-5 minutes per side until caramelized.\n5. Rest for 3 minutes, slice and serve with cucumber slices, pickled carrots, and steamed rice.',
     favoritedByMembers: [],
     isFamilyRecipe: true,
+    dishRole: 'main_protein',
+    spiceLevel: 0,
+    kidFriendly: true,
+    nutrition: {
+      calories: 420,
+      protein: 38,
+      carbs: 12,
+      fat: 24,
+      fiber: 1,
+      sodium: 620
+    },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ingredients: [
@@ -231,6 +253,17 @@ export const INITIAL_DISHES: Dish[] = [
     instructions: '1. Cut chicken breast into bite-sized cubes, toss with cornstarch and a pinch of salt.\n2. Pan-sear chicken pieces in oil over high heat until crispy and cooked through (6 mins), then set aside.\n3. In the same pan, toss bell peppers, onion, and pineapple chunks for 2 minutes.\n4. Whisk tomato ketchup, rice vinegar, sugar, and soy sauce; pour into the pan to bubble and glaze.\n5. Fold chicken back into the sweet & tangy glaze until glossy. Serve immediately.',
     favoritedByMembers: [],
     isFamilyRecipe: true,
+    dishRole: 'main_protein',
+    spiceLevel: 0,
+    kidFriendly: true,
+    nutrition: {
+      calories: 460,
+      protein: 34,
+      carbs: 42,
+      fat: 16,
+      fiber: 2,
+      sodium: 540
+    },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ingredients: [

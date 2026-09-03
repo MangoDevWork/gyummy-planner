@@ -7,7 +7,7 @@ let isLoadingPromise: Promise<Dish[]> | null = null;
 
 const INDEXED_DB_NAME = 'GyummySystemDB';
 const INDEXED_DB_STORE = 'system_recipes';
-const INDEXED_DB_VERSION = 5;
+const INDEXED_DB_VERSION = 6;
 
 /**
  * Open IndexedDB for offline persistent storage of large system recipes
