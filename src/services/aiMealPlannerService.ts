@@ -10,6 +10,175 @@ import { detectDishAllergens, getFamilyAllergens } from './personalisationServic
 export type AiPlannerMode = 'easy_meals' | 'give_me_ideas' | 'best_of_both';
 export type AiPlannerFocus = 'balanced' | 'quick' | 'high_protein' | 'light';
 
+export type MealAccompaniment =
+  | 'jasmine_rice'
+  | 'brown_rice'
+  | 'bread_buns'
+  | 'plain_noodles'
+  | 'cauliflower_rice'
+  | 'none_builtin'
+  | 'none_low_carb';
+
+export interface AccompanimentInfo {
+  id: MealAccompaniment;
+  labelEn: string;
+  labelZh: string;
+  emoji: string;
+  caloriesPerPerson: number;
+  carbsPerPerson: number;
+  grocerySearchTerm: string;
+}
+
+export const ACCOMPANIMENT_OPTIONS: Record<MealAccompaniment, AccompanimentInfo> = {
+  jasmine_rice: {
+    id: 'jasmine_rice',
+    labelEn: 'Steamed Jasmine Rice',
+    labelZh: '香甜白米饭',
+    emoji: '🍚',
+    caloriesPerPerson: 210,
+    carbsPerPerson: 46,
+    grocerySearchTerm: 'Jasmine Rice'
+  },
+  brown_rice: {
+    id: 'brown_rice',
+    labelEn: 'Healthy Brown Rice',
+    labelZh: '健康糙米饭',
+    emoji: '🌾',
+    caloriesPerPerson: 180,
+    carbsPerPerson: 38,
+    grocerySearchTerm: 'Brown Rice'
+  },
+  bread_buns: {
+    id: 'bread_buns',
+    labelEn: 'Crusty Bread / Buns',
+    labelZh: '佐餐欧包 / 馒头',
+    emoji: '🥖',
+    caloriesPerPerson: 140,
+    carbsPerPerson: 26,
+    grocerySearchTerm: 'Dinner Rolls Bread'
+  },
+  plain_noodles: {
+    id: 'plain_noodles',
+    labelEn: 'Plain Noodles / Vermicelli',
+    labelZh: '佐餐清汤面 / 米粉',
+    emoji: '🍜',
+    caloriesPerPerson: 200,
+    carbsPerPerson: 42,
+    grocerySearchTerm: 'Hokkien Noodles'
+  },
+  cauliflower_rice: {
+    id: 'cauliflower_rice',
+    labelEn: 'Cauliflower Rice (Low Carb)',
+    labelZh: '花椰菜米 (减碳轻食)',
+    emoji: '🥗',
+    caloriesPerPerson: 35,
+    carbsPerPerson: 5,
+    grocerySearchTerm: 'Cauliflower'
+  },
+  none_builtin: {
+    id: 'none_builtin',
+    labelEn: 'Starch Built-In',
+    labelZh: '菜品自带主食 (无需另煮)',
+    emoji: '✅',
+    caloriesPerPerson: 0,
+    carbsPerPerson: 0,
+    grocerySearchTerm: ''
+  },
+  none_low_carb: {
+    id: 'none_low_carb',
+    labelEn: 'No Starch (Strict Low-Carb)',
+    labelZh: '不配主食 (纯吃菜肉)',
+    emoji: '🥩',
+    caloriesPerPerson: 0,
+    carbsPerPerson: 0,
+    grocerySearchTerm: ''
+  }
+};
+
+export interface HeadcountRecommendation {
+  targetDishesCount: number;
+  descriptionEn: string;
+  descriptionZh: string;
+  rolesSummaryEn: string;
+  rolesSummaryZh: string;
+}
+
+export function getHeadcountRecommendation(dinersCount: number): HeadcountRecommendation {
+  if (dinersCount <= 1) {
+    return {
+      targetDishesCount: 1,
+      descriptionEn: '1 Fast Meal (One-Pot or Quick Main)',
+      descriptionZh: '1道便当快手菜 (一锅搞定)',
+      rolesSummaryEn: '1 One-Pot / Main',
+      rolesSummaryZh: '1道快手主菜/焖饭'
+    };
+  } else if (dinersCount === 2) {
+    return {
+      targetDishesCount: 2,
+      descriptionEn: '2 Dishes: 1 Main Protein + 1 Vegetable Side',
+      descriptionZh: '两菜搭配: 1主荤 + 1时蔬',
+      rolesSummaryEn: '1 Main + 1 Veg Side',
+      rolesSummaryZh: '1大荤 + 1时蔬'
+    };
+  } else if (dinersCount <= 4) {
+    return {
+      targetDishesCount: 3,
+      descriptionEn: '3 Dishes: 2 Mains + 1 Veg Side (or Soup)',
+      descriptionZh: '三菜搭配: 2大荤/主菜 + 1时蔬',
+      rolesSummaryEn: '2 Mains + 1 Veg Side',
+      rolesSummaryZh: '2大荤 + 1时蔬'
+    };
+  } else if (dinersCount <= 6) {
+    return {
+      targetDishesCount: 4,
+      descriptionEn: '4 Dishes: 2 Mains + 1 Veg + 1 Soup',
+      descriptionZh: '四菜一汤: 2大荤 + 1时蔬 + 1靓汤',
+      rolesSummaryEn: '2 Mains + 1 Veg + 1 Soup',
+      rolesSummaryZh: '2大荤 + 1时蔬 + 1靓汤'
+    };
+  } else {
+    return {
+      targetDishesCount: 5,
+      descriptionEn: '5 Dishes: 3 Mains + 2 Veg + 1 Soup',
+      descriptionZh: '五菜大宴: 3大荤 + 2时蔬 + 1靓汤',
+      rolesSummaryEn: '3 Mains + 2 Veg',
+      rolesSummaryZh: '3大荤 + 2时蔬'
+    };
+  }
+}
+
+/**
+ * Check if the meal already contains built-in rice, noodles, or pasta
+ */
+export function detectStarchBuiltIn(dishes: Dish[]): boolean {
+  for (const dish of dishes) {
+    if (dish.dishRole === 'one_pot_meal') return true;
+    const text = `${dish.name} ${(dish.ingredients || []).map((i) => i.name).join(' ')}`.toLowerCase();
+    if (
+      text.includes('fried rice') ||
+      text.includes('炒饭') ||
+      text.includes('chow fun') ||
+      text.includes('炒河粉') ||
+      text.includes('noodles') ||
+      text.includes('面条') ||
+      text.includes('pasta') ||
+      text.includes('spaghetti') ||
+      text.includes('lasagna') ||
+      text.includes('pad thai') ||
+      text.includes('risotto') ||
+      text.includes('claypot rice') ||
+      text.includes('煲仔饭') ||
+      text.includes('bibimbap') ||
+      text.includes('石锅拌饭') ||
+      text.includes('pizza') ||
+      text.includes('curry rice')
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export interface AiPlannerOptions {
   mode: AiPlannerMode;
   focus: AiPlannerFocus;
@@ -18,6 +187,7 @@ export interface AiPlannerOptions {
   startDateISO: string; // YYYY-MM-DD
   includedDays?: number[]; // [0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat]
   targetSlotId?: string; // default: 'slot_dinner'
+  defaultStaple?: MealAccompaniment;
   familyCookbookDishes: Dish[];
   allSystemDishes: Dish[];
   memberProfiles?: Record<string, MemberPreferences>;
@@ -32,9 +202,15 @@ export interface PlannedDayMeal {
   dayName: string;
   slotId: string;
   slotName: string;
-  dish: Dish;
+  dishes: Dish[]; // Full array of companion dishes
+  dish: Dish; // Primary dish for backwards compatibility
   dinersCount: number;
+  dishesCount: number;
+  comboStructure: string;
+  accompaniment: MealAccompaniment;
   reasonTag: string;
+  perPersonCalories: number;
+  perPersonProtein: number;
   scaledNutrition: NutritionInfo;
 }
 
@@ -45,6 +221,7 @@ export interface AiMealPlanResult {
   averageProtein: number;
   primaryCuisines: string[];
   kidFriendlyCount: number;
+  averageDishesPerMeal: number;
 }
 
 export type ProteinType = 'chicken' | 'beef' | 'pork' | 'seafood' | 'vegetarian' | 'other';
@@ -79,7 +256,7 @@ function containsDislikedIngredients(dish: Dish, dislikedList: string[]): boolea
 }
 
 /**
- * 100% Offline AI Meal Planning Engine
+ * 100% Offline AI Meal Planning Engine with Diner-Aware Multi-Dish Composition
  */
 export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlanResult {
   const {
@@ -90,6 +267,7 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
     startDateISO,
     includedDays = [0, 1, 2, 3, 4, 5, 6],
     targetSlotId = 'slot_dinner',
+    defaultStaple = 'jasmine_rice',
     familyCookbookDishes,
     allSystemDishes,
     memberProfiles = {},
@@ -98,7 +276,7 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
     recentMealPlan = {}
   } = options;
 
-  // 1. Gather all household constraints
+  // 1. Household constraints
   const familyAllergens = getFamilyAllergens(familyMembers, memberProfiles, familyPersonalisation);
 
   const allDislikedIngredients = new Set<string>();
@@ -113,24 +291,19 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
 
   const preferKids = Boolean(familyPersonalisation.cookingForKids);
 
-  // 2. Filter Candidate Pools Against Safety & Household Rules
+  // 2. Safety filter
   const isDishSafe = (dish: Dish): boolean => {
     if (!dish || !dish.name) return false;
-
-    // Filter non-entrees if planning dinner (exclude pure condiments/dips unless specifically paired)
     if (dish.dishRole === 'sauce_condiment') return false;
 
-    // Allergy check
     if (familyPersonalisation.strictAllergyFilter) {
       const dishAlgs = detectDishAllergens(dish);
       const isUnsafe = dishAlgs.some((alg) => familyAllergens.includes(alg));
       if (isUnsafe) return false;
     }
 
-    // Disliked ingredients check
     if (containsDislikedIngredients(dish, dislikedList)) return false;
 
-    // Spice ceiling check
     const dishSpice = dish.spiceLevel || 0;
     if (dishSpice > maxSpice) return false;
 
@@ -140,7 +313,17 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
   const safeCookbook = familyCookbookDishes.filter(isDishSafe);
   const safeSystem = allSystemDishes.filter(isDishSafe);
 
-  // 3. Extract Recently Planned Dish IDs to Prevent Dinner Fatigue
+  // Pools by role
+  const safeMains = safeSystem.filter((d) => d.dishRole === 'main_protein' || !d.dishRole);
+  const safeVegSides = safeSystem.filter((d) => d.dishRole === 'vegetable_side');
+  const safeSoups = safeSystem.filter((d) => d.dishRole === 'soup');
+
+  // Cookbook pools by role
+  const cbMains = safeCookbook.filter((d) => d.dishRole === 'main_protein' || !d.dishRole);
+  const cbVegSides = safeCookbook.filter((d) => d.dishRole === 'vegetable_side');
+  const cbSoups = safeCookbook.filter((d) => d.dishRole === 'soup');
+
+  // 3. Recently Planned Dish IDs
   const recentlyPlannedIds = new Set<string>();
   Object.values(recentMealPlan).forEach((daySchedule) => {
     if (!daySchedule) return;
@@ -155,12 +338,10 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
   // 4. Scoring Heuristic Function
   const scoreDish = (dish: Dish, isWeekend: boolean): number => {
     let score = 100;
-
     const cookTime = dish.totalTimeMinutes || dish.prepTimeMinutes || 30;
     const protein = dish.nutrition?.protein || 24;
     const calories = dish.nutrition?.calories || 500;
 
-    // Focus Bonus
     if (focus === 'quick') {
       if (cookTime <= 20) score += 60;
       else if (cookTime <= 30) score += 30;
@@ -173,39 +354,46 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
       else if (calories <= 520) score += 20;
       else score -= 40;
     } else {
-      // Balanced
       if (calories >= 450 && calories <= 680 && protein >= 22) score += 40;
     }
 
-    // Kid-Friendly Bonus
     if (preferKids) {
       if (dish.kidFriendly) score += 50;
       else score -= 20;
     }
 
-    // User Engagement Bonus
-    if (dish.favoritedByMembers && dish.favoritedByMembers.length > 0) {
-      score += 25;
-    }
+    if (dish.favoritedByMembers && dish.favoritedByMembers.length > 0) score += 25;
+    if (dish.timesPlanned && dish.timesPlanned > 0) score += Math.min(30, dish.timesPlanned * 5);
 
-    if (dish.timesPlanned && dish.timesPlanned > 0) {
-      score += Math.min(30, dish.timesPlanned * 5);
-    }
+    if (!isWeekend && cookTime <= 25) score += 20;
+    if (isWeekend && cookTime >= 35) score += 20;
 
-    // Weekend vs Weeknight matching
-    if (!isWeekend && cookTime <= 25) {
-      score += 20; // Fast dinner on weeknights
-    }
-    if (isWeekend && cookTime >= 35) {
-      score += 20; // More elaborate dish on weekends
-    }
-
-    // Anti-Fatigue Penalty (penalize dishes cooked in the last 14 days)
-    if (recentlyPlannedIds.has(dish.id)) {
-      score -= 80;
-    }
+    if (recentlyPlannedIds.has(dish.id)) score -= 80;
 
     return score;
+  };
+
+  // Helper to pick a candidate from a pool
+  const pickFromPool = (
+    pool: Dish[],
+    avoidIds: Set<string>,
+    avoidProtein?: ProteinType,
+    isWeekend: boolean = false
+  ): Dish | null => {
+    const available = pool.filter((d) => !avoidIds.has(d.id));
+    if (available.length === 0) return null;
+
+    const scored = available.map((d) => {
+      let sc = scoreDish(d, isWeekend);
+      const prot = getPrimaryProteinCategory(d);
+      if (avoidProtein && prot === avoidProtein) sc -= 50;
+      return { dish: d, score: sc };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    const top = scored.slice(0, Math.min(3, scored.length));
+    const chosen = top[Math.floor(Math.random() * top.length)];
+    return chosen ? chosen.dish : null;
   };
 
   // 5. Generate Dates for Planning Horizon
@@ -222,105 +410,151 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
     const dayOfWeek = currDate.getDay();
     const dateISO = currDate.toISOString().split('T')[0];
 
-    // Skip if day is excluded (e.g. eating out)
-    if (!includedDays.includes(dayOfWeek)) {
-      continue;
-    }
+    if (!includedDays.includes(dayOfWeek)) continue;
 
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-    // Determine Candidate Pool for this specific day based on mode
-    let candidatePool: Dish[] = [];
+    // STEP A: Pick Primary Dish
+    let primaryCandidatePool: Dish[] = [];
 
     if (mode === 'easy_meals') {
-      // 90% Cookbook, fallback to safe system library if cookbook exhausted
-      candidatePool = safeCookbook.filter((d) => !chosenDishIds.has(d.id));
-      if (candidatePool.length < 3) {
-        candidatePool = [...candidatePool, ...safeSystem.filter((d) => !chosenDishIds.has(d.id))];
+      primaryCandidatePool = safeCookbook.filter((d) => !chosenDishIds.has(d.id));
+      if (primaryCandidatePool.length < 3) {
+        primaryCandidatePool = [...primaryCandidatePool, ...safeSystem.filter((d) => !chosenDishIds.has(d.id))];
       }
     } else if (mode === 'give_me_ideas') {
-      // 100% Library discovery
-      candidatePool = safeSystem.filter((d) => !chosenDishIds.has(d.id));
+      primaryCandidatePool = safeSystem.filter((d) => !chosenDishIds.has(d.id));
     } else {
-      // Best of both (Hybrid): Weekdays lean cookbook, weekends lean discovery
+      // Best of Both
       if (!isWeekend) {
-        candidatePool = safeCookbook.filter((d) => !chosenDishIds.has(d.id));
-        if (candidatePool.length < 2) {
-          candidatePool = [...candidatePool, ...safeSystem.filter((d) => !chosenDishIds.has(d.id))];
+        primaryCandidatePool = safeCookbook.filter((d) => !chosenDishIds.has(d.id));
+        if (primaryCandidatePool.length < 2) {
+          primaryCandidatePool = [...primaryCandidatePool, ...safeSystem.filter((d) => !chosenDishIds.has(d.id))];
         }
       } else {
-        candidatePool = safeSystem.filter((d) => !chosenDishIds.has(d.id));
+        primaryCandidatePool = safeSystem.filter((d) => !chosenDishIds.has(d.id));
       }
     }
 
-    if (candidatePool.length === 0) {
-      candidatePool = safeSystem.length > 0 ? safeSystem : familyCookbookDishes;
+    if (primaryCandidatePool.length === 0) {
+      primaryCandidatePool = safeSystem.length > 0 ? safeSystem : familyCookbookDishes;
     }
 
-    // Score candidates
-    const scoredCandidates = candidatePool.map((dish) => {
+    const scoredPrimary = primaryCandidatePool.map((dish) => {
       let finalScore = scoreDish(dish, isWeekend);
       const prot = getPrimaryProteinCategory(dish);
-
-      // Protein rotation bonus / penalty
-      if (previousProtein && prot === previousProtein) {
-        finalScore -= 40; // Discourage same protein back-to-back
-      } else if (previousProtein && prot !== previousProtein) {
-        finalScore += 25; // Encourage protein variety
-      }
-
+      if (previousProtein && prot === previousProtein) finalScore -= 40;
+      else if (previousProtein && prot !== previousProtein) finalScore += 25;
       return { dish, score: finalScore, protein: prot };
     });
 
-    // Sort descending by score
-    scoredCandidates.sort((a, b) => b.score - a.score);
+    scoredPrimary.sort((a, b) => b.score - a.score);
+    const topPrimary = scoredPrimary.slice(0, Math.min(3, scoredPrimary.length));
+    const selectedPrimary = topPrimary[Math.floor(Math.random() * topPrimary.length)] || scoredPrimary[0];
 
-    // Pick top candidate (with slight randomized tie-breaking among top 3)
-    const topN = scoredCandidates.slice(0, Math.min(3, scoredCandidates.length));
-    const selected = topN[Math.floor(Math.random() * topN.length)] || scoredCandidates[0];
+    if (!selectedPrimary) continue;
 
-    if (!selected) continue;
+    const primaryDish = selectedPrimary.dish;
+    chosenDishIds.add(primaryDish.id);
+    previousProtein = selectedPrimary.protein;
 
-    const chosenDish = selected.dish;
-    chosenDishIds.add(chosenDish.id);
-    previousProtein = selected.protein;
+    // STEP B: Multi-Dish Dinner Composition based on dinersCount
+    const dayDishes: Dish[] = [primaryDish];
+    const isOnePot = primaryDish.dishRole === 'one_pot_meal';
 
-    // Generate Reason Tag
-    let reasonTag = '✨ Chef Discovery';
-    const isFromCookbook = safeCookbook.some((cb) => cb.id === chosenDish.id);
+    if (isOnePot) {
+      // One-Pot Meal:
+      // If 1-2 diners: 1 dish is plenty.
+      // If 3+ diners: Add 1 vegetable side or soup to balance nutrition and appetite.
+      if (dinersCount >= 3) {
+        const vegPool = mode === 'easy_meals' && cbVegSides.length > 0 ? cbVegSides : safeVegSides;
+        const vegSide = pickFromPool(vegPool, chosenDishIds, undefined, isWeekend);
+        if (vegSide) {
+          dayDishes.push(vegSide);
+          chosenDishIds.add(vegSide.id);
+        }
+      }
+    } else {
+      // Component Meal (starts with main protein):
+      // 1. Add Vegetable Side (Dish 2 for 2+ diners)
+      if (dinersCount >= 2) {
+        const vegPool = mode === 'easy_meals' && cbVegSides.length > 0 ? cbVegSides : safeVegSides;
+        const vegSide = pickFromPool(vegPool, chosenDishIds, undefined, isWeekend);
+        if (vegSide) {
+          dayDishes.push(vegSide);
+          chosenDishIds.add(vegSide.id);
+        }
+      }
 
-    if (isFromCookbook) {
-      reasonTag = '🏠 Family Classic';
-    } else if (preferKids && chosenDish.kidFriendly) {
-      reasonTag = '👶 Kid-Friendly';
-    } else if (focus === 'quick' && (chosenDish.totalTimeMinutes || chosenDish.prepTimeMinutes || 30) <= 20) {
-      reasonTag = '⚡ 20-min Fast';
-    } else if (focus === 'high_protein' && (chosenDish.nutrition?.protein || 0) >= 32) {
-      reasonTag = '💪 High Protein';
-    } else if (selected.protein === 'seafood') {
-      reasonTag = '🦐 Fresh Seafood';
-    } else if (selected.protein === 'vegetarian') {
-      reasonTag = '🌱 Healthy Greens';
+      // 2. Add Second Main or Soup (Dish 3 for 3+ diners)
+      if (dinersCount >= 3) {
+        // If 4+ diners, bias towards 2nd protein; if 3 diners, pick 2nd protein or soup
+        const mainPool = mode === 'easy_meals' && cbMains.length > 2 ? cbMains : safeMains;
+        const secondaryMain = pickFromPool(mainPool, chosenDishIds, selectedPrimary.protein, isWeekend);
+        if (secondaryMain) {
+          dayDishes.push(secondaryMain);
+          chosenDishIds.add(secondaryMain.id);
+        }
+      }
+
+      // 3. Add Soup or 2nd Veg Side (Dish 4 for 5+ diners)
+      if (dinersCount >= 5) {
+        const soupPool = mode === 'easy_meals' && cbSoups.length > 0 ? cbSoups : safeSoups;
+        const soup = pickFromPool(soupPool, chosenDishIds, undefined, isWeekend);
+        if (soup) {
+          dayDishes.push(soup);
+          chosenDishIds.add(soup.id);
+        }
+      }
     }
 
-    // Scale nutrition based on dinersCount
-    const baseServing = chosenDish.servings || 2;
-    const multiplier = dinersCount / baseServing;
+    // STEP C: Determine Staple Accompaniment (Rice, Bread, Noodles, or Built-In)
+    let accompaniment: MealAccompaniment = defaultStaple;
+    const hasStarchBuiltIn = detectStarchBuiltIn(dayDishes);
 
-    const baseNut = chosenDish.nutrition || {
-      calories: 520,
-      protein: 28,
-      carbs: 58,
-      fat: 16
-    };
+    if (hasStarchBuiltIn) {
+      accompaniment = 'none_builtin';
+    } else if (focus === 'light') {
+      accompaniment = 'cauliflower_rice';
+    } else {
+      accompaniment = defaultStaple;
+    }
+
+    const stapleInfo = ACCOMPANIMENT_OPTIONS[accompaniment] || ACCOMPANIMENT_OPTIONS.jasmine_rice;
+
+    // STEP D: Total Dinner Nutrition Calculation
+    // Total door-to-table per-person calories = sum(dish calories per serving) + staple calories
+    const dishesCal = dayDishes.reduce((sum, d) => sum + (d.nutrition?.calories || 480), 0);
+    const dishesPro = dayDishes.reduce((sum, d) => sum + (d.nutrition?.protein || 24), 0);
+    const dishesCarb = dayDishes.reduce((sum, d) => sum + (d.nutrition?.carbs || 45), 0);
+    const dishesFat = dayDishes.reduce((sum, d) => sum + (d.nutrition?.fat || 14), 0);
+
+    const perPersonCal = Math.round(dishesCal + stapleInfo.caloriesPerPerson);
+    const perPersonPro = Math.round(dishesPro);
+
+    // Dynamic combo structure description
+    let comboStructure = `${dayDishes.length} Dishes`;
+    if (dayDishes.length === 1) comboStructure = '1-Dish Feast (One-Pot)';
+    else if (dayDishes.length === 2) comboStructure = '2 Dishes: 1 Main + 1 Veg';
+    else if (dayDishes.length === 3) comboStructure = '3 Dishes: 2 Mains + 1 Veg';
+    else if (dayDishes.length >= 4) comboStructure = '4 Dishes: 2 Mains + 1 Veg + 1 Soup';
+
+    // Reason Tag
+    let reasonTag = '✨ Chef Discovery';
+    const isFromCookbook = safeCookbook.some((cb) => cb.id === primaryDish.id);
+
+    if (isFromCookbook) reasonTag = '🏠 Family Classic';
+    else if (preferKids && primaryDish.kidFriendly) reasonTag = '👶 Kid-Friendly';
+    else if (focus === 'quick' && (primaryDish.totalTimeMinutes || primaryDish.prepTimeMinutes || 30) <= 20) reasonTag = '⚡ 20-min Fast';
+    else if (focus === 'high_protein') reasonTag = '💪 High Protein';
+    else if (selectedPrimary.protein === 'seafood') reasonTag = '🦐 Fresh Seafood';
+    else if (selectedPrimary.protein === 'vegetarian') reasonTag = '🌱 Healthy Greens';
 
     const scaledNutrition: NutritionInfo = {
-      calories: Math.round(baseNut.calories * multiplier),
-      protein: Math.round(baseNut.protein * multiplier),
-      carbs: Math.round(baseNut.carbs * multiplier),
-      fat: Math.round(baseNut.fat * multiplier),
-      fiber: baseNut.fiber ? Math.round(baseNut.fiber * multiplier) : undefined,
-      sodium: baseNut.sodium ? Math.round(baseNut.sodium * multiplier) : undefined
+      calories: Math.round(perPersonCal * dinersCount),
+      protein: Math.round(perPersonPro * dinersCount),
+      carbs: Math.round((dishesCarb + stapleInfo.carbsPerPerson) * dinersCount),
+      fat: Math.round(dishesFat * dinersCount)
     };
 
     plannedMeals.push({
@@ -329,9 +563,15 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
       dayName: dayNamesEn[dayOfWeek],
       slotId: targetSlotId,
       slotName: 'Dinner',
-      dish: chosenDish,
+      dishes: dayDishes,
+      dish: primaryDish,
       dinersCount,
+      dishesCount: dayDishes.length,
+      comboStructure,
+      accompaniment,
       reasonTag,
+      perPersonCalories: perPersonCal,
+      perPersonProtein: perPersonPro,
       scaledNutrition
     });
   }
@@ -339,18 +579,22 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
   // 6. Compute Aggregated Metrics
   const totalDinners = plannedMeals.length;
   const avgCal = totalDinners > 0
-    ? Math.round(plannedMeals.reduce((sum, m) => sum + (m.dish.nutrition?.calories || 520), 0) / totalDinners)
+    ? Math.round(plannedMeals.reduce((sum, m) => sum + m.perPersonCalories, 0) / totalDinners)
     : 0;
 
   const avgPro = totalDinners > 0
-    ? Math.round(plannedMeals.reduce((sum, m) => sum + (m.dish.nutrition?.protein || 28), 0) / totalDinners)
+    ? Math.round(plannedMeals.reduce((sum, m) => sum + m.perPersonProtein, 0) / totalDinners)
     : 0;
 
+  const avgDishes = totalDinners > 0
+    ? Number((plannedMeals.reduce((sum, m) => sum + m.dishesCount, 0) / totalDinners).toFixed(1))
+    : 1;
+
   const cuisines = Array.from(
-    new Set(plannedMeals.map((m) => m.dish.cuisine || 'Home Cooking').filter(Boolean))
+    new Set(plannedMeals.flatMap((m) => m.dishes.map((d) => d.cuisine || 'Home Cooking')).filter(Boolean))
   );
 
-  const kidCount = plannedMeals.filter((m) => m.dish.kidFriendly).length;
+  const kidCount = plannedMeals.filter((m) => m.dishes.some((d) => d.kidFriendly)).length;
 
   return {
     suggestions: plannedMeals,
@@ -358,31 +602,44 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
     averageCalories: avgCal,
     averageProtein: avgPro,
     primaryCuisines: cuisines.slice(0, 4),
-    kidFriendlyCount: kidCount
+    kidFriendlyCount: kidCount,
+    averageDishesPerMeal: avgDishes
   };
 }
 
 /**
- * Swap a single meal suggestion without regenerating the whole week
+ * Swap an individual dish in a multi-dish dinner meal
  */
-export function swapSingleMealSuggestion(
-  currentDishId: string,
+export function swapSingleMealDish(
+  targetDishId: string,
   existingMeal: PlannedDayMeal,
   allSuggestions: PlannedDayMeal[],
   options: AiPlannerOptions
 ): PlannedDayMeal | null {
-  const currentPlannedIds = new Set(allSuggestions.map((s) => s.dish.id));
-  currentPlannedIds.delete(currentDishId); // Allow swapping out this one
+  const currentDishToReplace = existingMeal.dishes.find((d) => d.id === targetDishId) || existingMeal.dish;
+  const targetRole = currentDishToReplace.dishRole || 'main_protein';
+
+  const otherDishesInThisMeal = existingMeal.dishes.filter((d) => d.id !== targetDishId);
+  const existingProteins = new Set(otherDishesInThisMeal.map((d) => getPrimaryProteinCategory(d)));
+  const otherDishIds = new Set(allSuggestions.flatMap((s) => s.dishes.map((d) => d.id)));
+  otherDishIds.delete(targetDishId);
 
   const pool = options.mode === 'easy_meals' && options.familyCookbookDishes.length > 5
     ? options.familyCookbookDishes
     : options.allSystemDishes;
 
-  // Filter candidates
+  // Filter candidates matching the same role or complementary role
   const candidates = pool.filter((d) => {
-    if (!d || d.id === currentDishId) return false;
-    if (currentPlannedIds.has(d.id)) return false;
+    if (!d || d.id === targetDishId) return false;
+    if (otherDishIds.has(d.id)) return false;
     if (d.dishRole === 'sauce_condiment') return false;
+
+    // Avoid same protein on table if replacing a main
+    if (targetRole === 'main_protein' && existingProteins.has(getPrimaryProteinCategory(d))) return false;
+
+    // Prefer same role
+    if (targetRole === 'vegetable_side' && d.dishRole !== 'vegetable_side') return false;
+    if (targetRole === 'soup' && d.dishRole !== 'soup') return false;
 
     // Check allergies
     if (options.familyPersonalisation?.strictAllergyFilter) {
@@ -406,22 +663,31 @@ export function swapSingleMealSuggestion(
 
   if (candidates.length === 0) return null;
 
-  // Pick candidate
   const randomIndex = Math.floor(Math.random() * Math.min(8, candidates.length));
   const newDish = candidates[randomIndex] || candidates[0];
 
-  const baseNut = newDish.nutrition || { calories: 520, protein: 28, carbs: 58, fat: 16 };
-  const multiplier = existingMeal.dinersCount / (newDish.servings || 2);
+  const updatedDishes = existingMeal.dishes.map((d) => (d.id === targetDishId ? newDish : d));
+
+  // Recalculate Starch & Nutrition
+  let accompaniment = existingMeal.accompaniment;
+  if (detectStarchBuiltIn(updatedDishes)) {
+    accompaniment = 'none_builtin';
+  } else if (accompaniment === 'none_builtin') {
+    accompaniment = options.defaultStaple || 'jasmine_rice';
+  }
+
+  const stapleInfo = ACCOMPANIMENT_OPTIONS[accompaniment] || ACCOMPANIMENT_OPTIONS.jasmine_rice;
+  const dishesCal = updatedDishes.reduce((sum, d) => sum + (d.nutrition?.calories || 480), 0);
+  const dishesPro = updatedDishes.reduce((sum, d) => sum + (d.nutrition?.protein || 24), 0);
 
   return {
     ...existingMeal,
-    dish: newDish,
-    reasonTag: '🔄 Swapped Alternative',
-    scaledNutrition: {
-      calories: Math.round(baseNut.calories * multiplier),
-      protein: Math.round(baseNut.protein * multiplier),
-      carbs: Math.round(baseNut.carbs * multiplier),
-      fat: Math.round(baseNut.fat * multiplier)
-    }
+    dishes: updatedDishes,
+    dish: updatedDishes[0] || newDish,
+    accompaniment,
+    perPersonCalories: Math.round(dishesCal + stapleInfo.caloriesPerPerson),
+    perPersonProtein: Math.round(dishesPro)
   };
 }
+
+export const swapSingleMealSuggestion = swapSingleMealDish;
