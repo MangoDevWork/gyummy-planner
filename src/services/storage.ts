@@ -244,6 +244,31 @@ export function clearAllAppData(): void {
   }
 }
 
+/**
+ * Irrevocably purge all local family storage, profile caches, and credentials
+ */
+export function purgeFamilyLocalStorage(familyName?: string): void {
+  try {
+    const profile = getActiveProfile();
+    const targetName = familyName || profile?.familyName;
+    if (targetName) {
+      const familyKey = getFamilyStorageKey(targetName);
+      localStorage.removeItem(familyKey);
+    }
+    localStorage.removeItem(ACTIVE_PROFILE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    
+    // Purge any lingering family or member cache keys
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('GYUMMY_FAMILY_') || key.startsWith('gyummy_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch (err) {
+    console.error('Error purging local data:', err);
+  }
+}
+
 function normalizeName(name: string): string {
   return name.trim().toLowerCase();
 }

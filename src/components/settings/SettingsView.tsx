@@ -20,7 +20,8 @@ import {
   Scale,
   ShieldAlert
 } from 'lucide-react';
-import { updateFamilyPinFromSettings, fetchFamilyCloudData } from '../../services/firebase';
+import { updateFamilyPinFromSettings, fetchFamilyCloudData, deleteFamilyAccountAndData } from '../../services/firebase';
+import { purgeFamilyLocalStorage } from '../../services/storage';
 import { mergeAppData } from '../../services/mergeSyncService';
 import { MealScheduleSettingsModal } from './MealScheduleSettingsModal';
 import { PersonalisationModal } from '../personalisation/PersonalisationModal';
@@ -102,6 +103,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3500);
   };
+
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [deletePinInput, setDeletePinInput] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const currentMember = appData.currentProfile?.memberName || '';
   const familyName = appData.currentProfile?.familyName || '';
@@ -242,6 +248,46 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         mealSchedules: DEFAULT_MEAL_SCHEDULES
       });
       showToast('✅ Restored defaults');
+    }
+  };
+
+  // Statutory Account & Data Deletion (GDPR Art. 17 / APP 11 / CCPA)
+  const handleDeleteAccount = async () => {
+    if (!deletePinInput || !/^\d{4}$/.test(deletePinInput.trim())) {
+      setDeleteError(language === 'zh-CN' ? '请输入4位家庭PIN码以确认' : 'Enter 4-digit PIN to confirm');
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    setDeleteError('');
+
+    try {
+      const res = await deleteFamilyAccountAndData(familyName, deletePinInput);
+      if (!res.success) {
+        setDeleteError(res.error || (language === 'zh-CN' ? 'PIN码错误，注销失败' : 'Incorrect PIN. Failed to delete account.'));
+        setIsDeletingAccount(false);
+        return;
+      }
+
+      // Irrevocably purge local storage & caches
+      purgeFamilyLocalStorage(familyName);
+
+      alert(
+        language === 'zh-CN'
+          ? '您的家庭空间及所有关联云端与本地数据已被永久注销和删除。'
+          : 'Your family account and all associated cloud and local data have been permanently deleted.'
+      );
+
+      setShowDeleteAccountModal(false);
+      if (onLogout) {
+        onLogout();
+      } else {
+        window.location.reload();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Deletion error';
+      setDeleteError(msg);
+      setIsDeletingAccount(false);
     }
   };
 
@@ -650,22 +696,45 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       </SectionCard>
 
-      {/* ─── Account ─── */}
-      <SectionCard title={language === 'zh-CN' ? '账号与退出' : 'Account'}>
-        {onLogout && (
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm(language === 'zh-CN' ? `确定要退出 ${familyName} 吗？` : `Log out of ${familyName}?`)) {
-                onLogout();
-              }
-            }}
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 py-2.5 text-[13px] font-bold text-rose-600 dark:border-rose-950 dark:bg-rose-950/30 hover:bg-rose-100 transition cursor-pointer"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>{language === 'zh-CN' ? `退出登录 (${familyName})` : `Log Out (${familyName})`}</span>
-          </button>
-        )}
+      {/* ─── Account & Privacy ─── */}
+      <SectionCard title={language === 'zh-CN' ? '账号与隐私管理' : 'Account & Privacy'}>
+        <div className="space-y-2.5">
+          {onLogout && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm(language === 'zh-CN' ? `确定要退出 ${familyName} 吗？` : `Log out of ${familyName}?`)) {
+                  onLogout();
+                }
+              }}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#EDE8DF] bg-[#FAF8F5] dark:border-[#3D362E] dark:bg-[#221E1A] py-2.5 text-[13px] font-bold text-[#2D2640] dark:text-[#F0EDE8] hover:bg-[#EDE8DF] transition cursor-pointer"
+            >
+              <LogOut className="h-4 w-4 text-[#7A6E64]" />
+              <span>{language === 'zh-CN' ? `退出登录 (${familyName})` : `Log Out (${familyName})`}</span>
+            </button>
+          )}
+
+          {/* Statutory Right of Deletion (GDPR / CCPA / Australian Privacy Principles) */}
+          <div className="pt-2 border-t border-[#EDE8DF] dark:border-[#3D362E]">
+            <button
+              type="button"
+              onClick={() => {
+                setDeletePinInput('');
+                setDeleteError('');
+                setShowDeleteAccountModal(true);
+              }}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/70 dark:border-rose-950 dark:bg-rose-950/20 py-2.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 transition cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>{language === 'zh-CN' ? '永久注销账号与删除家庭数据' : 'Delete Account & Family Data'}</span>
+            </button>
+            <p className="text-[10px] text-center text-[#9A8A7E] dark:text-[#7A6E64] mt-1">
+              {language === 'zh-CN'
+                ? '符合隐私法规要求：立即且永久清空云端和设备上的所有家庭资料'
+                : 'Fulfills GDPR / APP 11 statutory rights: permanently purges all cloud and local records.'}
+            </p>
+          </div>
+        </div>
       </SectionCard>
 
       {/* ─── Reset Defaults ─── */}
@@ -708,6 +777,68 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         onClose={() => setIsLegalModalOpen(false)}
         initialTab={legalInitialTab}
       />
+
+      {/* ─── Delete Account Confirmation Modal ─── */}
+      {showDeleteAccountModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm rounded-3xl border border-rose-200 bg-white p-6 shadow-2xl dark:border-rose-950 dark:bg-[#201C18] space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-2.5 text-rose-600 dark:text-rose-400">
+              <AlertTriangle className="h-5 w-5 shrink-0" />
+              <h3 className="text-base font-bold">
+                {language === 'zh-CN' ? '确认注销家庭账号？' : 'Delete Family Account?'}
+              </h3>
+            </div>
+
+            <p className="text-xs leading-relaxed text-[#7A6E64] dark:text-[#9A9088]">
+              {language === 'zh-CN'
+                ? `此操作将立即并永久删除家庭空间“${familyName}”的所有排餐日程、自定义菜谱、储藏室清单及成员档案。云端和本地数据将被彻底清除，无法恢复。`
+                : `This will permanently and irreversibly erase the "${familyName}" family space, custom recipes, meal schedules, and member profiles from Google Cloud and this device.`}
+            </p>
+
+            {deleteError && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-2 text-xs font-bold text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+                ⚠️ {deleteError}
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
+                {language === 'zh-CN' ? '输入4位家庭PIN码确认' : 'Enter 4-Digit Family PIN to Confirm'}
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                autoFocus
+                placeholder="••••"
+                value={deletePinInput}
+                onChange={(e) => setDeletePinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                className="w-full px-3 py-2 text-center text-lg font-black tracking-widest rounded-xl border border-[#EDE8DF] dark:border-[#3D362E] bg-[#FAF8F5] dark:bg-[#28231E] text-[#2D2640] dark:text-[#F0EDE8] focus:outline-none focus:border-rose-500"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteAccountModal(false)}
+                className="flex-1 py-2.5 rounded-xl border border-[#EDE8DF] dark:border-[#3D362E] bg-[#F5F0E8] dark:bg-[#2E2A26] text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] hover:bg-[#EDE8DF] cursor-pointer"
+              >
+                {language === 'zh-CN' ? '取消' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingAccount || deletePinInput.length !== 4}
+                onClick={handleDeleteAccount}
+                className="flex-1 py-2.5 rounded-xl border border-rose-600 bg-rose-600 text-xs font-bold text-white hover:bg-rose-700 shadow-sm cursor-pointer disabled:opacity-50"
+              >
+                {isDeletingAccount
+                  ? (language === 'zh-CN' ? '正在删除...' : 'Deleting...')
+                  : (language === 'zh-CN' ? '永久删除所有数据' : 'Permanently Delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

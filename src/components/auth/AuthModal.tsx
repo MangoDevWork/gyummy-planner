@@ -4,7 +4,7 @@ import { Home, Check, ArrowRight, Camera, Trash2, LogOut, KeyRound, Loader2, Use
 import { compressImage } from '../../services/imageUtils';
 import { EasterEggModal } from '../common/EasterEggModal';
 import { LegalTermsModal } from '../common/LegalTermsModal';
-import { verifyOrCreateFamily, DEFAULT_FAMILY_PIN } from '../../services/firebase';
+import { verifyOrCreateFamily, checkFamilySpaceExists, DEFAULT_FAMILY_PIN } from '../../services/firebase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -33,6 +33,7 @@ export function AuthModal({
   const [avatarUrl, setAvatarUrl] = useState(currentProfile?.avatarUrl || '');
   const [newMemberInput, setNewMemberInput] = useState('');
   const [isCreatingNewFamily, setIsCreatingNewFamily] = useState(!currentProfile);
+  const [authMode, setAuthMode] = useState<'create' | 'join'>('create');
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -65,7 +66,8 @@ export function AuthModal({
     const clean = newMemberInput.trim();
     if (!clean) return;
 
-    if (familyMembers.includes(clean)) {
+    const isTaken = familyMembers.some((m) => m.trim().toLowerCase() === clean.toLowerCase());
+    if (isTaken) {
       setErrorMsg(`"${clean}" is already in this family.`);
       return;
     }
@@ -132,6 +134,17 @@ export function AuthModal({
     setErrorMsg('');
 
     try {
+      if (authMode === 'create') {
+        const spaceExists = await checkFamilySpaceExists(cleanFamily);
+        if (spaceExists) {
+          setErrorMsg(
+            `A family space named "${cleanFamily}" already exists. If this is your family, switch to the "Join Existing Family" tab above. Otherwise, choose a unique name (e.g. "${cleanFamily} 2").`
+          );
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const authResult = await verifyOrCreateFamily(cleanFamily, cleanPin, cleanMember, true);
 
       if (!authResult.success) {
@@ -374,9 +387,41 @@ export function AuthModal({
             ) : (
               /* Create or Join Family Form */
               <form onSubmit={handleRegisterOrLogin} className="space-y-3">
+                {/* Mode Selector */}
+                <div className="flex rounded-xl bg-[#F5F0E8] dark:bg-[#2E2A26] p-1 gap-1 border border-[#EDE8DF] dark:border-[#38332E]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('create');
+                      setErrorMsg('');
+                    }}
+                    className={`flex-1 py-1.5 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
+                      authMode === 'create'
+                        ? 'bg-[#FFD13B] text-[#2D2640] shadow-xs'
+                        : 'text-[#7A6E64] dark:text-[#9A9088]'
+                    }`}
+                  >
+                    👨‍👩‍👧‍👦 Create New Family
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('join');
+                      setErrorMsg('');
+                    }}
+                    className={`flex-1 py-1.5 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
+                      authMode === 'join'
+                        ? 'bg-[#FFD13B] text-[#2D2640] shadow-xs'
+                        : 'text-[#7A6E64] dark:text-[#9A9088]'
+                    }`}
+                  >
+                    🔑 Join Existing Family
+                  </button>
+                </div>
+
                 <div>
                   <label className="block text-[11px] font-extrabold text-[#2D2640] dark:text-[#F0EDE8] mb-1 uppercase tracking-wider">
-                    Family Space Name *
+                    {authMode === 'create' ? 'Name Your Family Space *' : 'Enter Family Space Name *'}
                   </label>
                   <input
                     type="text"
@@ -488,7 +533,9 @@ export function AuthModal({
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <>
-                        <span>Continue</span>
+                        <span>
+                          {authMode === 'create' ? 'Create Family Space 🚀' : 'Join Family Space ➔'}
+                        </span>
                         <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
                       </>
                     )}

@@ -199,7 +199,18 @@ export const LegalTermsModal: React.FC<LegalTermsModalProps> = ({
 
               <div>
                 <h4 className="font-bold text-[#1E1B2E] dark:text-[#F5F2EB] text-[13px] mb-1">
-                  {isZh ? '4. 责任限制与最高赔偿额' : '4. Limitation of Liability'}
+                  {isZh ? '4. 用户原创内容（UGC）与社区菜谱数据库许可' : '4. User-Generated Content & Recipe Pool License'}
+                </h4>
+                <p>
+                  {isZh
+                    ? '用户对其在 Gyummy 中自行录入或创建的原创家常菜谱享有署名权。为实现多端家庭同步、丰富公共社区菜谱库及持续优化本地离线 AI 膳食模型，用户在录入并同步菜谱时，即授予 Gyummy 一项永久、全球性、免版税、非排他的许可，允许我们对该菜谱数据（包括菜品名、食材配比、烹饪步骤、营养估算）进行去标识化汇总、索引并纳入 Gyummy 社区菜谱数据库。Gyummy 郑重承诺：在归纳菜谱时，将严格剔除所有家庭名称、个人身份及私人照片等隐私信息。'
+                    : 'Users retain moral ownership of custom recipes they create. To facilitate multi-device synchronization, enrich the community recipe repository, and train and calibrate our offline AI meal models, users grant Gyummy a perpetual, worldwide, royalty-free, non-exclusive license to anonymize, aggregate, index, format, and incorporate custom recipe data (dish names, ingredients, steps, timings, and nutritional tags) into the master Gyummy recipe pool. Gyummy guarantees that all personally identifying details (family names, member identities, and private photos) are permanently stripped before any recipe aggregation.'}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-[#1E1B2E] dark:text-[#F5F2EB] text-[13px] mb-1">
+                  {isZh ? '5. 责任限制与最高赔偿额' : '5. Limitation of Liability'}
                 </h4>
                 <p>
                   {isZh
@@ -210,7 +221,7 @@ export const LegalTermsModal: React.FC<LegalTermsModalProps> = ({
 
               <div>
                 <h4 className="font-bold text-[#1E1B2E] dark:text-[#F5F2EB] text-[13px] mb-1">
-                  {isZh ? '5. 适用法律与管辖权 (澳大利亚与国际规范)' : '5. Governing Law & Jurisdiction'}
+                  {isZh ? '6. 适用法律与管辖权 (澳大利亚与国际规范)' : '6. Governing Law & Jurisdiction'}
                 </h4>
                 <p>
                   {isZh
@@ -254,6 +265,17 @@ export const LegalTermsModal: React.FC<LegalTermsModalProps> = ({
                   {isZh
                     ? '您可以随时在“设置”页面将您家庭的所有菜谱和排餐数据一键导出为标准的 ZIP / JSON 备份文件，您始终拥有自己数据的完整所有权。'
                     : 'You retain full ownership of your recipes and data. You may export your entire recipe collection and schedules as an offline ZIP archive at any time via the Settings page.'}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-[#1E1B2E] dark:text-[#F5F2EB] text-[13px] mb-1">
+                  {isZh ? '4. 法定注销与彻底删除权 (Right to be Forgotten)' : '4. Statutory Right of Deletion & Account Erasure'}
+                </h4>
+                <p>
+                  {isZh
+                    ? '依据《澳大利亚隐私原则》(APP 11)、欧盟通用数据保护条例 (GDPR 第17条被遗忘权) 及加州消费者隐私法案 (CCPA)，用户享有随时撤回授权并彻底永久删除其个人及家庭空间数据的合法权利。您可在“设置 > 账号与隐私管理”中随时点击“永久注销账号与删除家庭数据”。在输入家庭 PIN 码确认后，系统将立即从 Google Firebase 云端数据库彻底抹除该家庭的所有云端数据，并同步清除当前设备上的所有本地缓存，此过程不可逆。'
+                    : 'Pursuant to Australian Privacy Principle 11, GDPR Article 17 (Right to Erasure / "Right to be Forgotten"), and the California Consumer Privacy Act (CCPA), users possess the statutory right to permanently delete their account and personal data at any time. You may exercise this right via "Settings > Account & Privacy > Delete Account & Family Data". Upon PIN confirmation, all cloud records in Google Firebase Firestore and all local storage caches are irrevocably and permanently destroyed.'}
                 </p>
               </div>
             </div>

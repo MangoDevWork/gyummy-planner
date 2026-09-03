@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  deleteDoc,
   onSnapshot,
   serverTimestamp,
   type Firestore,
@@ -106,6 +107,8 @@ export async function fetchFamilyCloudData(familyName: string): Promise<Partial<
           }
         : undefined,
       familyMembers: Array.isArray(data.familyMembers) ? data.familyMembers : (Array.isArray(data.members) ? data.members : []),
+      memberProfiles: data.memberProfiles || {},
+      familyPersonalisation: data.familyPersonalisation || undefined,
       settings: data.settings,
       lastSyncedAt: data.updatedAt || new Date().toISOString()
     };
@@ -199,6 +202,8 @@ export async function verifyOrCreateFamily(
           }
         : undefined,
       familyMembers: updatedMembers,
+      memberProfiles: data.memberProfiles || {},
+      familyPersonalisation: data.familyPersonalisation || undefined,
       settings: data.settings,
       lastSyncedAt: data.updatedAt || new Date().toISOString()
     };
@@ -438,6 +443,14 @@ export async function pushAppDataToCloud(
       await setDoc(docRef, finalWritePayload, { merge: true });
       lastPushedPayloadHash = currentHash;
       onSyncStateChange?.('synced');
+
+      // Asynchronously stage user-created custom recipes into the community pool for monthly review
+      const customDishes = (data.dishes || []).filter(
+        (d) => d && d.id && (d.id.startsWith('dish_1') || d.id.startsWith('custom_')) && d.isFamilyRecipe !== false
+      );
+      if (customDishes.length > 0) {
+        Promise.all(customDishes.map((dish) => submitCustomRecipeToCommunityPool(dish))).catch(() => {});
+      }
     } catch (err) {
       console.error('Firebase cloud push error:', err);
       onSyncStateChange?.('error');
@@ -546,6 +559,8 @@ export function subscribeToFamilyCloudData(
             undoStack: []
           },
           familyMembers: receivedCore.familyMembers,
+          memberProfiles: data.memberProfiles || undefined,
+          familyPersonalisation: data.familyPersonalisation || undefined,
           settings: receivedCore.settings,
           lastSyncedAt: data.updatedAt || new Date().toISOString()
         });
@@ -561,5 +576,103 @@ export function subscribeToFamilyCloudData(
     console.error('Failed to subscribe to cloud updates:', err);
     onStatusChange?.('offline');
     return null;
+  }
+}
+
+/**
+ * Check if a family space ID already exists in Cloud Firestore
+ */
+export async function checkFamilySpaceExists(familyName: string): Promise<boolean> {
+  if (!db || !familyName) return false;
+  try {
+    await ensureFirebaseAuth();
+    const familyId = sanitizeFamilyId(familyName);
+    const docRef = doc(db, 'families', familyId);
+    const snap = await getDoc(docRef);
+    return snap.exists();
+  } catch (err) {
+    console.error('Error checking family existence:', err);
+    return false;
+  }
+}
+
+/**
+ * Permanently delete a family account and all associated cloud data
+ * Fulfills statutory Right of Deletion / Right to be Forgotten (GDPR Art. 17, CCPA, Australian Privacy Act)
+ */
+export async function deleteFamilyAccountAndData(
+  familyName: string,
+  pin: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!db || !familyName) {
+      return { success: false, error: 'Database not initialized or family name missing.' };
+    }
+
+    await ensureFirebaseAuth();
+    const familyId = sanitizeFamilyId(familyName);
+    const docRef = doc(db, 'families', familyId);
+    const snap = await getDoc(docRef);
+
+    if (snap.exists()) {
+      const data = snap.data();
+      const existingPin = data?.pin || DEFAULT_FAMILY_PIN;
+      if (pin.trim() !== existingPin) {
+        return { success: false, error: 'Incorrect 4-digit PIN for account deletion.' };
+      }
+
+      // Irrevocably delete the cloud document
+      await deleteDoc(docRef);
+    }
+
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Failed to delete family account';
+    console.error('Account deletion error:', err);
+    return { success: false, error: msg };
+  }
+}
+
+/**
+ * Anonymously stage user custom recipes into the community pool for monthly review
+ */
+export async function submitCustomRecipeToCommunityPool(dish: any): Promise<void> {
+  if (!db || !dish || !dish.name) return;
+  try {
+    // Only submit if it's a real custom user recipe (not a system library dish)
+    if (!dish.id || (!dish.id.startsWith('dish_') && !dish.id.startsWith('custom_'))) return;
+
+    await ensureFirebaseAuth();
+    const communityDocRef = doc(db, 'community_submissions', dish.id);
+
+    // Completely strip any personal PII / family member tags
+    const anonymizedDish = {
+      dishId: dish.id,
+      name: dish.name.trim(),
+      category: dish.category || 'Dinner',
+      cuisine: dish.cuisine || 'Other',
+      servings: typeof dish.servings === 'number' ? dish.servings : 2,
+      prepTimeMinutes: typeof dish.prepTimeMinutes === 'number' ? dish.prepTimeMinutes : 20,
+      cookTimeMinutes: typeof dish.cookTimeMinutes === 'number' ? dish.cookTimeMinutes : 20,
+      totalTimeMinutes: typeof dish.totalTimeMinutes === 'number' ? dish.totalTimeMinutes : 40,
+      dishRole: dish.dishRole || 'one_pot_meal',
+      spiceLevel: typeof dish.spiceLevel === 'number' ? dish.spiceLevel : 0,
+      kidFriendly: Boolean(dish.kidFriendly),
+      ingredients: (dish.ingredients || []).map((ing: any) => ({
+        name: ing.name || '',
+        amount: ing.amount !== undefined ? ing.amount : null,
+        unit: ing.unit || '',
+        category: ing.category || 'Produce'
+      })),
+      instructions: dish.instructions || '',
+      stepList: dish.stepList || [],
+      tags: dish.tags || [],
+      submittedAt: new Date().toISOString()
+    };
+
+    await setDoc(communityDocRef, anonymizedDish, { merge: true });
+  } catch (err) {
+    // Non-blocking: community contribution failure should never break normal user workflows
+    console.warn('Community recipe submission warning:', err);
   }
 }
