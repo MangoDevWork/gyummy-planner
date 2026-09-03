@@ -10,11 +10,13 @@ import {
   Home,
   Sparkles,
   Calendar,
-  Trash2
+  Trash2,
+  Store
 } from 'lucide-react';
 import { copyGroceryListAsMessage } from '../../services/zipExportService';
 import { matchPantryIngredient } from '../../services/pantryMatching';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { SupermarketCartModal } from './SupermarketCartModal';
 
 interface GroceryViewProps {
   familyName: string;
@@ -29,6 +31,7 @@ interface GroceryViewProps {
 const COMMON_UNITS = ['g', 'kg', 'ml', 'L', 'tbsp', 'tsp', 'pcs', 'slices', 'can', 'packet', 'stalks', 'cloves', 'cup', 'pinch'];
 
 export const GroceryView: React.FC<GroceryViewProps> = ({
+  familyName = 'Family',
   dishes,
   mealPlan,
   pantryIngredients,
@@ -40,6 +43,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
   const [filter, setFilter] = useState<'pending' | 'checked' | 'all'>('pending');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [showCelebration, setShowCelebration] = useState(false);
+  const [isSupermarketModalOpen, setIsSupermarketModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const { items, startDate, endDate, undoStack } = groceryList;
@@ -398,6 +402,18 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
               <MessageSquareShare className="h-4 w-4" />
             </button>
           </div>
+
+          {totalCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsSupermarketModalOpen(true)}
+              className="w-full mt-2.5 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00703C] to-[#E01A22] text-white py-2.5 text-xs font-black shadow-xs hover:opacity-95 active:scale-[0.98] transition cursor-pointer"
+            >
+              <Store className="h-4 w-4" />
+              <span>🍏 Woolworths & Coles ❤️</span>
+              <span>{language === 'zh-CN' ? '直通澳洲超市采购 (已排除储藏室)' : 'Send to Supermarket (Auto-Exclude Pantry)'}</span>
+            </button>
+          )}
         </div>
 
         {/* Progress Bar */}
@@ -693,6 +709,16 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Australian Supermarket (Woolworths & Coles) Staging Modal */}
+      <SupermarketCartModal
+        isOpen={isSupermarketModalOpen}
+        onClose={() => setIsSupermarketModalOpen(false)}
+        rawGroceryItems={items}
+        familyName={familyName}
+        dateRangeText={rangeStart && rangeEnd ? `${rangeStart} ~ ${rangeEnd}` : 'Weekly Meals'}
+        onShowToast={showToast}
+      />
     </div>
   );
 };
