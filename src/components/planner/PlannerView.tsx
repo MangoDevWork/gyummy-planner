@@ -8,14 +8,17 @@ import {
   Copy,
   SlidersHorizontal,
   CheckCircle2,
-  Share2
+  Share2,
+  Sparkles
 } from 'lucide-react';
 import { MealScheduleModal } from './MealScheduleModal';
 import { WeekCopyModal } from './WeekCopyModal';
 import { MealScheduleSettingsModal } from '../settings/MealScheduleSettingsModal';
+import { AiMealPlannerModal } from './AiMealPlannerModal';
 import { copyMealPlanAsMessage } from '../../services/zipExportService';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getLocalizedDish } from '../../services/dataLocalizationService';
+import { getCachedSystemRecipes } from '../../services/systemRecipesService';
 
 interface PlannerViewProps {
   currentProfile?: UserProfile | null;
@@ -84,14 +87,36 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
 
   const [isWeekCopyOpen, setIsWeekCopyOpen] = useState(false);
   const [isScheduleSettingsOpen, setIsScheduleSettingsOpen] = useState(false);
+  const [isAiPlannerOpen, setIsAiPlannerOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   // Manual per-day extra schedules added
   const [customDaySchedules, setCustomDaySchedules] = useState<Record<string, string[]>>({});
 
+  const cachedSystemDishes = useMemo(() => getCachedSystemRecipes(), []);
+
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3500);
+  };
+
+  const handleApplyAiMealPlan = (
+    newEntries: Record<string, Record<string, MealScheduleEntry>>,
+    daysCount: number
+  ) => {
+    const nextMealPlan = { ...mealPlan };
+
+    Object.entries(newEntries).forEach(([dateISO, slots]) => {
+      if (!nextMealPlan[dateISO]) {
+        nextMealPlan[dateISO] = {};
+      }
+      Object.entries(slots).forEach(([slotId, entry]) => {
+        nextMealPlan[dateISO][slotId] = entry;
+      });
+    });
+
+    onBatchUpdateMealPlan(nextMealPlan);
+    showToast(`✨ ${language === 'zh-CN' ? `已成功安排 ${daysCount} 顿膳食！` : `Scheduled ${daysCount} meals!`}`);
   };
 
   // Map for fast dish lookup
@@ -250,6 +275,15 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setIsAiPlannerOpen(true)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#FFD13B] text-[#2D2640] hover:bg-[#FFC200] font-black text-xs shadow-2xs transition active:scale-95 cursor-pointer"
+              title="100% Offline AI Meal Planner"
+            >
+              <Sparkles className="h-3.5 w-3.5 fill-[#2D2640]" />
+              <span>{language === 'zh-CN' ? 'AI 排餐' : 'AI Plan'}</span>
+            </button>
             <ToolbarButton onClick={handleShareMealPlan} title="Share week as message">
               <Share2 className="h-3.5 w-3.5" />
             </ToolbarButton>
@@ -261,6 +295,34 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
             </ToolbarButton>
           </div>
         </div>
+
+        {/* Empty Week AI Prompt Card */}
+        {totalMealsPlannedThisWeek === 0 && (
+          <div
+            onClick={() => setIsAiPlannerOpen(true)}
+            className="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-[#FFF8E6] to-[#FDF3D6] dark:from-[#2A2000] dark:to-[#221A00] border border-[#FFD13B]/40 shadow-xs cursor-pointer hover:border-[#FFD13B] transition active:scale-[0.99]"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFD13B] text-[#2D2640] shadow-2xs">
+                <Sparkles className="h-5 w-5 fill-[#2D2640]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-black text-[#2D2640] dark:text-[#F0EDE8]">
+                  {language === 'zh-CN' ? '本周尚未安排餐点' : 'No meals planned this week yet'}
+                </h4>
+                <p className="text-[10.5px] text-[#7A5C00] dark:text-[#FFD13B] truncate">
+                  {language === 'zh-CN' ? '点此让 AI 为全家定制本周 100% 离线食谱 ➔' : 'Let AI auto-plan this week based on family tastes ➔'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="py-1 px-2.5 rounded-xl bg-[#2D2640] text-white text-[11px] font-bold shrink-0 ml-2 shadow-2xs"
+            >
+              {language === 'zh-CN' ? '一键排餐' : 'Auto-Plan'}
+            </button>
+          </div>
+        )}
 
         {/* Day Cards Stack */}
         <div className="space-y-3">
@@ -538,6 +600,21 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         onClose={() => setIsScheduleSettingsOpen(false)}
         mealSchedules={mealSchedules}
         onSaveMealSchedules={onSaveMealSchedules}
+      />
+
+      {/* 100% Offline AI Meal Planner Modal */}
+      <AiMealPlannerModal
+        isOpen={isAiPlannerOpen}
+        onClose={() => setIsAiPlannerOpen(false)}
+        startDateISO={weekStartISO || todayISO}
+        familyCookbookDishes={dishes.filter((d) => d.isFamilyRecipe !== false)}
+        allSystemDishes={cachedSystemDishes}
+        memberProfiles={memberProfiles}
+        familyPersonalisation={familyPersonalisation}
+        familyMembers={familyMembers}
+        recentMealPlan={mealPlan}
+        onApplyMealPlan={handleApplyAiMealPlan}
+        onGoToGrocery={onGoToGrocery}
       />
     </div>
   );
