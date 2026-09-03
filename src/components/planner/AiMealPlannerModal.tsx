@@ -16,13 +16,16 @@ import {
   ArrowLeft,
   ShieldCheck,
   Plus,
-  Minus
+  Minus,
+  Trash2
 } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import {
   generateOfflineAiMealPlan,
   swapSingleMealDish,
   swapWholeMealForDay,
+  removeDishFromMeal,
+  addDishToMeal,
   getHeadcountRecommendation,
   inferDishRole,
   ACCOMPANIMENT_OPTIONS,
@@ -100,6 +103,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [swappingDishId, setSwappingDishId] = useState<string | null>(null);
   const [swappingDate, setSwappingDate] = useState<string | null>(null);
+  const [addingDishDate, setAddingDishDate] = useState<string | null>(null);
   const [editingStapleDate, setEditingStapleDate] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -250,6 +254,54 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
         });
       }
       setSwappingDate(null);
+    }, 120);
+  };
+
+  // Remove an individual dish from a dinner
+  const handleRemoveDish = (meal: PlannedDayMeal, dishIdToRemove: string) => {
+    if (!planResult) return;
+    const updated = removeDishFromMeal(meal, dishIdToRemove, defaultStaple);
+    const nextSuggestions = planResult.suggestions.map((s) =>
+      s.dateISO === meal.dateISO ? updated : s
+    );
+    setPlanResult({
+      ...planResult,
+      suggestions: nextSuggestions
+    });
+  };
+
+  // AI plans and adds a complementary new dish to a dinner
+  const handleAddDish = (meal: PlannedDayMeal) => {
+    if (!planResult) return;
+    setAddingDishDate(meal.dateISO);
+
+    setTimeout(() => {
+      const updated = addDishToMeal(meal, planResult.suggestions, {
+        mode,
+        focus,
+        dinersCount,
+        durationDays,
+        startDateISO,
+        includedDays,
+        defaultStaple,
+        familyCookbookDishes,
+        allSystemDishes: effectiveSystemDishes,
+        memberProfiles,
+        familyPersonalisation,
+        familyMembers,
+        recentMealPlan
+      });
+
+      if (updated) {
+        const nextSuggestions = planResult.suggestions.map((s) =>
+          s.dateISO === meal.dateISO ? updated : s
+        );
+        setPlanResult({
+          ...planResult,
+          suggestions: nextSuggestions
+        });
+      }
+      setAddingDishDate(null);
     }, 120);
   };
 
@@ -829,20 +881,53 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                                 </div>
                               </div>
 
-                              {/* Swap Individual Dish Button */}
-                              <button
-                                type="button"
-                                disabled={isSwapping}
-                                onClick={() => handleSwapIndividualDish(meal, dish.id)}
-                                className="flex items-center gap-1 py-1 px-2 rounded-lg border border-[#EDE8DF] bg-white text-[10px] font-bold text-[#2D2640] hover:bg-[#FFD13B] hover:border-[#2D2640]/10 dark:border-[#38332E] dark:bg-[#252220] dark:text-[#F0EDE8] transition cursor-pointer shrink-0 ml-2"
-                                title="Swap this individual dish"
-                              >
-                                <RotateCw className={`h-2.5 w-2.5 ${isSwapping ? 'animate-spin' : ''}`} />
-                                <span>{language === 'zh-CN' ? '换这道' : 'Swap'}</span>
-                              </button>
+                              {/* Action Buttons: Swap + Remove */}
+                              <div className="flex items-center gap-1 shrink-0 ml-2">
+                                <button
+                                  type="button"
+                                  disabled={isSwapping}
+                                  onClick={() => handleSwapIndividualDish(meal, dish.id)}
+                                  className="flex items-center gap-1 py-1 px-2 rounded-lg border border-[#EDE8DF] bg-white text-[10px] font-bold text-[#2D2640] hover:bg-[#FFD13B] hover:border-[#2D2640]/10 dark:border-[#38332E] dark:bg-[#252220] dark:text-[#F0EDE8] transition cursor-pointer"
+                                  title={language === 'zh-CN' ? '换这道菜' : 'Swap this dish'}
+                                >
+                                  <RotateCw className={`h-2.5 w-2.5 ${isSwapping ? 'animate-spin' : ''}`} />
+                                  <span>{language === 'zh-CN' ? '换这道' : 'Swap'}</span>
+                                </button>
+
+                                {meal.dishes.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveDish(meal, dish.id)}
+                                    className="flex items-center justify-center h-6 w-6 rounded-lg text-[#9A8A7E] hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition cursor-pointer"
+                                    title={language === 'zh-CN' ? '从本餐中移除此菜品' : 'Remove dish from this dinner'}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
+
+                        {/* Add Dish Button (AI Plans Instantly) */}
+                        <button
+                          type="button"
+                          disabled={addingDishDate === meal.dateISO || meal.dishes.length >= 8}
+                          onClick={() => handleAddDish(meal)}
+                          className="flex w-full items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-dashed border-[#EDE8DF] bg-[#FAF8F5] text-[11px] font-bold text-[#7A6E64] hover:border-[#FFD13B] hover:text-[#2D2640] hover:bg-[#FFF8E6] dark:border-[#38332E] dark:bg-[#1E1B18] dark:text-[#9A9088] dark:hover:text-[#FFD13B] transition cursor-pointer disabled:opacity-50"
+                        >
+                          {addingDishDate === meal.dateISO ? (
+                            <>
+                              <RotateCw className="h-3.5 w-3.5 animate-spin text-[#FFD13B]" />
+                              <span>{language === 'zh-CN' ? 'AI 正在智能规划新菜...' : 'AI planning complementary dish...'}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="h-3.5 w-3.5 text-[#FFD13B]" />
+                              <span>{language === 'zh-CN' ? '+ AI 智能加一道菜 (荤素自动补位)' : '+ Add Dish (AI Plans Complementary Dish)'}</span>
+                            </>
+                          )}
+                        </button>
                       </div>
 
                     </div>

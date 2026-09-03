@@ -827,3 +827,185 @@ export function swapWholeMealForDay(
     reasonTag: '🔄 Swapped Meal'
   };
 }
+
+/**
+ * Remove an individual dish from a multi-dish dinner meal
+ */
+export function removeDishFromMeal(
+  meal: PlannedDayMeal,
+  dishIdToRemove: string,
+  defaultStaple: MealAccompaniment = 'jasmine_rice'
+): PlannedDayMeal {
+  // If only 1 dish in meal, keep at least 1 dish
+  if (meal.dishes.length <= 1) return meal;
+
+  const updatedDishes = meal.dishes.filter((d) => d.id !== dishIdToRemove);
+
+  // Recalculate Starch & Nutrition
+  let accompaniment = meal.accompaniment;
+  if (detectStarchBuiltIn(updatedDishes)) {
+    accompaniment = 'none_builtin';
+  } else if (accompaniment === 'none_builtin') {
+    accompaniment = defaultStaple;
+  }
+
+  const stapleInfo = ACCOMPANIMENT_OPTIONS[accompaniment] || ACCOMPANIMENT_OPTIONS.jasmine_rice;
+  const dishesCal = updatedDishes.reduce((sum, d) => sum + (d.nutrition?.calories || 480), 0);
+  const dishesPro = updatedDishes.reduce((sum, d) => sum + (d.nutrition?.protein || 24), 0);
+  const dishesCarb = updatedDishes.reduce((sum, d) => sum + (d.nutrition?.carbs || 45), 0);
+  const dishesFat = updatedDishes.reduce((sum, d) => sum + (d.nutrition?.fat || 14), 0);
+
+  let comboStructure = `${updatedDishes.length} Dishes`;
+  if (updatedDishes.length === 1) comboStructure = '1 Fast Meal (One-Pot)';
+  else if (updatedDishes.length === 2) comboStructure = '2 Dishes: 1 Main + 1 Veg';
+  else if (updatedDishes.length === 3) comboStructure = '3 Dishes: 2 Mains + 1 Veg';
+  else if (updatedDishes.length === 4) comboStructure = '4 Dishes: 2 Mains + 1 Veg + 1 Soup';
+  else if (updatedDishes.length === 5) comboStructure = '5 Dishes: 3 Mains + 2 Veg / Soup';
+  else comboStructure = `${updatedDishes.length} Dishes Family Feast`;
+
+  return {
+    ...meal,
+    dishes: updatedDishes,
+    dish: updatedDishes[0],
+    dishesCount: updatedDishes.length,
+    comboStructure,
+    accompaniment,
+    perPersonCalories: Math.round(dishesCal + stapleInfo.caloriesPerPerson),
+    perPersonProtein: Math.round(dishesPro),
+    scaledNutrition: {
+      calories: Math.round((dishesCal + stapleInfo.caloriesPerPerson) * meal.dinersCount),
+      protein: Math.round(dishesPro * meal.dinersCount),
+      carbs: Math.round((dishesCarb + stapleInfo.carbsPerPerson) * meal.dinersCount),
+      fat: Math.round(dishesFat * meal.dinersCount)
+    }
+  };
+}
+
+/**
+ * AI plans and adds a complementary new dish to an existing meal in real-time
+ */
+export function addDishToMeal(
+  meal: PlannedDayMeal,
+  allSuggestions: PlannedDayMeal[],
+  options: AiPlannerOptions
+): PlannedDayMeal | null {
+  const currentDishIds = new Set(meal.dishes.map((d) => d.id));
+  const otherDayDishIds = new Set(
+    allSuggestions
+      .filter((s) => s.dateISO !== meal.dateISO)
+      .flatMap((s) => s.dishes.map((d) => d.id))
+  );
+
+  // Analyze what is currently on the table
+  const existingRoles = meal.dishes.map(inferDishRole);
+  const existingProteins = new Set(meal.dishes.map(getPrimaryProteinCategory));
+  const hasVeg = existingRoles.includes('vegetable_side');
+  const hasSoup = existingRoles.includes('soup');
+
+  // Decide what role to add to complement the current table:
+  let preferredRole: 'vegetable_side' | 'soup' | 'main_protein' = 'vegetable_side';
+  if (!hasVeg) {
+    preferredRole = 'vegetable_side';
+  } else if (!hasSoup) {
+    preferredRole = 'soup';
+  } else {
+    preferredRole = 'main_protein';
+  }
+
+  const pool = options.mode === 'easy_meals' && options.familyCookbookDishes.length > 5
+    ? options.familyCookbookDishes
+    : options.allSystemDishes;
+  const fallbackPool = options.allSystemDishes;
+
+  // Filter candidates
+  const candidates = pool.filter((d) => {
+    if (!d || currentDishIds.has(d.id) || otherDayDishIds.has(d.id)) return false;
+    if (d.dishRole === 'sauce_condiment') return false;
+
+    // Safety checks
+    if (options.familyPersonalisation?.strictAllergyFilter) {
+      const familyAllergens = getFamilyAllergens(
+        options.familyMembers || [],
+        options.memberProfiles,
+        options.familyPersonalisation
+      );
+      const dishAlgs = detectDishAllergens(d);
+      if (dishAlgs.some((alg) => familyAllergens.includes(alg))) return false;
+    }
+
+    const maxSpice = typeof options.familyPersonalisation?.spiceTolerance === 'number'
+      ? options.familyPersonalisation.spiceTolerance
+      : 3;
+    if ((d.spiceLevel || 0) > maxSpice) return false;
+
+    const role = inferDishRole(d);
+    if (role !== preferredRole) return false;
+
+    if (preferredRole === 'main_protein') {
+      const prot = getPrimaryProteinCategory(d);
+      if (existingProteins.has(prot)) return false;
+    }
+
+    return true;
+  });
+
+  // If pool has candidates, pick best one
+  let chosenDish: Dish | null = null;
+  if (candidates.length > 0) {
+    const randomIndex = Math.floor(Math.random() * Math.min(6, candidates.length));
+    chosenDish = candidates[randomIndex] || candidates[0];
+  } else {
+    // Fallback: search fallbackPool for ANY safe dish not on the table
+    const fbCandidates = fallbackPool.filter((d) => {
+      if (!d || currentDishIds.has(d.id)) return false;
+      if (d.dishRole === 'sauce_condiment') return false;
+      return true;
+    });
+    if (fbCandidates.length > 0) {
+      chosenDish = fbCandidates[Math.floor(Math.random() * Math.min(10, fbCandidates.length))];
+    }
+  }
+
+  if (!chosenDish) return null;
+
+  const updatedDishes = [...meal.dishes, chosenDish];
+
+  // Recalculate Starch & Nutrition
+  let accompaniment = meal.accompaniment;
+  if (detectStarchBuiltIn(updatedDishes)) {
+    accompaniment = 'none_builtin';
+  } else if (accompaniment === 'none_builtin') {
+    accompaniment = options.defaultStaple || 'jasmine_rice';
+  }
+
+  const stapleInfo = ACCOMPANIMENT_OPTIONS[accompaniment] || ACCOMPANIMENT_OPTIONS.jasmine_rice;
+  const dishesCal = updatedDishes.reduce((sum, d) => sum + (d.nutrition?.calories || 480), 0);
+  const dishesPro = updatedDishes.reduce((sum, d) => sum + (d.nutrition?.protein || 24), 0);
+  const dishesCarb = updatedDishes.reduce((sum, d) => sum + (d.nutrition?.carbs || 45), 0);
+  const dishesFat = updatedDishes.reduce((sum, d) => sum + (d.nutrition?.fat || 14), 0);
+
+  let comboStructure = `${updatedDishes.length} Dishes`;
+  if (updatedDishes.length === 1) comboStructure = '1 Fast Meal (One-Pot)';
+  else if (updatedDishes.length === 2) comboStructure = '2 Dishes: 1 Main + 1 Veg';
+  else if (updatedDishes.length === 3) comboStructure = '3 Dishes: 2 Mains + 1 Veg';
+  else if (updatedDishes.length === 4) comboStructure = '4 Dishes: 2 Mains + 1 Veg + 1 Soup';
+  else if (updatedDishes.length === 5) comboStructure = '5 Dishes: 3 Mains + 2 Veg / Soup';
+  else comboStructure = `${updatedDishes.length} Dishes Family Feast`;
+
+  return {
+    ...meal,
+    dishes: updatedDishes,
+    dish: updatedDishes[0],
+    dishesCount: updatedDishes.length,
+    comboStructure,
+    accompaniment,
+    perPersonCalories: Math.round(dishesCal + stapleInfo.caloriesPerPerson),
+    perPersonProtein: Math.round(dishesPro),
+    scaledNutrition: {
+      calories: Math.round((dishesCal + stapleInfo.caloriesPerPerson) * meal.dinersCount),
+      protein: Math.round(dishesPro * meal.dinersCount),
+      carbs: Math.round((dishesCarb + stapleInfo.carbsPerPerson) * meal.dinersCount),
+      fat: Math.round(dishesFat * meal.dinersCount)
+    }
+  };
+}
