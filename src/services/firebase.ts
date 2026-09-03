@@ -298,31 +298,11 @@ export async function pushAppDataToCloud(
   immediate = false
 ): Promise<void> {
   // Filter dishes:
-  // System recipes (3,000+ scraped recipes and 10 built-in seeds) live client-side in IndexedDB/JSON.
-  // ONLY sync user-created custom recipes (which have user IDs like 'dish_17...'), or dishes favorited by family members.
-  const systemSeedDishIds = new Set([
-    'dish_tomato_meatball',
-    'dish_chicken_teriyaki',
-    'dish_korean_beef_bulgogi',
-    'dish_egg_fried_rice',
-    'dish_thai_basil_chicken',
-    'dish_steamed_fish_fillet',
-    'dish_japanese_chicken_curry',
-    'dish_scallion_oil_noodles',
-    'dish_lemongrass_pork',
-    'dish_sweet_sour_chicken'
-  ]);
-
+  // Only sync recipes that belong to this Family Cookbook (isFamilyRecipe !== false) or are favorited
   const persistedDishes = (data.dishes || []).filter((d) => {
-    // 1. If it's explicitly marked as NOT a family recipe and has no favorites, NEVER upload to Firestore
     if (d.isFamilyRecipe === false && (!d.favoritedByMembers || d.favoritedByMembers.length === 0)) {
       return false;
     }
-    // 2. If it's one of the 10 built-in seed dishes without customization or favorites, skip (already on all clients)
-    if (systemSeedDishIds.has(d.id) && (!d.favoritedByMembers || d.favoritedByMembers.length === 0)) {
-      return false;
-    }
-    // 3. User custom created recipes or system recipes explicitly added to Family Cookbook (isFamilyRecipe !== false)
     return Boolean(d.isFamilyRecipe || (d.favoritedByMembers && d.favoritedByMembers.length > 0));
   });
 

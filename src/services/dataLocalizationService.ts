@@ -355,6 +355,62 @@ export const STARTER_RECIPE_TRANSLATIONS: Record<string, LocalizedDishContent> =
       { id: 'ing_ss_4', name: '黄洋葱' },
       { id: 'ing_ss_5', name: '番茄酱 / 番茄膏' }
     ]
+  },
+  'dish_garlic_bok_choy': {
+    name: '蒜蓉清炒上海青',
+    tags: ['时蔬', '快手快炒', '健康低卡', '青菜'],
+    instructions: '1. 上海青洗净，沥干水分，对半切开。\n2. 热锅热油，下蒜末爆香15秒。\n3. 下上海青大火快速翻炒2-3分钟至翠绿断生，加入适量细盐调味。\n4. 淋入少许生抽与芝麻香油提香，即可装盘。',
+    ingredients: [
+      { id: 'ing_gb_1', name: '小油菜 / 上海青' },
+      { id: 'ing_gb_2', name: '大蒜瓣' },
+      { id: 'ing_gb_3', name: '食用油' },
+      { id: 'ing_gb_4', name: '食用盐' }
+    ]
+  },
+  'dish_sesame_broccoli': {
+    name: '蒜香芝麻西兰花',
+    tags: ['时蔬', '高纤维', '少油健康'],
+    instructions: '1. 西兰花切小朵，洗净备用。\n2. 锅中水沸加少许盐和油，焯水90秒捞出过冷水，保持翠绿口感。\n3. 平底锅热芝麻油，下蒜末煸香30秒。\n4. 倒入西兰花，淋入少许生抽，撒熟白芝麻大火拌炒均匀出锅。',
+    ingredients: [
+      { id: 'ing_sb_1', name: '西兰花' },
+      { id: 'ing_sb_2', name: '大蒜瓣' },
+      { id: 'ing_sb_3', name: '芝麻香油' },
+      { id: 'ing_sb_4', name: '熟白芝麻' }
+    ]
+  },
+  'dish_dry_fried_beans': {
+    name: '川香干煸四季豆',
+    tags: ['时蔬', '川味经典', '下饭爽口'],
+    instructions: '1. 四季豆摘去老筋，折成小段洗净沥干水分。\n2. 热锅稍多油，下四季豆中火煸炒至表皮起虎皮微皱（约4分钟）盛出。\n3. 锅底余油下蒜末、干辣椒段爆香。\n4. 倒回四季豆，淋入生抽、少许盐大火翻炒1分钟入味即可。',
+    ingredients: [
+      { id: 'ing_df_1', name: '四季豆 / 刀豆' },
+      { id: 'ing_df_2', name: '大蒜瓣' },
+      { id: 'ing_df_3', name: '生抽酱油' },
+      { id: 'ing_df_4', name: '食用油' }
+    ]
+  },
+  'dish_tofu_tomato_soup': {
+    name: '番茄嫩豆腐蛋花汤',
+    tags: ['靓汤', '暖胃舒心', '低脂鲜美'],
+    instructions: '1. 熟透番茄切小丁，热锅少油翻炒至软烂出浓汁。\n2. 倒入800毫升水或清高汤大火煮沸。\n3. 放入切小块的嫩豆腐，小火慢煮5分钟。\n4. 淋入打散的鸡蛋液，顺时针划圈搅出丝滑细腻蛋花。\n5. 撒白胡椒粉、盐和香油，撒入葱花出锅。',
+    ingredients: [
+      { id: 'ing_ts_1', name: '番茄 / 西红柿' },
+      { id: 'ing_ts_2', name: '嫩豆腐 / 绢豆腐' },
+      { id: 'ing_ts_3', name: '新鲜鸡蛋' },
+      { id: 'ing_ts_4', name: '香葱' },
+      { id: 'ing_ts_5', name: '芝麻香油' }
+    ]
+  },
+  'dish_sweet_corn_chicken_soup': {
+    name: '港式玉米鸡粒羹',
+    tags: ['靓汤', '粤菜', '全家老少皆宜'],
+    instructions: '1. 锅中倒入750毫升鸡汤与一罐甜玉米粒罐头煮沸。\n2. 加入剁细的鸡胸肉泥，快速搅散小火煮3分钟。\n3. 缓缓倒入蛋液，一边搅拌形成金黄蛋丝。\n4. 适量白胡椒粉与香油调味，温热清甜。',
+    ingredients: [
+      { id: 'ing_cs_1', name: '甜玉米粒 (罐头)' },
+      { id: 'ing_cs_2', name: '鸡胸肉 (细肉末)' },
+      { id: 'ing_cs_3', name: '新鲜鸡蛋' },
+      { id: 'ing_cs_4', name: '香葱' }
+    ]
   }
 };
 
