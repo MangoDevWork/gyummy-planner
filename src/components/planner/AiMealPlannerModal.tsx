@@ -24,6 +24,7 @@ import {
   swapSingleMealDish,
   swapWholeMealForDay,
   getHeadcountRecommendation,
+  inferDishRole,
   ACCOMPANIMENT_OPTIONS,
   type AiPlannerMode,
   type AiPlannerFocus,
@@ -31,6 +32,7 @@ import {
   type PlannedDayMeal,
   type AiMealPlanResult
 } from '../../services/aiMealPlannerService';
+import { loadMasterSystemRecipes, getCachedSystemRecipes } from '../../services/systemRecipesService';
 
 interface AiMealPlannerModalProps {
   isOpen: boolean;
@@ -73,6 +75,25 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   const [mode, setMode] = useState<AiPlannerMode>('best_of_both');
   const [defaultStaple, setDefaultStaple] = useState<MealAccompaniment>('jasmine_rice');
 
+  // Master System Dishess State (ensuring all 3,000+ recipes are available offline)
+  const [effectiveSystemDishes, setEffectiveSystemDishes] = useState<Dish[]>(() => {
+    if (allSystemDishes && allSystemDishes.length >= 50) return allSystemDishes;
+    const cached = getCachedSystemRecipes();
+    return cached && cached.length >= 50 ? cached : allSystemDishes;
+  });
+
+  React.useEffect(() => {
+    if (allSystemDishes && allSystemDishes.length >= 50) {
+      setEffectiveSystemDishes(allSystemDishes);
+    } else {
+      loadMasterSystemRecipes().then((loaded) => {
+        if (loaded && loaded.length >= 50) {
+          setEffectiveSystemDishes(loaded);
+        }
+      });
+    }
+  }, [allSystemDishes]);
+
   // ─── STEP 2: GENERATED PLAN STATE ───
   const [currentStep, setCurrentStep] = useState<'config' | 'preview'>('config');
   const [planResult, setPlanResult] = useState<AiMealPlanResult | null>(null);
@@ -107,8 +128,27 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   };
 
   // Run generation
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setIsGenerating(true);
+
+    let systemPool = effectiveSystemDishes;
+    if (!systemPool || systemPool.length < 50) {
+      const loaded = await loadMasterSystemRecipes();
+      if (loaded && loaded.length >= 50) {
+        systemPool = loaded;
+        setEffectiveSystemDishes(loaded);
+      }
+    }
+    if (!systemPool || systemPool.length < 50) {
+      const cached = getCachedSystemRecipes();
+      if (cached && cached.length >= 50) {
+        systemPool = cached;
+      }
+    }
+    if (!systemPool || systemPool.length === 0) {
+      systemPool = familyCookbookDishes;
+    }
+
     setTimeout(() => {
       const result = generateOfflineAiMealPlan({
         mode,
@@ -120,7 +160,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
         targetSlotId: 'slot_dinner',
         defaultStaple,
         familyCookbookDishes,
-        allSystemDishes,
+        allSystemDishes: systemPool,
         memberProfiles,
         familyPersonalisation,
         familyMembers,
@@ -151,7 +191,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
           includedDays,
           defaultStaple,
           familyCookbookDishes,
-          allSystemDishes,
+          allSystemDishes: effectiveSystemDishes,
           memberProfiles,
           familyPersonalisation,
           familyMembers,
@@ -191,7 +231,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
           includedDays,
           defaultStaple,
           familyCookbookDishes,
-          allSystemDishes,
+          allSystemDishes: effectiveSystemDishes,
           memberProfiles,
           familyPersonalisation,
           familyMembers,
@@ -278,13 +318,14 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   };
 
   const getDishRoleBadge = (dish: Dish) => {
-    if (dish.dishRole === 'one_pot_meal') {
+    const role = inferDishRole(dish);
+    if (role === 'one_pot_meal') {
       return { label: language === 'zh-CN' ? '一锅搞定' : 'One-Pot', emoji: '🍚', color: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300' };
     }
-    if (dish.dishRole === 'vegetable_side') {
+    if (role === 'vegetable_side') {
       return { label: language === 'zh-CN' ? '营养时蔬' : 'Veg Side', emoji: '🥗', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' };
     }
-    if (dish.dishRole === 'soup') {
+    if (role === 'soup') {
       return { label: language === 'zh-CN' ? '滋补靓汤' : 'Soup', emoji: '🍲', color: 'bg-sky-100 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300' };
     }
     return { label: language === 'zh-CN' ? '主荤主菜' : 'Main Protein', emoji: '🥩', color: 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300' };

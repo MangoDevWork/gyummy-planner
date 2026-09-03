@@ -93,7 +93,15 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   // Manual per-day extra schedules added
   const [customDaySchedules, setCustomDaySchedules] = useState<Record<string, string[]>>({});
 
-  const cachedSystemDishes = useMemo(() => getCachedSystemRecipes(), []);
+  // Master system recipes: dynamically pull from dishes prop (which includes the 3,000+ recipes)
+  // or fall back to memory cache
+  const systemDishes = useMemo(() => {
+    const fromProps = dishes.filter((d) => d.isFamilyRecipe === false);
+    if (fromProps.length >= 50) return fromProps;
+    const fromCache = getCachedSystemRecipes();
+    if (fromCache && fromCache.length >= 50) return fromCache;
+    return dishes;
+  }, [dishes]);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -608,7 +616,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         onClose={() => setIsAiPlannerOpen(false)}
         startDateISO={weekStartISO || todayISO}
         familyCookbookDishes={dishes.filter((d) => d.isFamilyRecipe !== false)}
-        allSystemDishes={cachedSystemDishes}
+        allSystemDishes={systemDishes}
         memberProfiles={memberProfiles}
         familyPersonalisation={familyPersonalisation}
         familyMembers={familyMembers}

@@ -271,6 +271,68 @@ function containsDislikedIngredients(dish: Dish, dislikedList: string[]): boolea
 }
 
 /**
+ * Infer culinary role of a dish from its metadata, ingredients, or name
+ */
+export function inferDishRole(
+  dish: Dish
+): 'main_protein' | 'vegetable_side' | 'soup' | 'one_pot_meal' | 'sauce_condiment' {
+  if (dish.dishRole) return dish.dishRole;
+
+  const text = `${dish.name} ${dish.category || ''} ${(dish.tags || []).join(' ')} ${(dish.ingredients || []).map((i) => i.name).join(' ')}`.toLowerCase();
+
+  if (text.includes('soup') || text.includes('汤') || text.includes('broth') || text.includes('chowder') || text.includes('miso')) {
+    return 'soup';
+  }
+
+  if (
+    text.includes('fried rice') ||
+    text.includes('炒饭') ||
+    text.includes('chow fun') ||
+    text.includes('炒河粉') ||
+    text.includes('pasta') ||
+    text.includes('spaghetti') ||
+    text.includes('lasagna') ||
+    text.includes('pad thai') ||
+    text.includes('risotto') ||
+    text.includes('claypot rice') ||
+    text.includes('煲仔饭') ||
+    text.includes('bibimbap') ||
+    text.includes('石锅拌饭') ||
+    text.includes('one-pot') ||
+    text.includes('焖饭') ||
+    text.includes('noodles')
+  ) {
+    return 'one_pot_meal';
+  }
+
+  if (
+    dish.category === 'Vegetables' ||
+    dish.category === 'Side' ||
+    text.includes('vegetable') ||
+    text.includes('greens') ||
+    text.includes('bok choy') ||
+    text.includes('broccoli') ||
+    text.includes('spinach') ||
+    text.includes('cabbage') ||
+    text.includes('eggplant') ||
+    text.includes('salad') ||
+    text.includes('青菜') ||
+    text.includes('蔬菜') ||
+    text.includes('时蔬') ||
+    text.includes('西兰花') ||
+    text.includes('芥蓝') ||
+    text.includes('通菜') ||
+    text.includes('豆苗') ||
+    text.includes('拍黄瓜') ||
+    text.includes('涼拌')
+  ) {
+    return 'vegetable_side';
+  }
+
+  return 'main_protein';
+}
+
+/**
  * 100% Offline AI Meal Planning Engine with Diner-Aware Multi-Dish Composition
  */
 export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlanResult {
@@ -328,15 +390,15 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
   const safeCookbook = familyCookbookDishes.filter(isDishSafe);
   const safeSystem = allSystemDishes.filter(isDishSafe);
 
-  // Pools by role
-  const safeMains = safeSystem.filter((d) => d.dishRole === 'main_protein' || !d.dishRole);
-  const safeVegSides = safeSystem.filter((d) => d.dishRole === 'vegetable_side');
-  const safeSoups = safeSystem.filter((d) => d.dishRole === 'soup');
+  // Pools by role using smart role inference
+  const safeMains = safeSystem.filter((d) => inferDishRole(d) === 'main_protein');
+  const safeVegSides = safeSystem.filter((d) => inferDishRole(d) === 'vegetable_side');
+  const safeSoups = safeSystem.filter((d) => inferDishRole(d) === 'soup');
 
   // Cookbook pools by role
-  const cbMains = safeCookbook.filter((d) => d.dishRole === 'main_protein' || !d.dishRole);
-  const cbVegSides = safeCookbook.filter((d) => d.dishRole === 'vegetable_side');
-  const cbSoups = safeCookbook.filter((d) => d.dishRole === 'soup');
+  const cbMains = safeCookbook.filter((d) => inferDishRole(d) === 'main_protein');
+  const cbVegSides = safeCookbook.filter((d) => inferDishRole(d) === 'vegetable_side');
+  const cbSoups = safeCookbook.filter((d) => inferDishRole(d) === 'soup');
 
   // 3. Recently Planned Dish IDs
   const recentlyPlannedIds = new Set<string>();
@@ -500,14 +562,14 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
 
       if (role === 'vegetable_side') {
         pool = mode === 'easy_meals' && cbVegSides.length > 0 ? cbVegSides : safeVegSides;
-        fallbackPool = safeVegSides;
+        fallbackPool = safeVegSides.length > 0 ? safeVegSides : safeSystem;
       } else if (role === 'soup') {
         pool = mode === 'easy_meals' && cbSoups.length > 0 ? cbSoups : safeSoups;
-        fallbackPool = safeSoups.length > 0 ? safeSoups : safeVegSides;
+        fallbackPool = safeSoups.length > 0 ? safeSoups : (safeVegSides.length > 0 ? safeVegSides : safeSystem);
       } else {
         // main_protein
         pool = mode === 'easy_meals' && cbMains.length > 0 ? cbMains : safeMains;
-        fallbackPool = safeMains;
+        fallbackPool = safeMains.length > 0 ? safeMains : safeSystem;
       }
 
       // Avoid picking a protein already on the table
@@ -520,6 +582,18 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
         if (role === 'main_protein') {
           tableProteins.add(getPrimaryProteinCategory(companionDish));
         }
+      }
+    }
+
+    // Hard Count Guarantee: The dinner table MUST reach targetDishesCount for this headcount
+    while (dayDishes.length < headcountPlan.targetDishesCount) {
+      const fillPool = safeVegSides.length > 0 ? safeVegSides : safeSystem;
+      const extraDish = pickFromPool(fillPool, safeSystem, chosenDishIds, undefined, isWeekend);
+      if (extraDish && !dayDishes.some((d) => d.id === extraDish.id)) {
+        dayDishes.push(extraDish);
+        chosenDishIds.add(extraDish.id);
+      } else {
+        break;
       }
     }
 

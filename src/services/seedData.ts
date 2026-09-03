@@ -273,6 +273,172 @@ export const INITIAL_DISHES: Dish[] = [
       { id: 'ing_ss_4', name: 'Yellow Onion', amount: 1, unit: 'pcs', category: 'Produce' },
       { id: 'ing_ss_5', name: 'Tomato Sauce / Paste', amount: 40, unit: 'g', category: 'Pantry & Spices' }
     ]
+  },
+  {
+    id: 'dish_garlic_bok_choy',
+    name: 'Garlic Stir-Fried Bok Choy',
+    category: 'Dinner',
+    cuisine: 'Cantonese',
+    servings: 4,
+    imageEmoji: '🥬',
+    imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
+    prepTimeMinutes: 10,
+    tags: ['Vegetable', 'Quick & Easy', 'Healthy', 'Greens'],
+    instructions: '1. Wash bok choy thoroughly and slice in halves.\n2. Heat oil in a hot wok, sizzle minced garlic for 15 seconds.\n3. Add bok choy, toss over high flame with a pinch of sea salt for 2-3 mins until tender-crisp.\n4. Drizzle light soy sauce and a splash of sesame oil, serve hot.',
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'vegetable_side',
+    spiceLevel: 0,
+    kidFriendly: true,
+    nutrition: {
+      calories: 95,
+      protein: 4,
+      carbs: 6,
+      fat: 7,
+      fiber: 3,
+      sodium: 320
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_gb_1', name: 'Baby Bok Choy', amount: 400, unit: 'g', category: 'Produce' },
+      { id: 'ing_gb_2', name: 'Garlic Clove', amount: 4, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_gb_3', name: 'Cooking Oil', amount: 15, unit: 'ml', category: 'Pantry & Spices' },
+      { id: 'ing_gb_4', name: 'Sea Salt', amount: 3, unit: 'g', category: 'Pantry & Spices' }
+    ]
+  },
+  {
+    id: 'dish_sesame_broccoli',
+    name: 'Sesame Garlic Broccoli',
+    category: 'Dinner',
+    cuisine: 'Chinese',
+    servings: 4,
+    imageEmoji: '🥦',
+    imageUrl: 'https://images.unsplash.com/photo-1584270354949-c26b0d5b4a0c?auto=format&fit=crop&w=800&q=80',
+    prepTimeMinutes: 12,
+    tags: ['Vegetable', 'High Fiber', 'Healthy'],
+    instructions: '1. Cut broccoli into bite-sized florets.\n2. Blanch in boiling salted water for 90 seconds, then plunge into cold water to preserve vibrant green color.\n3. Sauté minced garlic in sesame oil for 30 seconds.\n4. Toss broccoli florets in the garlic oil with light soy sauce and toasted sesame seeds.',
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'vegetable_side',
+    spiceLevel: 0,
+    kidFriendly: true,
+    nutrition: {
+      calories: 110,
+      protein: 5,
+      carbs: 9,
+      fat: 7,
+      fiber: 4,
+      sodium: 280
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_sb_1', name: 'Broccoli Head', amount: 450, unit: 'g', category: 'Produce' },
+      { id: 'ing_sb_2', name: 'Garlic Clove', amount: 3, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_sb_3', name: 'Sesame Oil', amount: 15, unit: 'ml', category: 'Pantry & Spices' },
+      { id: 'ing_sb_4', name: 'Toasted Sesame Seeds', amount: 5, unit: 'g', category: 'Pantry & Spices' }
+    ]
+  },
+  {
+    id: 'dish_dry_fried_beans',
+    name: 'Sichuan Dry-Fried Green Beans',
+    category: 'Dinner',
+    cuisine: 'Chinese',
+    servings: 4,
+    imageEmoji: '🫛',
+    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+    prepTimeMinutes: 15,
+    tags: ['Vegetable', 'Savory', 'Side'],
+    instructions: '1. Trim green beans and pat completely dry.\n2. Sear beans in hot oil until blistered and wrinkled (4 mins).\n3. Drain excess oil, toss with minced garlic, dried chilies, and a dash of soy sauce.\n4. Stir-fry for 1 minute until fragrant.',
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'vegetable_side',
+    spiceLevel: 1,
+    kidFriendly: false,
+    nutrition: {
+      calories: 120,
+      protein: 3,
+      carbs: 10,
+      fat: 8,
+      fiber: 4,
+      sodium: 350
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_df_1', name: 'Green Beans', amount: 400, unit: 'g', category: 'Produce' },
+      { id: 'ing_df_2', name: 'Garlic Clove', amount: 3, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_df_3', name: 'Soy Sauce', amount: 15, unit: 'ml', category: 'Pantry & Spices' },
+      { id: 'ing_df_4', name: 'Cooking Oil', amount: 20, unit: 'ml', category: 'Pantry & Spices' }
+    ]
+  },
+  {
+    id: 'dish_tofu_tomato_soup',
+    name: 'Silken Tofu & Tomato Egg Drop Soup',
+    category: 'Dinner',
+    cuisine: 'Chinese',
+    servings: 4,
+    imageEmoji: '🍲',
+    imageUrl: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80',
+    prepTimeMinutes: 15,
+    tags: ['Soup', 'Comfort Food', 'Light & Warm'],
+    instructions: '1. Sauté diced tomatoes in a pot with a touch of oil until soft and jammy.\n2. Pour in 800ml water or light vegetable broth and bring to a boil.\n3. Add cubed silken tofu and simmer for 5 minutes.\n4. Stir in a swirl of beaten egg while swirling the soup to create delicate egg ribbons.\n5. Season with salt, white pepper, sesame oil, and top with fresh scallions.',
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'soup',
+    spiceLevel: 0,
+    kidFriendly: true,
+    nutrition: {
+      calories: 140,
+      protein: 8,
+      carbs: 8,
+      fat: 8,
+      fiber: 2,
+      sodium: 380
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_ts_1', name: 'Roma Tomato', amount: 3, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_ts_2', name: 'Silken Tofu', amount: 300, unit: 'g', category: 'Produce' },
+      { id: 'ing_ts_3', name: 'Chicken Egg', amount: 2, unit: 'pcs', category: 'Dairy & Eggs' },
+      { id: 'ing_ts_4', name: 'Green Onion / Scallion', amount: 2, unit: 'stalks', category: 'Produce' },
+      { id: 'ing_ts_5', name: 'Sesame Oil', amount: 10, unit: 'ml', category: 'Pantry & Spices' }
+    ]
+  },
+  {
+    id: 'dish_sweet_corn_chicken_soup',
+    name: 'Sweet Corn & Chicken Soup',
+    category: 'Dinner',
+    cuisine: 'Cantonese',
+    servings: 4,
+    imageEmoji: '🍲',
+    imageUrl: 'https://images.unsplash.com/photo-1604152135912-04a022e23696?auto=format&fit=crop&w=800&q=80',
+    prepTimeMinutes: 15,
+    tags: ['Soup', 'Cantonese', 'Family Favorite', 'Kid Friendly'],
+    instructions: '1. Bring 750ml chicken broth to a gentle simmer with creamed sweet corn.\n2. Add finely minced chicken breast and stir continuously for 3 minutes.\n3. Drizzle beaten egg slowly into the soup while stirring to form silky ribbons.\n4. Season with white pepper and a dash of sesame oil, serve warm.',
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'soup',
+    spiceLevel: 0,
+    kidFriendly: true,
+    nutrition: {
+      calories: 180,
+      protein: 16,
+      carbs: 18,
+      fat: 5,
+      fiber: 2,
+      sodium: 460
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_cs_1', name: 'Creamed Corn (Can)', amount: 400, unit: 'g', category: 'Pantry & Spices' },
+      { id: 'ing_cs_2', name: 'Chicken Breast (Minced)', amount: 200, unit: 'g', category: 'Meat & Seafood' },
+      { id: 'ing_cs_3', name: 'Chicken Egg', amount: 2, unit: 'pcs', category: 'Dairy & Eggs' },
+      { id: 'ing_cs_4', name: 'Green Onion / Scallion', amount: 2, unit: 'stalks', category: 'Produce' }
+    ]
   }
 ];
 
