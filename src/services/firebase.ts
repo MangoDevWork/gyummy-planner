@@ -12,6 +12,7 @@ import {
   type Unsubscribe
 } from 'firebase/firestore';
 import type { AppData } from '../types';
+import { INITIAL_DISHES } from './seedData';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDDbz3VrrVTxsXX-iCbwj2LxuSHdup5h10',
@@ -297,12 +298,13 @@ export async function pushAppDataToCloud(
   onSyncStateChange?: (status: 'syncing' | 'synced' | 'error') => void,
   immediate = false
 ): Promise<void> {
-  // Filter dishes:
-  // Only sync recipes that belong to this Family Cookbook (isFamilyRecipe !== false) or are favorited
+  // Only sync recipes that belong to this Family Cookbook (isFamilyRecipe !== false), custom/starter recipes, or favorited
+  const starterIds = new Set(INITIAL_DISHES.map((d) => d.id));
   const persistedDishes = (data.dishes || []).filter((d) => {
-    // Always persist user custom / edited recipes
+    // Always persist user custom / edited recipes and starter recipes
     const isCustom = d.id && (d.id.startsWith('dish_') || d.id.startsWith('custom_'));
-    if (isCustom) return true;
+    const isStarter = d.id && starterIds.has(d.id);
+    if (isCustom || isStarter) return true;
     // For system recipes, persist if in family cookbook or favorited
     return Boolean(d.isFamilyRecipe || (d.favoritedByMembers && d.favoritedByMembers.length > 0));
   });

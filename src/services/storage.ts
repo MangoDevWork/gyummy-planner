@@ -116,21 +116,40 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
       parsed.mealSchedules = (parsed as any).mealSlots || DEFAULT_MEAL_SCHEDULES;
     }
 
-    // Ensure all starter cookbook dishes (from INITIAL_DISHES) exist and are active in Family Cookbook
+    // Ensure all starter cookbook dishes (from INITIAL_DISHES) exist in user dishes
     const dishMap = new Map<string, Dish>();
     if (parsed.dishes && Array.isArray(parsed.dishes)) {
       parsed.dishes.forEach((d) => dishMap.set(d.id, d));
     }
-    const starterIds = new Set(INITIAL_DISHES.map((d) => d.id));
+
+    // One-time migration for default cookbook version 2 (introducing the 6 newly designated default recipes)
+    const currentCookbookVersion = parsed.settings?.defaultCookbookVersion || 0;
+    const isNewCookbookVersion = currentCookbookVersion < 2;
+
+    const TARGET_NEW_STARTER_IDS = new Set([
+      'dish_stir_fry_garlic_beef',
+      'dish_1788042492598',
+      'dish_1788039952172',
+      'dish_1788041332181',
+      'dish_1788041140044',
+      'dish_1788042224332'
+    ]);
+
     INITIAL_DISHES.forEach((initDish) => {
       const existing = dishMap.get(initDish.id);
       if (!existing) {
         dishMap.set(initDish.id, { ...initDish, isFamilyRecipe: true });
-      } else if (starterIds.has(existing.id) && existing.isFamilyRecipe === false) {
-        // Restore initial starter dish if it was stripped or downgraded to isFamilyRecipe: false
+      } else if (isNewCookbookVersion && TARGET_NEW_STARTER_IDS.has(initDish.id)) {
+        // One-time activation of the 6 newly designated default recipes for existing users
         existing.isFamilyRecipe = true;
       }
+      // Note: If user explicitly removed a starter dish (isFamilyRecipe === false),
+      // do NOT force it back to true once cookbook version is 2 or higher!
     });
+
+    if (parsed.settings) {
+      parsed.settings.defaultCookbookVersion = 2;
+    }
     parsed.dishes = Array.from(dishMap.values());
 
     // Hydrate translations on known starter dishes if missing
@@ -246,10 +265,12 @@ export function saveAppData(data: AppData, skipCloudPush = false): void {
       setActiveProfile(data.currentProfile);
       const familyKey = getFamilyStorageKey(data.currentProfile.familyName);
 
+      const starterIds = new Set(INITIAL_DISHES.map((d) => d.id));
       const persistedDishes = data.dishes.filter((d) => {
-        // Always persist user custom / edited recipes
+        // Always persist user custom / edited recipes and starter recipes (even if removed from family cookbook)
         const isCustom = d.id.startsWith('dish_') || d.id.startsWith('custom_');
-        if (isCustom) return true;
+        const isStarter = starterIds.has(d.id);
+        if (isCustom || isStarter) return true;
         // For system recipes, persist if in family cookbook or favorited
         return Boolean(d.isFamilyRecipe || (d.favoritedByMembers && d.favoritedByMembers.length > 0));
       });

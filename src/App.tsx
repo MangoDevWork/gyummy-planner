@@ -325,17 +325,20 @@ export function App() {
       const existing = prev.dishes.find((d) => d.id === dishId);
       let updatedDishes: Dish[];
       if (existing) {
+        const currentlyInCookbook = existing.isFamilyRecipe !== false;
         updatedDishes = prev.dishes.map((dish) => {
           if (dish.id !== dishId) return dish;
           return {
             ...dish,
-            isFamilyRecipe: dish.isFamilyRecipe === false ? true : false
+            isFamilyRecipe: !currentlyInCookbook,
+            updatedAt: new Date().toISOString()
           };
         });
       } else if (dishObj) {
         const newEntry: Dish = {
           ...dishObj,
-          isFamilyRecipe: true
+          isFamilyRecipe: true,
+          updatedAt: new Date().toISOString()
         };
         updatedDishes = [newEntry, ...prev.dishes];
       } else {

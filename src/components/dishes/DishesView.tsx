@@ -31,7 +31,7 @@ interface DishesViewProps {
   onSaveDish: (dish: Dish) => void;
   onDeleteDish: (dishId: string) => void;
   onToggleFavoriteDish: (dishId: string) => void;
-  onToggleFamilyRecipe?: (dishId: string) => void;
+  onToggleFamilyRecipe?: (dishId: string, dishObj?: Dish) => void;
   onAddMasterIngredient?: (ing: MasterIngredient) => void;
   onImportDishes?: (dishes: Dish[]) => void;
   onQuickPlanDish?: (dish: Dish) => void;
@@ -283,9 +283,15 @@ export const DishesView: React.FC<DishesViewProps> = ({
       y: rect.top
     });
 
-    onToggleFamilyRecipe(dish.id);
-    setIsCookbookPulsing(true);
-    showToast(language === 'zh-CN' ? `📖 已加入家庭菜谱：${dish.name}` : `📖 Added "${dish.name}" to Family Cookbook!`);
+    const isAlreadyIn = dish.isFamilyRecipe !== false;
+    onToggleFamilyRecipe(dish.id, dish);
+
+    if (isAlreadyIn) {
+      showToast(language === 'zh-CN' ? `📖 已从家庭菜谱移除：${dish.name}` : `📖 Removed "${dish.name}" from Family Cookbook`);
+    } else {
+      setIsCookbookPulsing(true);
+      showToast(language === 'zh-CN' ? `📖 已加入家庭菜谱：${dish.name}` : `📖 Added "${dish.name}" to Family Cookbook!`);
+    }
 
     setTimeout(() => {
       setFlyingDish(null);
@@ -653,10 +659,12 @@ export const DishesView: React.FC<DishesViewProps> = ({
         }}
         onToggleFavorite={onToggleFavoriteDish}
         onToggleFamilyCookbook={(d) => {
-          onToggleFamilyRecipe?.(d.id);
-          setSelectedDish((prev) =>
-            prev && prev.id === d.id ? { ...prev, isFamilyRecipe: !prev.isFamilyRecipe } : prev
-          );
+          onToggleFamilyRecipe?.(d.id, d);
+          setSelectedDish((prev) => {
+            if (!prev || prev.id !== d.id) return prev;
+            const currentInCookbook = prev.isFamilyRecipe !== false;
+            return { ...prev, isFamilyRecipe: !currentInCookbook };
+          });
         }}
         onQuickPlan={(d) => {
           setSelectedDish(null);

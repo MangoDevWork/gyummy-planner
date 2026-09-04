@@ -439,6 +439,274 @@ export const INITIAL_DISHES: Dish[] = [
       { id: 'ing_cs_3', name: 'Chicken Egg', amount: 2, unit: 'pcs', category: 'Dairy & Eggs' },
       { id: 'ing_cs_4', name: 'Green Onion / Scallion', amount: 2, unit: 'stalks', category: 'Produce' }
     ]
+  },
+  {
+    id: 'dish_stir_fry_garlic_beef',
+    name: 'Stir-fry Garlic Minced Beef',
+    category: 'Dinner',
+    cuisine: 'Chinese',
+    servings: 2,
+    imageEmoji: '🥩',
+    imageUrl: '/recipe_images/garlic_minced_beef.jpg',
+    prepTimeMinutes: 15,
+    cookTimeMinutes: 10,
+    totalTimeMinutes: 15,
+    tags: ['Beef', 'Chinese', 'Quick (<20m)', 'High Protein', 'Family Favorite'],
+    instructions: '1. Heat cooking oil in a wok or skillet over medium-high heat. Add minced garlic and chopped scallions, stir-frying until fragrant (about 30 seconds).\n2. Add ground beef, breaking it up with a spatula. Cook until browned and no longer pink (4-5 minutes).\n3. Drizzle with soy sauce, oyster sauce, and black pepper. Stir-fry rapidly for 1-2 minutes until glossy and evenly coated.\n4. Garnish with fresh green onions and serve hot over steamed jasmine rice.',
+    stepList: [
+      'Heat cooking oil in a wok or skillet over medium-high heat. Add minced garlic and chopped scallions, stir-frying until fragrant (about 30 seconds).',
+      'Add ground beef, breaking it up with a spatula. Cook until browned and no longer pink (4-5 minutes).',
+      'Drizzle with soy sauce, oyster sauce, and black pepper. Stir-fry rapidly for 1-2 minutes until glossy and evenly coated.',
+      'Garnish with fresh green onions and serve hot over steamed jasmine rice.'
+    ],
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'main_protein',
+    spiceLevel: 0,
+    kidFriendly: true,
+    cleanupEffort: 'one_pot',
+    allergens: ['beef', 'alliums', 'soybeans'],
+    nutrition: {
+      calories: 420,
+      protein: 36,
+      carbs: 4,
+      fat: 28,
+      fiber: 1,
+      sodium: 580
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_gb_1', name: 'Ground Beef', amount: 400, unit: 'g', category: 'Meat & Seafood' },
+      { id: 'ing_gb_2', name: 'Garlic Clove', amount: 4, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_gb_3', name: 'Green Onion / Scallion', amount: 2, unit: 'stalks', category: 'Produce' },
+      { id: 'ing_gb_4', name: 'Soy Sauce', amount: 20, unit: 'ml', category: 'Pantry & Spices' },
+      { id: 'ing_gb_5', name: 'Oyster Sauce', amount: 15, unit: 'ml', category: 'Pantry & Spices' },
+      { id: 'ing_gb_6', name: 'Cooking Oil', amount: 15, unit: 'ml', category: 'Pantry & Spices' }
+    ]
+  },
+  {
+    id: 'dish_1788042492598',
+    name: 'Lamb cutlet',
+    category: 'Dinner',
+    cuisine: 'Western',
+    servings: 2,
+    imageEmoji: '🥩',
+    imageUrl: '/recipe_images/lamb_cutlet.jpg',
+    prepTimeMinutes: 20,
+    cookTimeMinutes: 12,
+    totalTimeMinutes: 20,
+    tags: ['Lamb', 'Western', 'Quick (<20m)', 'High Protein'],
+    instructions: '1. Pat lamb cutlets dry with paper towels and season generously with salt, freshly ground black pepper, minced garlic, and fresh rosemary.\n2. Heat olive oil in a heavy skillet or grill pan over medium-high heat until shimmering.\n3. Sear lamb cutlets for 3-4 minutes per side for medium-rare, basting with pan juices.\n4. Transfer to a warm plate and let rest for 5 minutes before serving.',
+    stepList: [
+      'Pat lamb cutlets dry with paper towels and season generously with salt, freshly ground black pepper, minced garlic, and fresh rosemary.',
+      'Heat olive oil in a heavy skillet or grill pan over medium-high heat until shimmering.',
+      'Sear lamb cutlets for 3-4 minutes per side for medium-rare, basting with pan juices.',
+      'Transfer to a warm plate and let rest for 5 minutes before serving.'
+    ],
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'main_protein',
+    spiceLevel: 0,
+    kidFriendly: true,
+    cleanupEffort: 'standard',
+    allergens: ['lamb_mutton', 'alliums'],
+    nutrition: {
+      calories: 650,
+      protein: 65,
+      carbs: 2,
+      fat: 42,
+      fiber: 1,
+      sodium: 380
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_lc_1', name: 'Lamb Cutlet', amount: 600, unit: 'g', category: 'Meat & Seafood' },
+      { id: 'ing_lc_2', name: 'Garlic Clove', amount: 3, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_lc_3', name: 'Rosemary', amount: 3, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_lc_4', name: 'Olive Oil', amount: 15, unit: 'ml', category: 'Pantry & Spices' }
+    ]
+  },
+  {
+    id: 'dish_1788039952172',
+    name: 'Beef burger',
+    category: 'Dinner',
+    cuisine: 'American',
+    servings: 2,
+    imageEmoji: '🍔',
+    imageUrl: '/recipe_images/beef_burger.jpg',
+    prepTimeMinutes: 20,
+    cookTimeMinutes: 12,
+    totalTimeMinutes: 20,
+    tags: ['Beef', 'American', 'Quick (<20m)', 'Comfort Food'],
+    instructions: '1. Season beef patties with salt and black pepper.\n2. Heat a skillet over high heat. Sear patties for 3-4 minutes per side until nicely browned and juicy.\n3. Top each patty with a slice of cheese during the last minute of cooking, covering with a lid to melt.\n4. Lightly toast brioche buns. Spread burger sauce on the bottom bun.\n5. Layer with lettuce, sliced tomato, onion, and the cheesy beef patty. Cap with top bun and enjoy hot.',
+    stepList: [
+      'Season beef patties with salt and black pepper.',
+      'Heat a skillet over high heat. Sear patties for 3-4 minutes per side until nicely browned and juicy.',
+      'Top each patty with a slice of cheese during the last minute of cooking, covering with a lid to melt.',
+      'Lightly toast brioche buns. Spread burger sauce on the bottom bun.',
+      'Layer with lettuce, sliced tomato, onion, and the cheesy beef patty. Cap with top bun and enjoy hot.'
+    ],
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'one_pot_meal',
+    spiceLevel: 0,
+    kidFriendly: true,
+    cleanupEffort: 'one_pot',
+    allergens: ['cow_milk', 'beef', 'alliums', 'wheat_gluten'],
+    nutrition: {
+      calories: 580,
+      protein: 32,
+      carbs: 42,
+      fat: 28,
+      fiber: 3,
+      sodium: 620
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_bb_1', name: 'Beef Patty', amount: 2, unit: 'pcs', category: 'Meat & Seafood' },
+      { id: 'ing_bb_2', name: 'Brioche Buns', amount: 2, unit: 'pcs', category: 'Bakery' },
+      { id: 'ing_bb_3', name: 'Cheese Slices', amount: 2, unit: 'pcs', category: 'Dairy & Eggs' },
+      { id: 'ing_bb_4', name: 'Lettuce', amount: 4, unit: 'leaves', category: 'Produce' },
+      { id: 'ing_bb_5', name: 'Roma Tomato', amount: 1, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_bb_6', name: 'Yellow Onion', amount: 0.5, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_bb_7', name: 'Burger Sauce', amount: 30, unit: 'ml', category: 'Pantry & Spices' }
+    ]
+  },
+  {
+    id: 'dish_1788041332181',
+    name: 'Beef don',
+    category: 'Dinner',
+    cuisine: 'Japanese',
+    servings: 2,
+    imageEmoji: '🍲',
+    imageUrl: '/recipe_images/beef_don.jpg',
+    prepTimeMinutes: 15,
+    cookTimeMinutes: 10,
+    totalTimeMinutes: 15,
+    tags: ['Beef', 'Japanese', 'Quick (<20m)', 'Noodles & Rice', 'Kid Friendly'],
+    instructions: '1. In a pan, combine water, soy sauce, mirin, and sliced yellow onion. Bring to a gentle simmer for 3-4 minutes until onions soften.\n2. Add thinly sliced beef and firm tofu cubes to the pan, simmering gently for 3-5 minutes until beef is just cooked through.\n3. Scoop warm jasmine rice into serving bowls.\n4. Ladle tender beef, sweet onions, tofu, and savory broth generously over the rice. Garnish with scallions.',
+    stepList: [
+      'In a pan, combine water, soy sauce, mirin, and sliced yellow onion. Bring to a gentle simmer for 3-4 minutes until onions soften.',
+      'Add thinly sliced beef and firm tofu cubes to the pan, simmering gently for 3-5 minutes until beef is just cooked through.',
+      'Scoop warm jasmine rice into serving bowls.',
+      'Ladle tender beef, sweet onions, tofu, and savory broth generously over the rice. Garnish with scallions.'
+    ],
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'one_pot_meal',
+    spiceLevel: 0,
+    kidFriendly: true,
+    cleanupEffort: 'one_pot',
+    allergens: ['soybeans', 'beef', 'alliums', 'wheat_gluten'],
+    nutrition: {
+      calories: 520,
+      protein: 38,
+      carbs: 54,
+      fat: 16,
+      fiber: 3,
+      sodium: 540
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_bd_1', name: 'Beef Slices Frozen', amount: 300, unit: 'g', category: 'Meat & Seafood' },
+      { id: 'ing_bd_2', name: 'Firm Tofu', amount: 200, unit: 'g', category: 'Produce' },
+      { id: 'ing_bd_3', name: 'Yellow Onion', amount: 1, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_bd_4', name: 'Soy Sauce', amount: 30, unit: 'ml', category: 'Pantry & Spices' },
+      { id: 'ing_bd_5', name: 'Jasmine Rice', amount: 300, unit: 'g', category: 'Pantry & Spices' }
+    ]
+  },
+  {
+    id: 'dish_1788041140044',
+    name: 'Grilled chicken wings',
+    category: 'Dinner',
+    cuisine: 'Chinese',
+    servings: 2,
+    imageEmoji: '🍗',
+    imageUrl: '/recipe_images/grilled_chicken_wings.jpg',
+    prepTimeMinutes: 25,
+    cookTimeMinutes: 20,
+    totalTimeMinutes: 25,
+    tags: ['Chicken', 'Chinese', 'Family Favorite', 'Kid Friendly', 'High Protein'],
+    instructions: '1. Wash chicken wings and pat thoroughly dry. Make 2 diagonal slits on both sides of each wing for flavor penetration.\n2. In a large bowl, toss wings with light soy sauce, dark soy sauce, cooking wine, garlic powder, and chicken marinade powder. Marinate for 15-20 minutes.\n3. Preheat oven or air fryer to 200°C (390°F).\n4. Arrange wings in a single layer and grill/bake for 18-20 minutes, flipping halfway through until skin is golden, crispy, and sizzling.\n5. Brush lightly with honey or pan glaze and serve immediately.',
+    stepList: [
+      'Wash chicken wings and pat thoroughly dry. Make 2 diagonal slits on both sides of each wing for flavor penetration.',
+      'In a large bowl, toss wings with light soy sauce, dark soy sauce, cooking wine, garlic powder, and chicken marinade powder. Marinate for 15-20 minutes.',
+      'Preheat oven or air fryer to 200°C (390°F).',
+      'Arrange wings in a single layer and grill/bake for 18-20 minutes, flipping halfway through until skin is golden, crispy, and sizzling.',
+      'Brush lightly with honey or pan glaze and serve immediately.'
+    ],
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'main_protein',
+    spiceLevel: 0,
+    kidFriendly: true,
+    cleanupEffort: 'standard',
+    allergens: ['chicken_poultry', 'soybeans', 'alliums'],
+    nutrition: {
+      calories: 480,
+      protein: 42,
+      carbs: 8,
+      fat: 31,
+      fiber: 0,
+      sodium: 490
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_gw_1', name: 'Chicken Wings', amount: 800, unit: 'g', category: 'Meat & Seafood' },
+      { id: 'ing_gw_2', name: 'Light Soy Sauce', amount: 30, unit: 'ml', category: 'Pantry & Spices' },
+      { id: 'ing_gw_3', name: 'Dark Soy Sauce', amount: 15, unit: 'ml', category: 'Pantry & Spices' },
+      { id: 'ing_gw_4', name: 'Garlic Clove', amount: 3, unit: 'pcs', category: 'Produce' },
+      { id: 'ing_gw_5', name: 'Honey', amount: 15, unit: 'ml', category: 'Pantry & Spices' }
+    ]
+  },
+  {
+    id: 'dish_1788042224332',
+    name: 'Instant noodles',
+    category: 'Dinner',
+    cuisine: 'Cantonese',
+    servings: 1,
+    imageEmoji: '🍜',
+    imageUrl: '/recipe_images/instant_noodles.jpg',
+    prepTimeMinutes: 10,
+    cookTimeMinutes: 5,
+    totalTimeMinutes: 10,
+    tags: ['Noodles & Rice', 'Quick (<20m)', 'Comfort Food', 'Kid Friendly'],
+    instructions: '1. In a small skillet, pan-fry sliced spam until both sides are lightly browned and crisp (about 2 mins per side). In the same pan, fry a sunny-side-up egg.\n2. Bring 500ml water to a rolling boil in a pot. Add instant noodle block and cook for 2.5 minutes.\n3. Add fresh bok choy leaves into the boiling broth during the last 30 seconds of cooking.\n4. Stir in soup seasoning base.\n5. Transfer noodles, bok choy, and broth to a wide ramen bowl. Top with the golden fried egg and seared spam.',
+    stepList: [
+      'In a small skillet, pan-fry sliced spam until both sides are lightly browned and crisp (about 2 mins per side). In the same pan, fry a sunny-side-up egg.',
+      'Bring 500ml water to a rolling boil in a pot. Add instant noodle block and cook for 2.5 minutes.',
+      'Add fresh bok choy leaves into the boiling broth during the last 30 seconds of cooking.',
+      'Stir in soup seasoning base.',
+      'Transfer noodles, bok choy, and broth to a wide ramen bowl. Top with the golden fried egg and seared spam.'
+    ],
+    favoritedByMembers: [],
+    isFamilyRecipe: true,
+    dishRole: 'one_pot_meal',
+    spiceLevel: 0,
+    kidFriendly: true,
+    cleanupEffort: 'one_pot',
+    allergens: ['wheat_gluten', 'eggs', 'soybeans'],
+    nutrition: {
+      calories: 480,
+      protein: 18,
+      carbs: 56,
+      fat: 20,
+      fiber: 3,
+      sodium: 850
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ingredients: [
+      { id: 'ing_in_1', name: 'Instant Noodles', amount: 1, unit: 'pcs', category: 'Pantry & Spices' },
+      { id: 'ing_in_2', name: 'Chicken Egg', amount: 1, unit: 'pcs', category: 'Dairy & Eggs' },
+      { id: 'ing_in_3', name: 'Bok Choy', amount: 150, unit: 'g', category: 'Produce' },
+      { id: 'ing_in_4', name: 'Spam', amount: 2, unit: 'slices', category: 'Meat & Seafood' }
+    ]
   }
 ];
 
@@ -506,7 +774,8 @@ export function getInitialAppData(currentProfile: AppData['currentProfile'] | nu
       defaultServings: 4,
       theme: 'warm',
       hasCompletedScheduleOnboarding: false,
-      hasCompletedPersonalisationOnboarding: false
+      hasCompletedPersonalisationOnboarding: false,
+      defaultCookbookVersion: 2
     }
   };
 }

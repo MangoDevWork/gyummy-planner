@@ -27,8 +27,19 @@ export function mergeAppData(local: AppData, remote: Partial<AppData>): AppData 
       (existing.favoritedByMembers || []).forEach((m) => favSet.add(m));
       (remoteDish.favoritedByMembers || []).forEach((m) => favSet.add(m));
 
-      // If either side marked it as a family recipe, keep it as family recipe
-      const isFamilyRecipe = Boolean(existing.isFamilyRecipe || remoteDish.isFamilyRecipe);
+      // Respect recent removal or addition based on updatedAt timestamp
+      let isFamilyRecipe: boolean;
+      if (existing.updatedAt && remoteDish.updatedAt) {
+        const localTime = new Date(existing.updatedAt).getTime();
+        const remoteTime = new Date(remoteDish.updatedAt).getTime();
+        isFamilyRecipe = remoteTime > localTime
+          ? Boolean(remoteDish.isFamilyRecipe)
+          : Boolean(existing.isFamilyRecipe);
+      } else if (remoteDish.isFamilyRecipe !== undefined) {
+        isFamilyRecipe = Boolean(remoteDish.isFamilyRecipe);
+      } else {
+        isFamilyRecipe = Boolean(existing.isFamilyRecipe);
+      }
 
       dishMap.set(remoteDish.id, {
         ...existing,

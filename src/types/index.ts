@@ -147,6 +147,7 @@ export interface AppSettings {
   theme: 'warm' | 'fresh' | 'lavender';
   hasCompletedScheduleOnboarding?: boolean;
   hasCompletedPersonalisationOnboarding?: boolean;
+  defaultCookbookVersion?: number;
 }
 
 export type DietaryPreference =
