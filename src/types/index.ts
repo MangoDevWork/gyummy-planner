@@ -176,6 +176,11 @@ export interface FamilyPersonalisation {
   householdAllergies?: string[];    // Additional family-wide excluded allergens
   householdCuisines?: string[];     // Family top cuisine choices
   householdCategories?: string[];   // Family top meal categories
+  // Default Quick Meal Planner Settings
+  defaultStaple?: 'jasmine_rice' | 'brown_rice' | 'bread_buns' | 'plain_noodles' | 'cauliflower_rice' | 'none_builtin' | 'none_low_carb';
+  defaultCookingDays?: number[];    // Days of week (0=Sun, 1=Mon, ..., 6=Sat)
+  defaultDietaryFocus?: 'balanced' | 'quick' | 'high_protein' | 'light';
+  defaultPlanningStrategy?: 'best_of_both' | 'easy_meals' | 'give_me_ideas';
 }
 
 // AI Recipe Generation Background Preparation Types

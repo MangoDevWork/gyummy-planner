@@ -35,6 +35,7 @@ interface PlannerViewProps {
   onToggleFamilyRecipe?: (dishId: string) => void;
   onToggleFavoriteDish?: (dishId: string) => void;
   onGoToGrocery: (startDate: string, endDate: string) => void;
+  onOpenPersonalisation?: () => void;
 }
 
 function ToolbarButton({
@@ -72,7 +73,8 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   onOpenDishCreator,
   onToggleFamilyRecipe,
   onToggleFavoriteDish,
-  onGoToGrocery
+  onGoToGrocery,
+  onOpenPersonalisation
 }) => {
   const { language, t, formatScheduleName, formatDayOfWeek, formatDate } = useLanguage();
   const [currentBaseDate, setCurrentBaseDate] = useState<Date>(new Date());
@@ -287,10 +289,10 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
               type="button"
               onClick={() => setIsAiPlannerOpen(true)}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#FFD13B] text-[#2D2640] hover:bg-[#FFC200] font-black text-xs shadow-2xs transition active:scale-95 cursor-pointer"
-              title="100% Offline AI Meal Planner"
+              title="Quick Meal Plan"
             >
               <Sparkles className="h-3.5 w-3.5 fill-[#2D2640]" />
-              <span>{language === 'zh-CN' ? 'AI 排餐' : 'AI Plan'}</span>
+              <span>{language === 'zh-CN' ? '快速排餐' : 'Quick Plan'}</span>
             </button>
             <ToolbarButton onClick={handleShareMealPlan} title="Share week as message">
               <Share2 className="h-3.5 w-3.5" />
@@ -327,7 +329,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
               type="button"
               className="py-1 px-2.5 rounded-xl bg-[#2D2640] text-white text-[11px] font-bold shrink-0 ml-2 shadow-2xs"
             >
-              {language === 'zh-CN' ? '一键排餐' : 'Auto-Plan'}
+              {language === 'zh-CN' ? '快速排餐' : 'Quick Plan'}
             </button>
           </div>
         )}
@@ -623,6 +625,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         recentMealPlan={mealPlan}
         onApplyMealPlan={handleApplyAiMealPlan}
         onGoToGrocery={onGoToGrocery}
+        onOpenPersonalisation={onOpenPersonalisation}
       />
     </div>
   );

@@ -47,6 +47,7 @@ export const FirstTimeOnboardingGuide: React.FC<FirstTimeOnboardingGuideProps> =
     Boolean(familyPersonalisation?.cookingForKids)
   );
   const [showDetailedAllergyModal, setShowDetailedAllergyModal] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(true);
 
   if (!isOpen) return null;
 
@@ -208,6 +209,41 @@ export const FirstTimeOnboardingGuide: React.FC<FirstTimeOnboardingGuideProps> =
                   <p className="text-[10.5px] text-[#7A5C00] dark:text-[#FFD13B] leading-relaxed">
                     💡 <strong>Tip:</strong> You can fine-tune member tastes, hated ingredients (like cilantro or mushrooms) & dietary goals anytime in <strong>Settings &gt; Personalisation</strong>.
                   </p>
+                </div>
+
+                {/* Effortless Terms & Health Disclaimer Agreement */}
+                <div className="flex items-start gap-2 text-left pt-0.5 px-0.5">
+                  <input
+                    type="checkbox"
+                    id="onboarding-agree-terms"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    className="mt-0.5 h-3.5 w-3.5 rounded accent-[#FFD13B] cursor-pointer text-[#2D2640]"
+                  />
+                  <label htmlFor="onboarding-agree-terms" className="text-[10.5px] text-[#7A6E64] dark:text-[#9A8A7E] leading-tight cursor-pointer select-none">
+                    I agree to the{' '}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowLegalModal(true);
+                      }}
+                      className="text-[#2D2640] dark:text-[#F0EDE8] font-bold underline hover:text-[#7A5C00] cursor-pointer"
+                    >
+                      Terms of Service
+                    </button>{' '}
+                    &{' '}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowLegalModal(true);
+                      }}
+                      className="text-[#2D2640] dark:text-[#F0EDE8] font-bold underline hover:text-[#7A5C00] cursor-pointer"
+                    >
+                      Health Disclaimer
+                    </button>.
+                  </label>
                 </div>
 
                 <button

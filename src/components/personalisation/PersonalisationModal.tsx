@@ -9,7 +9,8 @@ import {
   Search,
   Save,
   Check,
-  Plus
+  Plus,
+  Sparkles
 } from 'lucide-react';
 import { ALLERGEN_TAXONOMY, type AllergenCategory } from '../../services/personalisationService';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -668,6 +669,181 @@ export const PersonalisationModal: React.FC<PersonalisationModalProps> = ({
                 />
                 <div className="w-9 h-5 bg-[#EDE8DF] dark:bg-[#38332E] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#EDE8DF] dark:after:border-[#38332E] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#FFD13B]"></div>
               </label>
+            </div>
+          </div>
+
+          {/* Section 4: Default Quick Meal Planner Settings */}
+          <div className="bg-white dark:bg-[#252220] p-3.5 rounded-2xl border border-[#EDE8DF] dark:border-[#38332E] space-y-3.5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#FFD13B]" />
+                <span className="text-xs font-black uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
+                  ⚡ {language === 'zh-CN' ? '智能排餐默认配置 (Quick Plan Defaults)' : 'Quick Meal Plan Defaults'}
+                </span>
+              </div>
+              <span className="text-[10.5px] text-[#9A8A7E] dark:text-[#7A6E64]">
+                {language === 'zh-CN' ? '作为快速排餐时的预设值' : 'Pre-fills Quick Plan modal'}
+              </span>
+            </div>
+
+            {/* 1. Default Staple Accompaniment */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] block">
+                🍚 {language === 'zh-CN' ? '默认主食搭配' : 'Default Staple Accompaniment'}
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                {[
+                  { id: 'jasmine_rice', emoji: '🍚', en: 'Jasmine Rice', zh: '白米饭' },
+                  { id: 'brown_rice', emoji: '🌾', en: 'Brown Rice', zh: '糙米饭' },
+                  { id: 'bread_buns', emoji: '🥖', en: 'Bread / Buns', zh: '欧包 / 馒头' },
+                  { id: 'plain_noodles', emoji: '🍜', en: 'Plain Noodles', zh: '面条 / 米粉' },
+                  { id: 'cauliflower_rice', emoji: '🥗', en: 'Cauliflower', zh: '花椰菜米' },
+                  { id: 'none_low_carb', emoji: '🥩', en: 'Low-Carb', zh: '无米面 (纯菜肉)' }
+                ].map((s) => {
+                  const isCurrent = (localFamilyPersonalisation.defaultStaple || 'jasmine_rice') === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() =>
+                        setLocalFamilyPersonalisation({
+                          ...localFamilyPersonalisation,
+                          defaultStaple: s.id as any
+                        })
+                      }
+                      className={`p-2 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                        isCurrent
+                          ? 'border-[#FFD13B] bg-[#FFF8E6] text-[#2D2640] dark:bg-[#2A1E00] dark:text-[#FFD13B] ring-1 ring-[#FFD13B]/50'
+                          : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E]'
+                      }`}
+                    >
+                      <span>{s.emoji}</span>
+                      <span className="truncate">{language === 'zh-CN' ? s.zh : s.en}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 2. Default Cooking Days */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] block">
+                  🗓️ {language === 'zh-CN' ? '默认烹饪日程' : 'Default Cooking Days'}
+                </label>
+                <span className="text-[10.5px] text-[#9A8A7E] dark:text-[#7A6E64]">
+                  {(localFamilyPersonalisation.defaultCookingDays || [1, 2, 3, 4, 5, 6, 0]).length} {language === 'zh-CN' ? '天在家吃' : 'days cooking'}
+                </span>
+              </div>
+              <div className="flex gap-1">
+                {[
+                  { num: 1, en: 'Mon', zh: '一' },
+                  { num: 2, en: 'Tue', zh: '二' },
+                  { num: 3, en: 'Wed', zh: '三' },
+                  { num: 4, en: 'Thu', zh: '四' },
+                  { num: 5, en: 'Fri', zh: '五' },
+                  { num: 6, en: 'Sat', zh: '六' },
+                  { num: 0, en: 'Sun', zh: '日' }
+                ].map((d) => {
+                  const currentDays = localFamilyPersonalisation.defaultCookingDays || [1, 2, 3, 4, 5, 6, 0];
+                  const isSelected = currentDays.includes(d.num);
+                  return (
+                    <button
+                      key={d.num}
+                      type="button"
+                      onClick={() => {
+                        const nextDays = isSelected
+                          ? currentDays.filter((n) => n !== d.num)
+                          : [...currentDays, d.num];
+                        if (nextDays.length === 0) return; // keep at least 1 day
+                        setLocalFamilyPersonalisation({
+                          ...localFamilyPersonalisation,
+                          defaultCookingDays: nextDays
+                        });
+                      }}
+                      className={`flex-1 py-1.5 rounded-xl text-xs font-black transition cursor-pointer border ${
+                        isSelected
+                          ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
+                          : 'bg-[#F5F0E8] text-[#A89F95] border-[#EDE8DF] line-through dark:bg-[#2E2A26] dark:border-[#38332E] opacity-50'
+                      }`}
+                    >
+                      {language === 'zh-CN' ? d.zh : d.en}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3. Default Weekly Dietary Focus */}
+            <div className="space-y-1.5 pt-1">
+              <label className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] block">
+                ⚖️ {language === 'zh-CN' ? '默认膳食侧重' : 'Default Dietary Focus'}
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { id: 'balanced', icon: '⚖️', label: language === 'zh-CN' ? '均衡营养' : 'Balanced' },
+                  { id: 'quick', icon: '⚡', label: language === 'zh-CN' ? '快手省时 (≤25m)' : 'Weeknight Fast' },
+                  { id: 'high_protein', icon: '💪', label: language === 'zh-CN' ? '高蛋白 (≥35g)' : 'High Protein' },
+                  { id: 'light', icon: '🥗', label: language === 'zh-CN' ? '轻食低卡' : 'Light & Fresh' }
+                ].map((f) => {
+                  const isCurrent = (localFamilyPersonalisation.defaultDietaryFocus || 'balanced') === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() =>
+                        setLocalFamilyPersonalisation({
+                          ...localFamilyPersonalisation,
+                          defaultDietaryFocus: f.id as any
+                        })
+                      }
+                      className={`p-2 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                        isCurrent
+                          ? 'border-[#FFD13B] bg-[#FFF8E6] text-[#2D2640] dark:bg-[#2A1E00] dark:text-[#FFD13B] ring-1 ring-[#FFD13B]/50'
+                          : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E]'
+                      }`}
+                    >
+                      <span>{f.icon}</span>
+                      <span>{f.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 4. Family Classics or Something New? */}
+            <div className="space-y-1.5 pt-1">
+              <label className="text-xs font-bold text-[#2D2640] dark:text-[#F0EDE8] block">
+                ✨ {language === 'zh-CN' ? '常做家常菜还是探索新灵感？' : 'Family Classics or Something New?'}
+              </label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { id: 'best_of_both', label: language === 'zh-CN' ? '🌟 黄金组合' : '🌟 Best of Both' },
+                  { id: 'easy_meals', label: language === 'zh-CN' ? '🍲 家常拿手' : '🍲 Classics' },
+                  { id: 'give_me_ideas', label: language === 'zh-CN' ? '✨ 探索新菜' : '✨ New Ideas' }
+                ].map((m) => {
+                  const isCurrent = (localFamilyPersonalisation.defaultPlanningStrategy || 'best_of_both') === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() =>
+                        setLocalFamilyPersonalisation({
+                          ...localFamilyPersonalisation,
+                          defaultPlanningStrategy: m.id as any
+                        })
+                      }
+                      className={`py-2 px-1 rounded-xl text-[11px] font-bold border transition cursor-pointer text-center shadow-2xs ${
+                        isCurrent
+                          ? 'border-[#FFD13B] bg-[#FFF8E6] text-[#2D2640] dark:bg-[#2A1E00] dark:text-[#FFD13B] ring-1 ring-[#FFD13B]/50'
+                          : 'bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] border-[#EDE8DF] dark:border-[#38332E]'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

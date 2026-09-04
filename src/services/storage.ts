@@ -3,6 +3,7 @@ import { getInitialAppData, INITIAL_DISHES, DEFAULT_MEAL_SCHEDULES, DEFAULT_PANT
 import { DEFAULT_MASTER_INGREDIENTS } from './masterIngredients';
 import { matchPantryIngredient } from './pantryMatching';
 import { STARTER_RECIPE_TRANSLATIONS, getLocalizedDish } from './dataLocalizationService';
+import { sanitizeIngredient, sanitizeMasterIngredient, cleanIngredientName } from './ingredientSanitizer';
 import { pushAppDataToCloud } from './firebase';
 
 const ACTIVE_PROFILE_KEY = 'gyummy_active_profile_v2';
@@ -145,6 +146,44 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
       }
       return dish;
     });
+
+    // Sanitize user dishes (strip prefixes, extract embedded amounts and units)
+    if (parsed.dishes && Array.isArray(parsed.dishes)) {
+      parsed.dishes = parsed.dishes.map((dish) => {
+        if (!dish.ingredients || !Array.isArray(dish.ingredients)) return dish;
+        return {
+          ...dish,
+          ingredients: dish.ingredients.map(sanitizeIngredient)
+        };
+      });
+    }
+
+    // Sanitize master ingredients if present in user state
+    if (parsed.masterIngredients && Array.isArray(parsed.masterIngredients)) {
+      const seen = new Set<string>();
+      const sanitizedList: MasterIngredient[] = [];
+      parsed.masterIngredients.forEach((item) => {
+        const cleaned = sanitizeMasterIngredient(item);
+        if (cleaned && cleaned.name) {
+          const key = cleaned.name.toLowerCase().trim();
+          if (!seen.has(key)) {
+            seen.add(key);
+            sanitizedList.push(cleaned);
+          }
+        }
+      });
+      parsed.masterIngredients = sanitizedList;
+    }
+
+    // Sanitize user's home pantry ingredients
+    if (parsed.pantryIngredients && Array.isArray(parsed.pantryIngredients)) {
+      const cleanedPantry = new Set<string>();
+      parsed.pantryIngredients.forEach((p) => {
+        const cleaned = cleanIngredientName(p).name;
+        if (cleaned) cleanedPantry.add(cleaned);
+      });
+      parsed.pantryIngredients = Array.from(cleanedPantry);
+    }
 
     if (!parsed.familyMembers) {
       parsed.familyMembers = currentProfile ? [currentProfile.memberName] : [];

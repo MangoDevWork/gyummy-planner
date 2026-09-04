@@ -8,42 +8,21 @@
   },
   {
     "id": "master_ing_mtk0dqgi_srg0",
-    "name": "1.5 Oz Feta Cheese",
+    "name": "Feta Cheese",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
   },
   {
     "id": "master_ing_mtk0dqm8_pjqc",
-    "name": "3 Cup Water",
+    "name": "Water",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqm0_0efh",
-    "name": "A Fine-meshed Strainer Lined With A Piece Of Fine Cheesecloth",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqme_ehj1",
-    "name": "A Heat-proof Dish That Can Fit Inside The Wok Or Pot",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Canned Goods"
   },
   {
     "id": "master_ing_mtk0dqjv_4737",
     "name": "A Mesa Y Los Amigos Tempranillo Spanish Wine",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqme_udo5",
-    "name": "A Pot Or Wok With A Lid",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -71,7 +50,7 @@
   },
   {
     "id": "master_ing_mtk0dqev_pzc9",
-    "name": "A-yu",
+    "name": "Yu",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -148,7 +127,7 @@
   },
   {
     "id": "master_canon_91",
-    "name": "All-Purpose Flour (中筋面粉)",
+    "name": "All-purpose Flour",
     "defaultValue": 200,
     "defaultUnit": "g",
     "category": "Bakery"
@@ -183,7 +162,7 @@
   },
   {
     "id": "master_canon_87",
-    "name": "Almonds (杏仁/巴旦木)",
+    "name": "Almonds",
     "defaultValue": 50,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -357,13 +336,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqho_ljpa",
-    "name": "Arnott's Marie Crackers Or Other Plain Biscuit  Or 28 Graham Cracker Squares",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqkq_v7t1",
     "name": "Artichoke Hearts",
     "defaultValue": 1,
@@ -428,7 +400,7 @@
   },
   {
     "id": "master_canon_23",
-    "name": "Asparagus (芦笋)",
+    "name": "Asparagus",
     "defaultValue": 1,
     "defaultUnit": "bunch",
     "category": "Produce"
@@ -456,7 +428,7 @@
   },
   {
     "id": "master_canon_29",
-    "name": "Avocado (牛油果)",
+    "name": "Avocado",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -477,420 +449,392 @@
   },
   {
     "id": "master_ing_mtk0dqh2_q2mz",
-    "name": "B  Chicken Pieces",
+    "name": "Chicken Pieces",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqhl_obz8",
-    "name": "B - 1 Kg Chuck Steak, Or Other Slow Cooking Beef",
+    "name": "Chuck Steak",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqio_cvts",
-    "name": "B - 1 Kg Pumpkin",
+    "name": "Pumpkin",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqgz_ipxq",
-    "name": "B - 1 Kg Skirt - Flank - Hanger Steak",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqjw_28yn",
-    "name": "B - 1.2 Kg Chicken Pieces",
+    "name": "Skirt - Flank - Hanger Steak",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqha_d153",
-    "name": "B - 1.25 Kg Beef Chuck",
+    "name": "Beef Chuck",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqha_9p8a",
-    "name": "B - 1.5kg Beef Chuck Or Brisket  Cut Into 4 Pieces",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqjc_k69q",
-    "name": "B - 1.5kg Chuck Steak",
+    "name": "Beef Chuck Or Brisket Cut Into 4 Pieces",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqh7_ilf5",
-    "name": "B - 1kg Granny Smith Apples",
+    "name": "Granny Smith Apples",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhq_qkrk",
-    "name": "B - 250g Chinese Barbecue Pork , Thinly Sliced",
+    "name": "Chinese Barbecue Pork",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqk3_piv6",
-    "name": "B - 4 Kg Pound Bone-in Turkey Breast",
+    "name": "Bone-in Turkey Breast",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqgs_k6vy",
-    "name": "B - 500 G Ground Chicken",
+    "name": "Ground Chicken",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqh1_oicg",
-    "name": "B - 500 G Mixed Raw Seafood",
+    "name": "Mixed Raw Seafood",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqka_ihev",
-    "name": "B - 500 G Ricotta",
+    "name": "Ricotta",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqip_aoa1",
-    "name": "B - 500g Chicken Mince  Or Pork",
+    "name": "Chicken Mince Or Pork",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqjl_a3z2",
-    "name": "B - 500g Green Beans",
+    "name": "Green Beans",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqgl_2buo",
-    "name": "B - 500g Potato",
+    "name": "Potato",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqgz_ilyz",
-    "name": "B - 500g Whole Smoked Trout",
+    "name": "Whole Smoked Trout",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqij_88qq",
-    "name": "B - 5kg Whole Turkey",
+    "name": "Whole Turkey",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqgm_vskq",
-    "name": "B - 600g Mushrooms",
+    "name": "Mushrooms",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqeh_8jop",
-    "name": "B Beef Roast",
+    "name": "Beef Roast",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqee_skhd",
-    "name": "B Beef Tendon",
+    "name": "Beef Tendon",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqg6_yq3o",
-    "name": "B Beef Tongue Slices",
+    "name": "Beef Tongue Slices",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqey_g4dw",
-    "name": "B Bone-in Beef Short Ribs",
+    "name": "Bone-in Beef Short Ribs",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqeg_lhm4",
-    "name": "B Boneless",
+    "name": "Boneless",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqee_cj0m",
-    "name": "B Boneless Beef Chuck Roast",
+    "name": "Boneless Beef Chuck Roast",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqeh_scp3",
-    "name": "B Boneless Beef Short Ribs",
+    "name": "Boneless Beef Short Ribs",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqei_tdgl",
-    "name": "B Cherries",
+    "name": "Cherries",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqen_f69m",
-    "name": "B Chicken Backs And Necks",
+    "name": "Chicken Backs And Necks",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqek_ag68",
-    "name": "B Daikon Radish",
+    "name": "Daikon Radish",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqfb_5kp5",
-    "name": "B French Green Beans",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqfa_3lzi",
-    "name": "B Green Beans",
+    "name": "French Green Beans",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqfl_3owz",
-    "name": "B Green Ume Plums",
+    "name": "Green Ume Plums",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqf4_3ged",
-    "name": "B Ground Chicken",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
     "id": "master_ing_mtk0dqej_gt3u",
-    "name": "B Ground Meat",
+    "name": "Ground Meat",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqf7_rx41",
-    "name": "B Japanese Sweet Potato",
+    "name": "Japanese Sweet Potato",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqge_9e2i",
-    "name": "B Japanese Turnips",
+    "name": "Japanese Turnips",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqek_jhh9",
-    "name": "B Kabocha Squash",
+    "name": "Kabocha Squash",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqf6_ufp9",
-    "name": "B Kimchi",
+    "name": "Kimchi",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqg3_ge4d",
-    "name": "B King Crab Legs",
+    "name": "King Crab Legs",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqgc_k748",
-    "name": "B Kinmedai",
+    "name": "Kinmedai",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqep_fk1c",
-    "name": "B Komatsuna",
+    "name": "Komatsuna",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqfm_8f4o",
-    "name": "B Monkfish",
+    "name": "Monkfish",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqf9_4aus",
-    "name": "B Okara",
+    "name": "Okara",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqen_pbnx",
-    "name": "B Oxtails",
+    "name": "Oxtails",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqf2_x0jd",
-    "name": "B Sashimi-grade Yellowtail",
+    "name": "Sashimi-grade Yellowtail",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqgf_64bz",
-    "name": "B Sea Bream Meat",
+    "name": "Sea Bream Meat",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqf9_03mn",
-    "name": "B Shungiku",
+    "name": "Shungiku",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqep_milj",
-    "name": "B Soybeans",
+    "name": "Soybeans",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqfm_mwl9",
-    "name": "B Steamed Monk Fish Liver",
+    "name": "Steamed Monk Fish Liver",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqeo_lfgk",
-    "name": "B Strawberries",
+    "name": "Strawberries",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqf0_sli0",
-    "name": "B Sweet Red Bean Paste",
+    "name": "Sweet Red Bean Paste",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqga_2ug1",
-    "name": "B Taro",
+    "name": "Taro",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqfk_uw44",
-    "name": "B Thinly Sliced Pork",
+    "name": "Thinly Sliced Pork",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqfl_w6xr",
-    "name": "B Thinly Sliced Short Rib",
+    "name": "Thinly Sliced Short Rib",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqek_9o4a",
-    "name": "B Tri-tip",
+    "name": "Tri-tip",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqeu_q4wu",
-    "name": "B Used Ume Plums From Making Plum Wine - Syrup",
+    "name": "Used Ume Plums From Making Plum Wine - Syrup",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_ing_mtk0dqgf_ezcc",
-    "name": "B Yellowtail",
+    "name": "Yellowtail",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqm7_2rwr",
-    "name": "B. Boneless Beef Chuck Or Brisket",
+    "name": "Boneless Beef Chuck Or Brisket",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqld_85w7",
-    "name": "B. Frozen Shepherd’s Purse",
+    "name": "Frozen Shepherd’s Purse",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -953,7 +897,7 @@
   },
   {
     "id": "master_ing_mtk0dqgw_x0hf",
-    "name": "Baby Rocket  Leaves",
+    "name": "Baby Rocket Leaves",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -988,7 +932,7 @@
   },
   {
     "id": "master_canon_51",
-    "name": "Bacon (培根/烟熏肉)",
+    "name": "Bacon",
     "defaultValue": 150,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -1072,14 +1016,14 @@
   },
   {
     "id": "master_canon_93",
-    "name": "Baking Powder (泡打粉)",
+    "name": "Baking Powder",
     "defaultValue": 5,
     "defaultUnit": "g",
     "category": "Bakery"
   },
   {
     "id": "master_canon_92",
-    "name": "Baking Soda (小苏打)",
+    "name": "Baking Soda",
     "defaultValue": 5,
     "defaultUnit": "g",
     "category": "Bakery"
@@ -1121,14 +1065,14 @@
   },
   {
     "id": "master_canon_97",
-    "name": "Bamboo Skewers (竹签)",
+    "name": "Bamboo Skewers",
     "defaultValue": 10,
     "defaultUnit": "pcs",
     "category": "Other"
   },
   {
     "id": "master_canon_98",
-    "name": "Bamboo Steamer (竹蒸笼)",
+    "name": "Bamboo Steamer",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Other"
@@ -1191,7 +1135,7 @@
   },
   {
     "id": "master_canon_33",
-    "name": "Basil (罗勒/九层塔)",
+    "name": "Basil",
     "defaultValue": 1,
     "defaultUnit": "bunch",
     "category": "Produce"
@@ -1296,7 +1240,7 @@
   },
   {
     "id": "master_ing_mtk0dqkb_9lms",
-    "name": "Bay Leaves  Or 3 Dried",
+    "name": "Bay Leaves Or 3 Dried",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -1317,7 +1261,7 @@
   },
   {
     "id": "master_canon_27",
-    "name": "Bean Sprouts (豆芽/绿豆芽)",
+    "name": "Bean Sprouts",
     "defaultValue": 150,
     "defaultUnit": "g",
     "category": "Produce"
@@ -1367,20 +1311,6 @@
   {
     "id": "master_ing_mtk0dqhk_xepu",
     "name": "Beef Cheeks",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqhk_jjoq",
-    "name": "Beef Chuck",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqhj_qv3v",
-    "name": "Beef Chuck Or Other Stewing Beef",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -1457,7 +1387,7 @@
   },
   {
     "id": "master_canon_45",
-    "name": "Beef Steak / Slices (牛肉/牛排)",
+    "name": "Beef Steak / Slices",
     "defaultValue": 400,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -1499,7 +1429,7 @@
   },
   {
     "id": "master_canon_17",
-    "name": "Bell Pepper (甜椒/彩椒)",
+    "name": "Bell Pepper",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -1527,7 +1457,7 @@
   },
   {
     "id": "master_ing_mtk0dqkq_1wl9",
-    "name": "Bisquick Or Other Biscuit - Pancake Mix",
+    "name": "Bisquick",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -1541,7 +1471,7 @@
   },
   {
     "id": "master_canon_26",
-    "name": "Bitter Melon (苦瓜)",
+    "name": "Bitter Melon",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -1604,7 +1534,7 @@
   },
   {
     "id": "master_canon_78",
-    "name": "Black Pepper (黑胡椒)",
+    "name": "Black Pepper",
     "defaultValue": 3,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -1625,7 +1555,7 @@
   },
   {
     "id": "master_ing_mtk0dqlb_hhef",
-    "name": "Black Tapioca Pearls Aka Bubbles Aka \"Boba",
+    "name": "Black Tapioca Pearls Aka Bubbles Aka \"boba",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -1702,7 +1632,7 @@
   },
   {
     "id": "master_ing_mtk0dqho_strh",
-    "name": "Blue Cheese  Pieces",
+    "name": "Blue Cheese Pieces",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
@@ -1730,7 +1660,7 @@
   },
   {
     "id": "master_ing_mtk0dqjp_e4is",
-    "name": "Blue Swimmer Crabs  , Pre-cooked In Shell, Whole",
+    "name": "Blue Swimmer Crabs , Pre-cooked In Shell, Whole",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -1772,7 +1702,7 @@
   },
   {
     "id": "master_canon_10",
-    "name": "Bok Choy (青江菜/小白菜)",
+    "name": "Bok Choy",
     "defaultValue": 3,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -1808,20 +1738,6 @@
   {
     "id": "master_ing_mtk0dql4_ma7e",
     "name": "Bone-in Skin-on Turkey Thighs",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqef_09xw",
-    "name": "Boneless",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqf1_cquk",
-    "name": "Boneless Beef Short Ribs",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -1947,7 +1863,7 @@
   },
   {
     "id": "master_ing_mtk0dqgf_4k14",
-    "name": "Brie Cheese  Round Brie Cheese",
+    "name": "Brie Cheese Round Brie Cheese",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
@@ -1961,7 +1877,7 @@
   },
   {
     "id": "master_canon_9",
-    "name": "Broccoli (西兰花)",
+    "name": "Broccoli",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -1982,7 +1898,7 @@
   },
   {
     "id": "master_canon_76",
-    "name": "Brown Sugar (红糖)",
+    "name": "Brown Sugar",
     "defaultValue": 20,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -2178,21 +2094,21 @@
   },
   {
     "id": "master_canon_59",
-    "name": "Butter (黄油)",
+    "name": "Butter",
     "defaultValue": 50,
     "defaultUnit": "g",
     "category": "Dairy & Eggs"
   },
   {
     "id": "master_ing_mtk0dqho_chd6",
-    "name": "Cabanossi  Pieces",
+    "name": "Cabanossi Pieces",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_canon_14",
-    "name": "Cabbage (包菜/卷心菜)",
+    "name": "Cabbage",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -2213,7 +2129,7 @@
   },
   {
     "id": "master_ing_mtk0dqgx_vhvy",
-    "name": "Can  Or Fresh Baby Beetroot",
+    "name": "Can Or Fresh Baby Beetroot",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Canned Goods"
@@ -2597,13 +2513,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqhw_vpe2",
-    "name": "Cardamom Pods , Lightly Crushed, Wrapped And Tied In Muslin Or Cheesecloth",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqik_5w39",
     "name": "Cardamom Powder",
     "defaultValue": 1,
@@ -2619,7 +2528,7 @@
   },
   {
     "id": "master_canon_11",
-    "name": "Carrot (胡萝卜)",
+    "name": "Carrot",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -2640,7 +2549,7 @@
   },
   {
     "id": "master_ing_mtk0dqje_nhy3",
-    "name": "Cauliflower  , Cut - Broken Into Small Florets",
+    "name": "Cauliflower , Cut - Broken Into Small Florets",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -2717,7 +2626,7 @@
   },
   {
     "id": "master_canon_28",
-    "name": "Celery (芹菜/西芹)",
+    "name": "Celery",
     "defaultValue": 2,
     "defaultUnit": "stalks",
     "category": "Produce"
@@ -2793,13 +2702,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqhf_vvk9",
-    "name": "Chardonnay Or Other Dry White Wine",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqj4_zq0a",
     "name": "Chargrilled Peppers",
     "defaultValue": 1,
@@ -2815,7 +2717,7 @@
   },
   {
     "id": "master_canon_64",
-    "name": "Cheddar Cheese (车达芝士)",
+    "name": "Cheddar Cheese",
     "defaultValue": 100,
     "defaultUnit": "g",
     "category": "Dairy & Eggs"
@@ -2857,7 +2759,7 @@
   },
   {
     "id": "master_ing_mtk0dqic_km3y",
-    "name": "Chervil Sprigs  Or Small Edible Flowers",
+    "name": "Chervil Sprigs Or Small Edible Flowers",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -2892,14 +2794,14 @@
   },
   {
     "id": "master_ing_mtk0dqgl_0j8q",
-    "name": "Chicken  Sliced Against The Grain",
+    "name": "Chicken Sliced Against The Grain",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqgu_l79f",
-    "name": "Chicken &Amp; Salad",
+    "name": "Chicken &amp; Salad",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -2927,28 +2829,28 @@
   },
   {
     "id": "master_canon_82",
-    "name": "Chicken Bouillon / Powder (鸡精)",
+    "name": "Chicken Bouillon / Powder",
     "defaultValue": 5,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_canon_36",
-    "name": "Chicken Breast (鸡胸肉)",
+    "name": "Chicken Breast",
     "defaultValue": 500,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_canon_83",
-    "name": "Chicken Broth / Stock (鸡汤)",
+    "name": "Chicken Broth / Stock",
     "defaultValue": 250,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_canon_39",
-    "name": "Chicken Drumsticks (鸡腿/鸡小腿)",
+    "name": "Chicken Drumsticks",
     "defaultValue": 500,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -3003,20 +2905,6 @@
     "category": "Meat & Seafood"
   },
   {
-    "id": "master_ing_mtk0dqip_u9zh",
-    "name": "Chicken Mince , Excess Liquid Drained And Discarded",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqiu_w4py",
-    "name": "Chicken Mince , Or Turkey Or Pork",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
     "id": "master_ing_mtk0dqg5_rhab",
     "name": "Chicken Nanban",
     "defaultValue": 1,
@@ -3026,13 +2914,6 @@
   {
     "id": "master_ing_mtk0dqgt_tsx5",
     "name": "Chicken Or Fish Stock - Broth",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqhc_87wn",
-    "name": "Chicken Or Other Protein",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -3102,14 +2983,14 @@
   },
   {
     "id": "master_canon_37",
-    "name": "Chicken Thigh (鸡腿肉)",
+    "name": "Chicken Thigh",
     "defaultValue": 500,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_canon_38",
-    "name": "Chicken Wings (鸡翅)",
+    "name": "Chicken Wings",
     "defaultValue": 500,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -3130,21 +3011,21 @@
   },
   {
     "id": "master_canon_85",
-    "name": "Chili Flakes / Powder (辣椒碎/粉)",
+    "name": "Chili Flakes / Powder",
     "defaultValue": 5,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_canon_84",
-    "name": "Chili Oil (辣椒油)",
+    "name": "Chili Oil",
     "defaultValue": 15,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_canon_18",
-    "name": "Chili Pepper (辣椒)",
+    "name": "Chili Pepper",
     "defaultValue": 2,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -3563,13 +3444,6 @@
     "category": "Meat & Seafood"
   },
   {
-    "id": "master_ing_mtk0dqgs_hdlk",
-    "name": "Chuck Steak Or Other Beef Cut Suitable For Slow Cooking",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
     "id": "master_ing_mtk0dqfr_vil4",
     "name": "Chuka Dashi",
     "defaultValue": 1,
@@ -3613,7 +3487,7 @@
   },
   {
     "id": "master_canon_32",
-    "name": "Cilantro / Coriander (香菜)",
+    "name": "Cilantro / Coriander",
     "defaultValue": 1,
     "defaultUnit": "bunch",
     "category": "Produce"
@@ -3655,7 +3529,7 @@
   },
   {
     "id": "master_canon_56",
-    "name": "Clams / Mussels (蛤蜊/青口贝)",
+    "name": "Clams / Mussels",
     "defaultValue": 500,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -3949,7 +3823,7 @@
   },
   {
     "id": "master_canon_69",
-    "name": "Cooking Oil (食用油)",
+    "name": "Cooking Oil",
     "defaultValue": 30,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
@@ -4047,7 +3921,7 @@
   },
   {
     "id": "master_canon_80",
-    "name": "Cornstarch (玉米淀粉/生粉)",
+    "name": "Cornstarch",
     "defaultValue": 15,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -4362,7 +4236,7 @@
   },
   {
     "id": "master_canon_13",
-    "name": "Cucumber (黄瓜)",
+    "name": "Cucumber",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -4431,29 +4305,15 @@
     "category": "Pantry & Spices"
   },
   {
-    "id": "master_ing_mtk0dqlp_j2b3",
-    "name": "D Chicken",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
     "id": "master_ing_mtk0dqhu_7tf8",
-    "name": "D Jalapeño Peppers",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqgm_fbxz",
-    "name": "D Strawberries",
+    "name": "Jalapeño Peppers",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqk6_yobz",
-    "name": "D Tomato",
+    "name": "Tomato",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -4461,13 +4321,6 @@
   {
     "id": "master_ing_mtk0dqlp_si7b",
     "name": "Daikon Or Korean Radish",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqen_ha1r",
-    "name": "Daikon Radish",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -4502,7 +4355,7 @@
   },
   {
     "id": "master_canon_88",
-    "name": "Dark Chocolate (黑巧克力/可可)",
+    "name": "Dark Chocolate",
     "defaultValue": 100,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -4544,7 +4397,7 @@
   },
   {
     "id": "master_canon_66",
-    "name": "Dark Soy Sauce (老抽)",
+    "name": "Dark Soy Sauce",
     "defaultValue": 15,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
@@ -4656,14 +4509,14 @@
   },
   {
     "id": "master_ing_mtk0dqim_wbry",
-    "name": "Digestive Biscuits  Or Graham Crackers",
+    "name": "Digestive Biscuits Or Graham Crackers",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqho_yuwv",
-    "name": "Digestive Biscuits , Or Other Plain Biscuits - Cookies",
+    "name": "Digestive Biscuits",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -5321,14 +5174,14 @@
   },
   {
     "id": "master_canon_41",
-    "name": "Duck (鸭肉/整鸭)",
+    "name": "Duck",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqgx_b9ny",
-    "name": "Dulce De Leche  - 1 Ingredient Recipe",
+    "name": "Dulce De Leche - 1 Ingredient Recipe",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -5587,14 +5440,14 @@
   },
   {
     "id": "master_canon_58",
-    "name": "Egg (鸡蛋)",
+    "name": "Egg",
     "defaultValue": 4,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
   },
   {
     "id": "master_canon_25",
-    "name": "Eggplant / Aubergine (茄子)",
+    "name": "Eggplant / Aubergine",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -5671,7 +5524,7 @@
   },
   {
     "id": "master_canon_21",
-    "name": "Enoki Mushroom (金针菇)",
+    "name": "Enoki Mushroom",
     "defaultValue": 1,
     "defaultUnit": "packet",
     "category": "Produce"
@@ -5930,7 +5783,7 @@
   },
   {
     "id": "master_ing_mtk0dqk2_3io4",
-    "name": "Fennel, Shaved  Or Finely Sliced",
+    "name": "Fennel, Shaved Or Finely Sliced",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -5978,13 +5831,6 @@
     "category": "Dairy & Eggs"
   },
   {
-    "id": "master_ing_mtk0dqg7_u15i",
-    "name": "Feta Cheese",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Dairy & Eggs"
-  },
-  {
     "id": "master_ing_mtk0dqiy_mh1s",
     "name": "Feta Or Goats Cheese",
     "defaultValue": 1,
@@ -6021,7 +5867,7 @@
   },
   {
     "id": "master_ing_mtk0dqfe_63mu",
-    "name": "Fillet Unagi  Fillet",
+    "name": "Fillet Unagi Fillet",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -6287,7 +6133,7 @@
   },
   {
     "id": "master_canon_74",
-    "name": "Fish Sauce (鱼露)",
+    "name": "Fish Sauce",
     "defaultValue": 15,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
@@ -6399,7 +6245,7 @@
   },
   {
     "id": "master_ing_mtk0dqis_4axy",
-    "name": "Frangelico, Amaretto Or Other Liquor",
+    "name": "Frangelico, Amaretto",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -6448,7 +6294,7 @@
   },
   {
     "id": "master_ing_mtk0dqkf_wua3",
-    "name": "French Dressing  Or Store Bought",
+    "name": "French Dressing Or Store Bought",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -6456,13 +6302,6 @@
   {
     "id": "master_ing_mtk0dqi7_ht9i",
     "name": "French Fries",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqf9_ij5r",
-    "name": "French Green Beans",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -7022,7 +6861,7 @@
   },
   {
     "id": "master_canon_0",
-    "name": "Garlic (大蒜)",
+    "name": "Garlic",
     "defaultValue": 3,
     "defaultUnit": "cloves",
     "category": "Produce"
@@ -7092,7 +6931,7 @@
   },
   {
     "id": "master_canon_1",
-    "name": "Ginger (生姜)",
+    "name": "Ginger",
     "defaultValue": 10,
     "defaultUnit": "g",
     "category": "Produce"
@@ -7232,7 +7071,7 @@
   },
   {
     "id": "master_ing_mtk0dqk9_abii",
-    "name": "Gorgonzola Dolce  Or Roquefort",
+    "name": "Gorgonzola Dolce Or Roquefort",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -7240,13 +7079,6 @@
   {
     "id": "master_ing_mtk0dqko_gujc",
     "name": "Goya Sazon Con Culantro Y Achiote Seasoning",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqi1_drp9",
-    "name": "Granny Smith Apples",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -7323,7 +7155,7 @@
   },
   {
     "id": "master_ing_mtk0dqkc_ua7r",
-    "name": "Grated Red Apple  Or Nashi Pears",
+    "name": "Grated Red Apple Or Nashi Pears",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -7378,13 +7210,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqfe_ldtm",
-    "name": "Green Beans",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqjr_q6ha",
     "name": "Green Beans, Trimmed",
     "defaultValue": 1,
@@ -7414,7 +7239,7 @@
   },
   {
     "id": "master_canon_2",
-    "name": "Green Onion / Scallion (小葱)",
+    "name": "Green Onion / Scallion",
     "defaultValue": 2,
     "defaultUnit": "stalks",
     "category": "Produce"
@@ -7429,13 +7254,6 @@
   {
     "id": "master_ing_mtk0dqek_45t9",
     "name": "Green Peas",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqgf_qfk0",
-    "name": "Green Ume Plums",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -7491,7 +7309,7 @@
   },
   {
     "id": "master_canon_42",
-    "name": "Ground Beef (牛肉末)",
+    "name": "Ground Beef",
     "defaultValue": 500,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -7516,13 +7334,6 @@
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqfe_5oj7",
-    "name": "Ground Chicken",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqkj_wtmb",
@@ -7589,7 +7400,7 @@
   },
   {
     "id": "master_canon_43",
-    "name": "Ground Pork (猪肉末)",
+    "name": "Ground Pork",
     "defaultValue": 500,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -7701,7 +7512,7 @@
   },
   {
     "id": "master_ing_mtk0dqho_rpat",
-    "name": "Ham  Batons",
+    "name": "Ham Batons",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -7820,16 +7631,9 @@
   },
   {
     "id": "master_ing_mtk0dqeh_gmx6",
-    "name": "Heavy  Cream",
+    "name": "Heavy Cream",
     "defaultValue": 1,
     "defaultUnit": "pcs",
-    "category": "Dairy & Eggs"
-  },
-  {
-    "id": "master_canon_61",
-    "name": "Heavy Cream (淡奶油)",
-    "defaultValue": 100,
-    "defaultUnit": "ml",
     "category": "Dairy & Eggs"
   },
   {
@@ -7897,7 +7701,7 @@
   },
   {
     "id": "master_ing_mtk0dqf1_qmcs",
-    "name": "Hojicha  Powder",
+    "name": "Hojicha Powder",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8023,7 +7827,7 @@
   },
   {
     "id": "master_canon_81",
-    "name": "Honey (蜂蜜)",
+    "name": "Honey",
     "defaultValue": 20,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
@@ -8128,7 +7932,7 @@
   },
   {
     "id": "master_ing_mtk0dqjm_guww",
-    "name": "Igantic Sweet Potato - To Cut 2 X “Steaks”  - Note 1",
+    "name": "Igantic Sweet Potato - To Cut 2 X “steaks” - Note 1",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8331,14 +8135,14 @@
   },
   {
     "id": "master_ing_mtk0dqhv_0u1a",
-    "name": "Itre  Vegetable Stock - Broth",
+    "name": "Itre Vegetable Stock - Broth",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_ing_mtk0dqhn_iana",
-    "name": "Itre  Water",
+    "name": "Itre Water",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8373,7 +8177,7 @@
   },
   {
     "id": "master_ing_mtk0dqk5_6t7w",
-    "name": "Itres - 1.5 Quarts  Vegetable Or Chicken",
+    "name": "Itres - 1.5 Quarts Vegetable Or Chicken",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -8394,7 +8198,7 @@
   },
   {
     "id": "master_ing_mtk0dqjh_ttcz",
-    "name": "Itres - Quarts  Water",
+    "name": "Itres - Quarts Water",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8405,13 +8209,6 @@
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
-  },
-  {
-    "id": "master_ing_mtk0dqip_xsq8",
-    "name": "Itres - Quarts Water",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqlr_jdja",
@@ -8440,13 +8237,6 @@
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
-  },
-  {
-    "id": "master_ing_mtk0dqmf_nvzu",
-    "name": "Jalapeño Peppers",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqi8_z7gg",
@@ -8534,7 +8324,7 @@
   },
   {
     "id": "master_canon_73",
-    "name": "Japanese Sake / Cooking Wine (清酒)",
+    "name": "Japanese Sake / Cooking Wine",
     "defaultValue": 30,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
@@ -8561,22 +8351,8 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqfe_nozb",
-    "name": "Japanese Sweet Potato",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqfm_e6xr",
     "name": "Japanese Turnip",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqfe_mu2b",
-    "name": "Japanese Turnips",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8611,14 +8387,14 @@
   },
   {
     "id": "master_canon_90",
-    "name": "Jasmine Rice / White Rice (大米)",
+    "name": "Jasmine Rice / White Rice",
     "defaultValue": 200,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_ing_mtk0dqj4_xhym",
-    "name": "Jatz Or Other Crackers",
+    "name": "Jatz",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8694,13 +8470,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqed_zygn",
-    "name": "Kabocha Squash",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqht_3u3p",
     "name": "Kahlua",
     "defaultValue": 1,
@@ -8723,7 +8492,7 @@
   },
   {
     "id": "master_ing_mtk0dqk3_rq47",
-    "name": "Kalamata Or Other Black Deli Olives",
+    "name": "Kalamata",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8744,7 +8513,7 @@
   },
   {
     "id": "master_ing_mtk0dqfv_hbmw",
-    "name": "Kanten  Powder",
+    "name": "Kanten Powder",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8786,7 +8555,7 @@
   },
   {
     "id": "master_ing_mtk0dqhn_3mdy",
-    "name": "Kecap Manis  - Note 4",
+    "name": "Kecap Manis - Note 4",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8801,13 +8570,6 @@
   {
     "id": "master_ing_mtk0dqhx_2p60",
     "name": "Kidney Beans",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqey_4skt",
-    "name": "Kimchi",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8835,7 +8597,7 @@
   },
   {
     "id": "master_canon_22",
-    "name": "King Oyster Mushroom (杏鲍菇)",
+    "name": "King Oyster Mushroom",
     "defaultValue": 2,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8899,13 +8661,6 @@
   {
     "id": "master_ing_mtk0dqgz_edns",
     "name": "Kochujang",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqfd_ezsb",
-    "name": "Komatsuna",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -8989,7 +8744,7 @@
   },
   {
     "id": "master_canon_50",
-    "name": "Lamb Chops / Meat (羊肉/羊排)",
+    "name": "Lamb Chops / Meat",
     "defaultValue": 400,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -9031,7 +8786,7 @@
   },
   {
     "id": "master_canon_49",
-    "name": "Lamb Shanks (羊小腿/羊腱)",
+    "name": "Lamb Shanks",
     "defaultValue": 2,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -9402,7 +9157,7 @@
   },
   {
     "id": "master_ing_mtk0dqk2_xgxi",
-    "name": "Lb+ Whole Mud Crab Or Other Crab",
+    "name": "Lb+ Whole Mud Crab",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -9423,7 +9178,7 @@
   },
   {
     "id": "master_canon_35",
-    "name": "Leafy Green Vegetables (绿叶蔬菜)",
+    "name": "Leafy Green Vegetables",
     "defaultValue": 200,
     "defaultUnit": "g",
     "category": "Produce"
@@ -9437,14 +9192,14 @@
   },
   {
     "id": "master_canon_6",
-    "name": "Leek (大葱/韭葱)",
+    "name": "Leek",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqjg_n55w",
-    "name": "Leftover Cooked Brisket Or Other Beef",
+    "name": "Leftover Cooked Brisket",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -9465,14 +9220,14 @@
   },
   {
     "id": "master_canon_30",
-    "name": "Lemon (柠檬)",
+    "name": "Lemon",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_canon_7",
-    "name": "Lemongrass (香茅)",
+    "name": "Lemongrass",
     "defaultValue": 2,
     "defaultUnit": "stalks",
     "category": "Produce"
@@ -9521,7 +9276,7 @@
   },
   {
     "id": "master_canon_31",
-    "name": "Lime (青柠)",
+    "name": "Lime",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -9570,7 +9325,7 @@
   },
   {
     "id": "master_ing_mtk0dqj1_wuaa",
-    "name": "Live Mud Crab Or Other Large, Fresh Crab",
+    "name": "Live Mud Crab",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -10179,7 +9934,7 @@
   },
   {
     "id": "master_canon_72",
-    "name": "Mirin (味醂)",
+    "name": "Mirin",
     "defaultValue": 30,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
@@ -10368,7 +10123,7 @@
   },
   {
     "id": "master_canon_63",
-    "name": "Mozzarella Cheese (马苏里拉芝士)",
+    "name": "Mozzarella Cheese",
     "defaultValue": 150,
     "defaultUnit": "g",
     "category": "Dairy & Eggs"
@@ -10402,13 +10157,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_canon_20",
-    "name": "Mushroom (口蘑/蘑菇)",
-    "defaultValue": 200,
-    "defaultUnit": "g",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqmc_op3o",
     "name": "Mushroom Powder",
     "defaultValue": 1,
@@ -10423,15 +10171,8 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqee_ry0v",
-    "name": "Mushrooms",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_canon_86",
-    "name": "Mustard / Dijon (芥末酱/第戎芥末)",
+    "name": "Mustard / Dijon",
     "defaultValue": 15,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -10473,7 +10214,7 @@
   },
   {
     "id": "master_canon_15",
-    "name": "Napa Cabbage (大白菜)",
+    "name": "Napa Cabbage",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -10536,7 +10277,7 @@
   },
   {
     "id": "master_canon_95",
-    "name": "Noodles (面条/拉面/乌冬面)",
+    "name": "Noodles",
     "defaultValue": 200,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -10676,7 +10417,7 @@
   },
   {
     "id": "master_canon_70",
-    "name": "Olive Oil (橄榄油)",
+    "name": "Olive Oil",
     "defaultValue": 20,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
@@ -10899,13 +10640,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqi9_f4in",
-    "name": "Orange Or Other Fruit Flavoured Liquor , Or Apple, Orange Or Other Fruit Juice",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqef_z51u",
     "name": "Orange Peel",
     "defaultValue": 1,
@@ -11054,7 +10788,7 @@
   },
   {
     "id": "master_canon_67",
-    "name": "Oyster Sauce (蚝油)",
+    "name": "Oyster Sauce",
     "defaultValue": 20,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
@@ -11243,7 +10977,7 @@
   },
   {
     "id": "master_ing_mtk0dqep_u32t",
-    "name": "Package Shimeji  Mushrooms",
+    "name": "Package Shimeji Mushrooms",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -11404,7 +11138,7 @@
   },
   {
     "id": "master_canon_62",
-    "name": "Parmesan Cheese (帕玛森芝士)",
+    "name": "Parmesan Cheese",
     "defaultValue": 50,
     "defaultUnit": "g",
     "category": "Dairy & Eggs"
@@ -11516,7 +11250,7 @@
   },
   {
     "id": "master_canon_94",
-    "name": "Pasta / Spaghetti (意大利面)",
+    "name": "Pasta / Spaghetti",
     "defaultValue": 200,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -11740,7 +11474,7 @@
   },
   {
     "id": "master_canon_96",
-    "name": "Pie Crust / Pastry Sheet (派皮/酥皮)",
+    "name": "Pie Crust / Pastry Sheet",
     "defaultValue": 1,
     "defaultUnit": "sheet",
     "category": "Bakery"
@@ -11825,13 +11559,6 @@
   {
     "id": "master_ing_mtk0dqhr_7jxx",
     "name": "Pinot Noir",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqhe_6wd7",
-    "name": "Pinot Noir Or Other Red Wine",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -12139,7 +11866,7 @@
   },
   {
     "id": "master_canon_46",
-    "name": "Pork Belly (五花肉)",
+    "name": "Pork Belly",
     "defaultValue": 500,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -12160,7 +11887,7 @@
   },
   {
     "id": "master_canon_47",
-    "name": "Pork Chops / Loin (猪排/猪里脊)",
+    "name": "Pork Chops / Loin",
     "defaultValue": 400,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -12202,14 +11929,14 @@
   },
   {
     "id": "master_canon_48",
-    "name": "Pork Ribs (猪肋排/排骨)",
+    "name": "Pork Ribs",
     "defaultValue": 500,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_canon_44",
-    "name": "Pork Shoulder (猪梅花肉/猪肩肉)",
+    "name": "Pork Shoulder",
     "defaultValue": 500,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -12243,13 +11970,6 @@
     "category": "Meat & Seafood"
   },
   {
-    "id": "master_ing_mtk0dqe1_17u1",
-    "name": "Pork絲 300公克",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
     "id": "master_ing_mtk0dqlo_pkkt",
     "name": "Portuguese Rolls",
     "defaultValue": 1,
@@ -12260,27 +11980,6 @@
     "id": "master_ing_mtk0dqms_2yxh",
     "name": "Potassium Carbonate Solution",
     "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqee_cnwe",
-    "name": "Potato",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqjv_c9ey",
-    "name": "Potato , Or Other Starchy Or All-rounder Potato",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_canon_12",
-    "name": "Potato (土豆)",
-    "defaultValue": 2,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
@@ -12374,13 +12073,6 @@
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
-  },
-  {
-    "id": "master_ing_mtk0dqgl_9mu3",
-    "name": "Pumpkin",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqel_997q",
@@ -13098,7 +12790,7 @@
   },
   {
     "id": "master_canon_4",
-    "name": "Red Onion (红洋葱)",
+    "name": "Red Onion",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -13119,13 +12811,6 @@
   },
   {
     "id": "master_ing_mtk0dqjf_6lja",
-    "name": "Red Pepper  Flakes",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Pantry & Spices"
-  },
-  {
-    "id": "master_ing_mtk0dqgn_65i0",
     "name": "Red Pepper Flakes",
     "defaultValue": 1,
     "defaultUnit": "pcs",
@@ -13154,7 +12839,7 @@
   },
   {
     "id": "master_ing_mtk0dqf8_mq35",
-    "name": "Red Shiso Leaves   Is About",
+    "name": "Red Shiso Leaves Is About",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -13475,13 +13160,6 @@
     "category": "Pantry & Spices"
   },
   {
-    "id": "master_ing_mtk0dqgn_voe4",
-    "name": "Ricotta",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqh6_2ruj",
     "name": "Ricotta , Full Fat",
     "defaultValue": 1,
@@ -13672,7 +13350,7 @@
   },
   {
     "id": "master_ing_mtk0dqj0_dt3v",
-    "name": "Roquefort, Gorgonzola, Stilton Or Other Good Blue Cheese",
+    "name": "Roquefort, Gorgonzola, Stilton",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
@@ -13707,7 +13385,7 @@
   },
   {
     "id": "master_ing_mtk0dqhs_8wm7",
-    "name": "Roti , Frozen, Pan Fried - For Dunking  - Note 6",
+    "name": "Roti , Frozen, Pan Fried - For Dunking - Note 6",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -13791,7 +13469,7 @@
   },
   {
     "id": "master_ing_mtk0dqhs_k5hv",
-    "name": "Round Wonton  Wrappers  - 1 1 - 2 Packets",
+    "name": "Round Wonton Wrappers - 1 1 - 2 Packets",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -13840,294 +13518,294 @@
   },
   {
     "id": "master_ing_mtk0dqk2_tnxo",
-    "name": "S  Apple Juice",
+    "name": "S Apple Juice",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqjh_hgpu",
-    "name": "S  Arborio Rice",
+    "name": "S Arborio Rice",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_ing_mtk0dqit_06hs",
-    "name": "S  Blueberries",
+    "name": "S Blueberries",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhm_lwwp",
-    "name": "S  Cheese",
+    "name": "S Cheese",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
   },
   {
     "id": "master_ing_mtk0dqip_gs27",
-    "name": "S  Chicken Marylands",
+    "name": "S Chicken Marylands",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqig_d1yq",
-    "name": "S  Chicken Or Veg Stock - Broth",
+    "name": "S Chicken Or Veg Stock - Broth",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqjf_1bwh",
-    "name": "S  Chicken Or Vegetable Broth",
+    "name": "S Chicken Or Vegetable Broth",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqgi_2r2o",
-    "name": "S  Chicken Or Vegetable Broth - Stock",
+    "name": "S Chicken Or Vegetable Broth - Stock",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqiv_eq63",
-    "name": "S  Chicken Or Vegetable Broth, Low Sodium",
+    "name": "S Chicken Or Vegetable Broth, Low Sodium",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqk9_ge1p",
-    "name": "S  Chopped Mango",
+    "name": "S Chopped Mango",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqj1_sfzd",
-    "name": "S  Cider Vinegar",
+    "name": "S Cider Vinegar",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_ing_mtk0dqke_fxyd",
-    "name": "S  Cooked Chopped Turkey Or Chicken",
+    "name": "S Cooked Chopped Turkey Or Chicken",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqjn_rmzh",
-    "name": "S  Cranberry Juice Or Cranberry Pomegranate Juice",
+    "name": "S Cranberry Juice Or Cranberry Pomegranate Juice",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhu_u58r",
-    "name": "S  Cream",
+    "name": "S Cream",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
   },
   {
     "id": "master_ing_mtk0dqj5_31ou",
-    "name": "S  Cream, Heavy - Thickened",
+    "name": "S Cream, Heavy - Thickened",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
   },
   {
     "id": "master_ing_mtk0dqi5_9qh6",
-    "name": "S  Dried Navy Beans",
+    "name": "S Dried Navy Beans",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhb_4ctu",
-    "name": "S  Dry Red Wine",
+    "name": "S Dry Red Wine",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhb_m8kv",
-    "name": "S  Dry Red Wine, Guinness Beer Or Stout",
+    "name": "S Dry Red Wine, Guinness Beer Or Stout",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqgl_n0dq",
-    "name": "S  Enchilada Sauce",
+    "name": "S Enchilada Sauce",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_ing_mtk0dqiv_xe3d",
-    "name": "S  Frozen Peas",
+    "name": "S Frozen Peas",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhz_2x6s",
-    "name": "S  Hot Water",
+    "name": "S Hot Water",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqjy_f1go",
-    "name": "S  Kale",
+    "name": "S Kale",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqj7_wrkz",
-    "name": "S  Kale Leaves",
+    "name": "S Kale Leaves",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqjk_9oal",
-    "name": "S  Mango Slices",
+    "name": "S Mango Slices",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhk_gdco",
-    "name": "S  Pearl Couscous",
+    "name": "S Pearl Couscous",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqgl_8o9k",
-    "name": "S  Pork Carnitas  Or Other Shredded Meat",
+    "name": "S Pork Carnitas",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqhk_ck81",
-    "name": "S  Red Wine",
+    "name": "S Red Wine",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqjn_j52m",
-    "name": "S  Rocket - Arugula Leaves",
+    "name": "S Rocket - Arugula Leaves",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqkh_6e79",
-    "name": "S  Semolina",
+    "name": "S Semolina",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhm_l1kn",
-    "name": "S  Shredded Cheese",
+    "name": "S Shredded Cheese",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
   },
   {
     "id": "master_ing_mtk0dqjp_xu73",
-    "name": "S  Shredded Chicken",
+    "name": "S Shredded Chicken",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqj7_m19b",
-    "name": "S  Shredded Cooked Chicken",
+    "name": "S Shredded Cooked Chicken",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqi6_vjog",
-    "name": "S  Shredded Granny Smith Apple",
+    "name": "S Shredded Granny Smith Apple",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqjn_29u6",
-    "name": "S  Sparkling Apple Juice",
+    "name": "S Sparkling Apple Juice",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqjk_d8gx",
-    "name": "S  Stock - Broth, Chicken Or Veg",
+    "name": "S Stock - Broth, Chicken Or Veg",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqhg_745c",
-    "name": "S  Sultanas",
+    "name": "S Sultanas",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhs_vht9",
-    "name": "S  Tomato Passata Or Us Puree",
+    "name": "S Tomato Passata Or Us Puree",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhq_5gq5",
-    "name": "S  Uncooked Basmati Rice",
+    "name": "S Uncooked Basmati Rice",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_ing_mtk0dqkh_nimw",
-    "name": "S  Very Warm Tap Water",
+    "name": "S Very Warm Tap Water",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqh8_auoj",
-    "name": "S  Water",
+    "name": "S Water",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhp_l33e",
-    "name": "S  Water, Plus More",
+    "name": "S Water, Plus More",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqjn_6vnp",
-    "name": "S  White Rum",
+    "name": "S White Rum",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -14260,7 +13938,7 @@
   },
   {
     "id": "master_ing_mtk0dqmv_2g2j",
-    "name": "S “Chicken” Seitan, Regular Seitan, Or Seitan Puffs",
+    "name": "S “chicken” Seitan, Regular Seitan, Or Seitan Puffs",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -14287,13 +13965,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqgz_8h64",
-    "name": "S Apple Juice",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dql5_tst6",
     "name": "S Apricot Jam",
     "defaultValue": 1,
@@ -14306,13 +13977,6 @@
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqhj_xdhv",
-    "name": "S Arborio Rice",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Pantry & Spices"
   },
   {
     "id": "master_ing_mtk0dqgs_30fc",
@@ -14504,13 +14168,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqei_1txm",
-    "name": "S Blueberries",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqmm_yq9x",
     "name": "S Boneless",
     "defaultValue": 1,
@@ -14561,7 +14218,7 @@
   },
   {
     "id": "master_ing_mtk0dqi6_n9hb",
-    "name": "S Burger Cheese  Or Other Cheese Or Choice",
+    "name": "S Burger Cheese",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
@@ -14607,13 +14264,6 @@
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqi4_36g9",
-    "name": "S Cheese",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Dairy & Eggs"
   },
   {
     "id": "master_ing_mtk0dqk3_b6yh",
@@ -14798,13 +14448,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqks_9u37",
-    "name": "S Cider Vinegar",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Pantry & Spices"
-  },
-  {
     "id": "master_ing_mtk0dqlo_8d33",
     "name": "S Cinnamon",
     "defaultValue": 1,
@@ -14959,13 +14602,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqh4_j16o",
-    "name": "S Cream",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Dairy & Eggs"
-  },
-  {
     "id": "master_ing_mtk0dql5_7hbn",
     "name": "S Crushed Red Pepper Flakes",
     "defaultValue": 1,
@@ -15058,7 +14694,7 @@
   },
   {
     "id": "master_ing_mtk0dqk9_da38",
-    "name": "S Diced Fresh Fruit  - Like Apples, Pears",
+    "name": "S Diced Fresh Fruit - Like Apples, Pears",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -15274,13 +14910,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqkv_akei",
-    "name": "S Dry Red Wine",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqij_nmmq",
     "name": "S Dry White Wine",
     "defaultValue": 1,
@@ -15302,13 +14931,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqgq_8nrb",
-    "name": "S Enchilada Sauce",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Pantry & Spices"
-  },
-  {
     "id": "master_ing_mtk0dqmw_38hv",
     "name": "S Fatty Lamb",
     "defaultValue": 1,
@@ -15317,7 +14939,7 @@
   },
   {
     "id": "master_ing_mtk0dqmu_4di8",
-    "name": "S Fatty, Thinly Sliced Hot Pot Beef",
+    "name": "S Fatty",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -15444,13 +15066,6 @@
   {
     "id": "master_ing_mtk0dqis_v4z7",
     "name": "S Frozen Corn , Or Fresh Corn Kernels",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqgt_whf2",
-    "name": "S Frozen Peas",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -15611,7 +15226,7 @@
   },
   {
     "id": "master_ing_mtk0dqee_rl4n",
-    "name": "S Heavy  Cream",
+    "name": "S Heavy Cream",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
@@ -15673,13 +15288,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqki_8axe",
-    "name": "S Hot Water",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqkj_4df3",
     "name": "S Ice",
     "defaultValue": 1,
@@ -15731,20 +15339,6 @@
   {
     "id": "master_ing_mtk0dqm0_v0t8",
     "name": "S Jinhua Ham",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqg3_7m5e",
-    "name": "S Kale",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqgs_8fpv",
-    "name": "S Kale Leaves",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -16269,7 +15863,7 @@
   },
   {
     "id": "master_ing_mtk0dqho_wq6p",
-    "name": "S Pepperoni  Thick",
+    "name": "S Pepperoni Thick",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -16395,7 +15989,7 @@
   },
   {
     "id": "master_ing_mtk0dqho_c160",
-    "name": "S Potato   Slices",
+    "name": "S Potato Slices",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -16515,13 +16109,6 @@
   {
     "id": "master_ing_mtk0dqlf_7ufj",
     "name": "S Red Fermented Bean Curd",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqh8_widh",
-    "name": "S Red Wine",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -16746,27 +16333,6 @@
   {
     "id": "master_ing_mtk0dqgi_cz6h",
     "name": "S Shredded Beef Cheeks From Slow Cooked Beef Cheeks In Red Wine Leftovers",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqgl_p8q6",
-    "name": "S Shredded Cheese",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Dairy & Eggs"
-  },
-  {
-    "id": "master_ing_mtk0dqhi_p9g5",
-    "name": "S Shredded Chicken",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqgq_vzsn",
-    "name": "S Shredded Cooked Chicken",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -17123,7 +16689,7 @@
   },
   {
     "id": "master_ing_mtk0dqhz_5h1f",
-    "name": "S Thi Nguoi  Or Brawn",
+    "name": "S Thi Nguoi Or Brawn",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -17318,13 +16884,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqk9_ek2n",
-    "name": "S Very Warm Tap Water",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqkt_1clb",
     "name": "S Vietnamese Ground Coffee",
     "defaultValue": 1,
@@ -17341,13 +16900,6 @@
   {
     "id": "master_ing_mtk0dqkq_14xr",
     "name": "S Warm Water",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqef_k5dh",
-    "name": "S Water",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -17606,7 +17158,7 @@
   },
   {
     "id": "master_canon_54",
-    "name": "Salmon Fillet (三文鱼柳)",
+    "name": "Salmon Fillet",
     "defaultValue": 300,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -17620,7 +17172,7 @@
   },
   {
     "id": "master_canon_75",
-    "name": "Salt (食盐)",
+    "name": "Salt",
     "defaultValue": 5,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -17675,13 +17227,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqer_izrk",
-    "name": "Sashimi-grade Yellowtail",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqgg_i910",
     "name": "Sauce Of Slow Cooked Beef Cheeks In Red Wine",
     "defaultValue": 1,
@@ -17704,7 +17249,7 @@
   },
   {
     "id": "master_canon_52",
-    "name": "Sausage / Hot Dog (香肠/热狗)",
+    "name": "Sausage / Hot Dog",
     "defaultValue": 200,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -17872,7 +17417,7 @@
   },
   {
     "id": "master_canon_68",
-    "name": "Sesame Oil (芝麻香油)",
+    "name": "Sesame Oil",
     "defaultValue": 15,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
@@ -17921,7 +17466,7 @@
   },
   {
     "id": "master_canon_5",
-    "name": "Shallot (红葱头)",
+    "name": "Shallot",
     "defaultValue": 3,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -17939,13 +17484,6 @@
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
-  },
-  {
-    "id": "master_canon_71",
-    "name": "Shaoxing Cooking Wine (绍兴料酒)",
-    "defaultValue": 30,
-    "defaultUnit": "ml",
-    "category": "Pantry & Spices"
   },
   {
     "id": "master_ing_mtk0dqjj_mp7k",
@@ -18117,14 +17655,14 @@
   },
   {
     "id": "master_canon_19",
-    "name": "Shiitake Mushroom (香菇)",
+    "name": "Shiitake Mushroom",
     "defaultValue": 6,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqen_h343",
-    "name": "Shimeji  Mushrooms",
+    "name": "Shimeji Mushrooms",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -18208,7 +17746,7 @@
   },
   {
     "id": "master_ing_mtk0dqis_32bf",
-    "name": "Shot  Hot Espresso Coffee  - Note 2",
+    "name": "Shot Hot Espresso Coffee - Note 2",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -18285,17 +17823,10 @@
   },
   {
     "id": "master_canon_53",
-    "name": "Shrimp / Prawns (鲜虾/虾仁)",
+    "name": "Shrimp / Prawns",
     "defaultValue": 300,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqgb_6s6y",
-    "name": "Shungiku",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqh3_7vs0",
@@ -18411,7 +17942,7 @@
   },
   {
     "id": "master_ing_mtk0dqjl_li4v",
-    "name": "Sliced Kalamata Olives  - Or Other Olives Or Briny Things",
+    "name": "Sliced Kalamata Olives -",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -18579,7 +18110,7 @@
   },
   {
     "id": "master_ing_mtk0dqjy_iard",
-    "name": "Small Fennel  Or Finely Sliced",
+    "name": "Small Fennel Or Finely Sliced",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -18866,7 +18397,7 @@
   },
   {
     "id": "master_ing_mtk0dqj5_ky01",
-    "name": "Sour Cream Or Yogurt  - Optional",
+    "name": "Sour Cream Or Yogurt - Optional",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
@@ -18880,7 +18411,7 @@
   },
   {
     "id": "master_canon_65",
-    "name": "Soy Sauce (生抽)",
+    "name": "Soy Sauce",
     "defaultValue": 30,
     "defaultUnit": "ml",
     "category": "Pantry & Spices"
@@ -18957,7 +18488,7 @@
   },
   {
     "id": "master_canon_16",
-    "name": "Spinach (菠菜)",
+    "name": "Spinach",
     "defaultValue": 200,
     "defaultUnit": "g",
     "category": "Produce"
@@ -19034,7 +18565,7 @@
   },
   {
     "id": "master_ing_mtk0dqif_olej",
-    "name": "Spring Roll Wrappers, Defrosted  Or 35 - 40 Small Spring Roll Wrappers",
+    "name": "Spring Roll Wrappers, Defrosted Or 35 - 40 Small Spring Roll Wrappers",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -19097,7 +18628,7 @@
   },
   {
     "id": "master_canon_57",
-    "name": "Squid / Calamari (鱿鱼/墨鱼)",
+    "name": "Squid / Calamari",
     "defaultValue": 300,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -19146,7 +18677,7 @@
   },
   {
     "id": "master_ing_mtk0dqk9_o5gx",
-    "name": "Standard Or 24 Small Soft White Roll Slab  - Note 1",
+    "name": "Standard Or 24 Small Soft White Roll Slab - Note 1",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -19250,13 +18781,6 @@
     "category": "Meat & Seafood"
   },
   {
-    "id": "master_ing_mtk0dqhe_fyam",
-    "name": "Stewing Beef Or Other Economical Beef Cuts",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
     "id": "master_ing_mtk0dqfh_j9ce",
     "name": "Stick Cinnamon",
     "defaultValue": 1,
@@ -19265,14 +18789,14 @@
   },
   {
     "id": "master_ing_mtk0dqf1_zs5m",
-    "name": "Stick Kanten  Powder",
+    "name": "Stick Kanten Powder",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqey_mj0v",
-    "name": "Stick Packet Kanten  Powder",
+    "name": "Stick Packet Kanten Powder",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -19322,13 +18846,6 @@
   {
     "id": "master_ing_mtk0dql0_1uvf",
     "name": "Straw Mushrooms",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqez_paqa",
-    "name": "Strawberries",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -19538,7 +19055,7 @@
   },
   {
     "id": "master_ing_mtk0dqgn_vdjv",
-    "name": "Sweet Apple Cider  - I Used Rochdale Apple Cider",
+    "name": "Sweet Apple Cider - I Used Rochdale Apple Cider",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -19594,7 +19111,7 @@
   },
   {
     "id": "master_ing_mtk0dqdx_xqmi",
-    "name": "Sweet Potato Leaves 1包",
+    "name": "Sweet Potato Leaves",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -19602,13 +19119,6 @@
   {
     "id": "master_ing_mtk0dqe7_uqbv",
     "name": "Sweet Potato Leaves 約150g或",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqed_54s8",
-    "name": "Sweet Red Bean Paste",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -19664,7 +19174,7 @@
   },
   {
     "id": "master_ing_mtk0dqjv_97qc",
-    "name": "Swiss Brown Or Other Small Mushrooms",
+    "name": "Swiss Brown",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -19685,7 +19195,7 @@
   },
   {
     "id": "master_ing_mtk0dqij_gpcv",
-    "name": "Swiss Or Other Melting Cheese Slices",
+    "name": "Swiss",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
@@ -19714,13 +19224,6 @@
   {
     "id": "master_ing_mtk0dqh8_n401",
     "name": "Tabasco Or Cayenne Pepper",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Pantry & Spices"
-  },
-  {
-    "id": "master_ing_mtk0dqje_mxb1",
-    "name": "Tabasco Or Other Hot Sauce",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
@@ -19762,7 +19265,7 @@
   },
   {
     "id": "master_ing_mtk0dqk1_o6cq",
-    "name": "Tahini  Or Yoghurt",
+    "name": "Tahini Or Yoghurt",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -19852,13 +19355,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqeg_yhc1",
-    "name": "Taro",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqhv_rv77",
     "name": "Tarragon",
     "defaultValue": 1,
@@ -19875,13 +19371,6 @@
   {
     "id": "master_ing_mtk0dqi3_rl80",
     "name": "Tartare Sauce",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Pantry & Spices"
-  },
-  {
-    "id": "master_ing_mtk0dqj6_f4uu",
-    "name": "Tartare Sauce Or Other Seafood Dipping Sauce",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
@@ -20090,13 +19579,6 @@
     "category": "Pantry & Spices"
   },
   {
-    "id": "master_ing_mtk0dqfj_nact",
-    "name": "Thinly Sliced Pork",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Meat & Seafood"
-  },
-  {
     "id": "master_ing_mtk0dqeg_gemz",
     "name": "Thyme",
     "defaultValue": 1,
@@ -20175,7 +19657,7 @@
   },
   {
     "id": "master_ing_mtk0dqh4_x0zf",
-    "name": "Tins  Chickpeas",
+    "name": "Tins Chickpeas",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -20455,7 +19937,7 @@
   },
   {
     "id": "master_canon_34",
-    "name": "Tofu (豆腐)",
+    "name": "Tofu",
     "defaultValue": 1,
     "defaultUnit": "block",
     "category": "Produce"
@@ -20473,20 +19955,6 @@
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
-  },
-  {
-    "id": "master_ing_mtk0dqee_mgrz",
-    "name": "Tomato",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_canon_8",
-    "name": "Tomato (番茄/西红柿)",
-    "defaultValue": 2,
-    "defaultUnit": "pcs",
-    "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqi6_gkxm",
@@ -20700,21 +20168,21 @@
   },
   {
     "id": "master_ing_mtk0dqei_2fax",
-    "name": "Unagi  Fillet",
+    "name": "Unagi Fillet",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqey_bhh1",
-    "name": "Unagi  Fillets",
+    "name": "Unagi Fillets",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqfe_uow8",
-    "name": "Unagi  Sauce",
+    "name": "Unagi Sauce",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
@@ -20776,13 +20244,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqfc_1c35",
-    "name": "Used Ume Plums From Making Plum Wine - Syrup",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Pantry & Spices"
-  },
-  {
     "id": "master_ing_mtk0dqja_popp",
     "name": "Vanilla",
     "defaultValue": 1,
@@ -20826,7 +20287,7 @@
   },
   {
     "id": "master_ing_mtk0dqkc_1vz8",
-    "name": "Vanilla Bean Paste With Seeds  Or 1 Vanilla Bean Pod",
+    "name": "Vanilla Bean Paste With Seeds Or 1 Vanilla Bean Pod",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
@@ -20931,7 +20392,7 @@
   },
   {
     "id": "master_ing_mtk0dqhi_8yol",
-    "name": "Vegeta Or Other Stock Powder",
+    "name": "Vegeta",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
@@ -21140,13 +20601,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_canon_89",
-    "name": "Water (水/清水)",
-    "defaultValue": 250,
-    "defaultUnit": "ml",
-    "category": "Pantry & Spices"
-  },
-  {
     "id": "master_ing_mtk0dqk2_yk3j",
     "name": "Water As Required",
     "defaultValue": 1,
@@ -21274,7 +20728,7 @@
   },
   {
     "id": "master_canon_55",
-    "name": "White Fish Fillet (鱼片/鳕鱼柳)",
+    "name": "White Fish Fillet",
     "defaultValue": 300,
     "defaultUnit": "g",
     "category": "Meat & Seafood"
@@ -21302,7 +20756,7 @@
   },
   {
     "id": "master_canon_79",
-    "name": "White Pepper (白胡椒)",
+    "name": "White Pepper",
     "defaultValue": 2,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -21323,7 +20777,7 @@
   },
   {
     "id": "master_canon_77",
-    "name": "White Sugar (白糖)",
+    "name": "White Sugar",
     "defaultValue": 15,
     "defaultUnit": "g",
     "category": "Pantry & Spices"
@@ -21400,7 +20854,7 @@
   },
   {
     "id": "master_canon_40",
-    "name": "Whole Chicken (整鸡)",
+    "name": "Whole Chicken",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
@@ -21463,7 +20917,7 @@
   },
   {
     "id": "master_canon_60",
-    "name": "Whole Milk (牛奶)",
+    "name": "Whole Milk",
     "defaultValue": 250,
     "defaultUnit": "ml",
     "category": "Dairy & Eggs"
@@ -21631,161 +21085,147 @@
   },
   {
     "id": "master_ing_mtk0dqhr_ovbp",
-    "name": "X 1 Fresh Burrata Cheese",
+    "name": "1 Fresh Burrata Cheese",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
   },
   {
     "id": "master_ing_mtk0dqin_aakh",
-    "name": "X 1.25kg - 2.5lb Pork Knuckle",
+    "name": "Pork Knuckle",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqk9_hur3",
-    "name": "X 125g - 4oz Small Brie",
+    "name": "Small Brie",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqhm_wv2v",
-    "name": "X 160 - 180g - 6oz Barramundi Fillets",
+    "name": "- 6oz Barramundi Fillets",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqj8_sh37",
-    "name": "X 180g - 6oz Barramundi Fillets",
+    "name": "Barramundi Fillets",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqgn_i0fk",
-    "name": "X 20\" - 50 Cm Baguette - French Stick",
+    "name": "20\" - 50 Cm Baguette - French Stick",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqk7_e9u0",
-    "name": "X 20cm - 8 Chocolate Cake",
+    "name": "20cm - 8 Chocolate Cake",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Pantry & Spices"
   },
   {
     "id": "master_ing_mtk0dqj3_qfsf",
-    "name": "X 250g - 8oz Lamb Backstraps",
+    "name": "Lamb Backstraps",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqhi_2cvm",
-    "name": "X 300 - 350g - 10 - 12 Oz Beef Ribs",
+    "name": "- 10 - 12 Oz Beef Ribs",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqjs_wp2t",
-    "name": "X 350 - 400g - 12 - 13 Oz Bream Or Snapper Fish",
+    "name": "- 12 - 13 Oz Bream Or Snapper Fish",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
-    "id": "master_ing_mtk0dqig_kdz7",
-    "name": "X 400g  Black Beans",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqif_v2hm",
-    "name": "X 400g  Corn Kernels",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqix_wf4i",
-    "name": "X 400g - 14 Oz Cans Chickpeas",
+    "name": "Cans Chickpeas",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqih_8k33",
-    "name": "X 400g - 14oz Cans Cannellini Beans",
+    "name": "Cans Cannellini Beans",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqi5_9acf",
-    "name": "X 400g - 14oz Cans Harricot - Navy Beans, Cannellini Or Any White Beans",
+    "name": "Cans Harricot - Navy Beans, Cannellini Or Any White Beans",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqi1_7ran",
-    "name": "X 400g - 14oz Cans Red Kidney Beans",
+    "name": "Cans Red Kidney Beans",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqj8_2et3",
-    "name": "X 400g - 14oz Cans Red Kidney Or Other Beans",
+    "name": "Cans Red Kidney",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqjk_d36m",
-    "name": "X 420g - 15oz Cans Cannellini Or Any White Beans",
+    "name": "Cans Cannellini Or Any White Beans",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqi9_u050",
-    "name": "X 450g - 14 Oz Madeira Cake Or Pound Cake Store Bought",
+    "name": "Madeira Cake Or Pound Cake Store Bought",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqjk_ljt2",
-    "name": "X 60g - 2oz Ripened Goat&039;s Cheese  Wide, Ideally Aoc",
+    "name": "Ripened Goat&039;s Cheese Wide, Ideally Aoc",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
   },
   {
     "id": "master_ing_mtk0dqil_g6hi",
-    "name": "X 800g - 1.3lb Racks Of Lamb",
+    "name": "Racks Of Lamb",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqia_0ril",
-    "name": "X 800g - 1.6 Lb Whole Snapper Or Other Whole Fish",
+    "name": "Whole Snapper",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Meat & Seafood"
   },
   {
     "id": "master_ing_mtk0dqj7_28kl",
-    "name": "X 80g - 3 Oz Thin Veal Steaks Or Boneless Cutlets",
+    "name": "Thin Veal Steaks Or Boneless Cutlets",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -21841,7 +21281,7 @@
   },
   {
     "id": "master_canon_3",
-    "name": "Yellow Onion (洋葱)",
+    "name": "Yellow Onion",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -21862,7 +21302,7 @@
   },
   {
     "id": "master_ing_mtk0dqh2_7hnn",
-    "name": "Yoghurt  Or Water",
+    "name": "Yoghurt Or Water",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -21883,7 +21323,7 @@
   },
   {
     "id": "master_ing_mtk0dqi9_3fd4",
-    "name": "Yogurt  Or Water",
+    "name": "Yogurt Or Water",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
@@ -21897,7 +21337,7 @@
   },
   {
     "id": "master_ing_mtk0dqil_avgo",
-    "name": "Yogurt, Plain Low Fat  Or Sour Cream",
+    "name": "Yogurt, Plain Low Fat Or Sour Cream",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Dairy & Eggs"
@@ -22086,7 +21526,7 @@
   },
   {
     "id": "master_canon_24",
-    "name": "Zucchini / Courgette (西葫芦/节瓜)",
+    "name": "Zucchini / Courgette",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22170,7 +21610,7 @@
   },
   {
     "id": "master_ing_mtk0dqec_0x9k",
-    "name": "仿土雞腿 1支",
+    "name": "仿土雞腿",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22205,7 +21645,7 @@
   },
   {
     "id": "master_ing_mtk0dqe1_64ir",
-    "name": "冬粉 250公克",
+    "name": "冬粉",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22393,13 +21833,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqe5_7p4z",
-    "name": "咖喱粉 2匙",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqe5_a31s",
     "name": "咖喱醬",
     "defaultValue": 1,
@@ -22429,14 +21862,14 @@
   },
   {
     "id": "master_ing_mtk0dqe7_ezzj",
-    "name": "地瓜粉（用吃飯碗量） 1碗",
+    "name": "地瓜粉（用吃飯碗量）",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqe9_wyns",
-    "name": "大白蝦 10支",
+    "name": "大白蝦",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22478,7 +21911,7 @@
   },
   {
     "id": "master_ing_mtk0dqdz_npto",
-    "name": "小松菜 1包",
+    "name": "小松菜",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22499,7 +21932,7 @@
   },
   {
     "id": "master_ing_mtk0dqe7_q02d",
-    "name": "小貢丸 1盒",
+    "name": "小貢丸",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22555,21 +21988,21 @@
   },
   {
     "id": "master_ing_mtk0dqe6_kscy",
-    "name": "市售水餃皮 1 包",
+    "name": "市售水餃皮",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqe9_7buw",
-    "name": "帶皮火腿切片 1包",
+    "name": "帶皮火腿切片",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqe3_wqdz",
-    "name": "平葉巴西里 3支",
+    "name": "平葉巴西里",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22583,7 +22016,7 @@
   },
   {
     "id": "master_ing_mtk0dqe9_z02t",
-    "name": "忌廉 200毫升",
+    "name": "忌廉",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22618,7 +22051,7 @@
   },
   {
     "id": "master_ing_mtk0dqe3_llf4",
-    "name": "新鮮百里香 3支",
+    "name": "新鮮百里香",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22639,7 +22072,7 @@
   },
   {
     "id": "master_ing_mtk0dqe3_xi8a",
-    "name": "新鮮迷迭香 3支",
+    "name": "新鮮迷迭香",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22828,49 +22261,7 @@
   },
   {
     "id": "master_ing_mtk0dqe3_uqqv",
-    "name": "水 10毫升",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe4_jum4",
-    "name": "水 110毫升",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe7_cat0",
-    "name": "水 130毫升",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe4_pyeq",
-    "name": "水 180毫升",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe5_68rz",
-    "name": "水 20毫升",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe6_i67s",
-    "name": "水 30毫升",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe9_btsg",
-    "name": "水 3碗",
+    "name": "水",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22878,20 +22269,6 @@
   {
     "id": "master_ing_mtk0dqe6_kmli",
     "name": "水 5.5杯",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe4_fn01",
-    "name": "水 600毫升",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqdw_ms5z",
-    "name": "水 700毫升",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -22926,7 +22303,7 @@
   },
   {
     "id": "master_ing_mtk0dqe9_edct",
-    "name": "水（煮水餃用） 1500毫升",
+    "name": "水（煮水餃用）",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -23003,7 +22380,7 @@
   },
   {
     "id": "master_ing_mtk0dqe6_yd45",
-    "name": "溫熱水 4匙",
+    "name": "溫熱水",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -23115,7 +22492,7 @@
   },
   {
     "id": "master_ing_mtk0dqe5_yeks",
-    "name": "燙水80-90℃ 90毫升",
+    "name": "燙水80-90℃",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -23171,14 +22548,7 @@
   },
   {
     "id": "master_ing_mtk0dqeb_cpb9",
-    "name": "玉米筍 4 支",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe9_d949",
-    "name": "玉米筍 6支",
+    "name": "玉米筍",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -23220,7 +22590,7 @@
   },
   {
     "id": "master_ing_mtk0dqe7_3kbm",
-    "name": "甜豆（切2等份） 10支",
+    "name": "甜豆（切2等份）",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -23233,15 +22603,8 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqe6_0mcx",
-    "name": "甜麵醬 30毫升",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqe0_2e1h",
-    "name": "甜龍筍 1 - 2支",
+    "name": "甜龍筍",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -23366,15 +22729,8 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqe9_ovos",
-    "name": "秋葵 12支",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqe0_2e20",
-    "name": "秋葵（小） 24支",
+    "name": "秋葵（小）",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -23457,13 +22813,6 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqe1_kb58",
-    "name": "紅蘿蔔 1 - 2支",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqe4_afnm",
     "name": "紅蘿蔔（可不用）",
     "defaultValue": 1,
@@ -23507,7 +22856,7 @@
   },
   {
     "id": "master_ing_mtk0dqe1_hri2",
-    "name": "紅酒 100毫升",
+    "name": "紅酒",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -23613,13 +22962,6 @@
   {
     "id": "master_ing_mtk0dqdx_q1lv",
     "name": "美國雞腿",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqdw_drgl",
-    "name": "美國雞腿 1支",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -23807,15 +23149,8 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqdw_fs64",
-    "name": "蕃薯粉 1匙",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqea_eqse",
-    "name": "藥膳湯 600毫升",
+    "name": "藥膳湯",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -23878,7 +23213,7 @@
   },
   {
     "id": "master_ing_mtk0dqe9_gwn6",
-    "name": "蟹味菇 1包",
+    "name": "蟹味菇",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -24053,7 +23388,7 @@
   },
   {
     "id": "master_ing_mtk0dqe5_zftg",
-    "name": "辛拉麵 1包",
+    "name": "辛拉麵",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -24144,7 +23479,7 @@
   },
   {
     "id": "master_ing_mtk0dqea_ywna",
-    "name": "金針菇 1包",
+    "name": "金針菇",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -24214,14 +23549,14 @@
   },
   {
     "id": "master_ing_mtk0dqdw_za6q",
-    "name": "雞里肌肉 1包",
+    "name": "雞里肌肉",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
   },
   {
     "id": "master_ing_mtk0dqe7_q4h6",
-    "name": "電鍋外鍋用水 250毫升",
+    "name": "電鍋外鍋用水",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -24339,29 +23674,8 @@
     "category": "Produce"
   },
   {
-    "id": "master_ing_mtk0dqe4_g2zr",
-    "name": "鮮味炒手 1 - 2匙",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe2_0mla",
-    "name": "鮮味炒手 2匙",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
     "id": "master_ing_mtk0dqea_w020",
     "name": "鮮奶",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe2_0v7n",
-    "name": "鮮奶 220毫升",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -24410,7 +23724,7 @@
   },
   {
     "id": "master_ing_mtk0dqe5_h95t",
-    "name": "鴻喜菇 1包",
+    "name": "鴻喜菇",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -24418,13 +23732,6 @@
   {
     "id": "master_ing_mtk0dqea_eos4",
     "name": "鴻禧菇",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqdv_hm9m",
-    "name": "鴻禧菇 1包",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"
@@ -24474,13 +23781,6 @@
   {
     "id": "master_ing_mtk0dqeb_cefo",
     "name": "麵腸",
-    "defaultValue": 1,
-    "defaultUnit": "pcs",
-    "category": "Produce"
-  },
-  {
-    "id": "master_ing_mtk0dqe7_6faq",
-    "name": "麵腸 1盒",
     "defaultValue": 1,
     "defaultUnit": "pcs",
     "category": "Produce"

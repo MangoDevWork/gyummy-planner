@@ -1,5 +1,6 @@
 import type { Dish, Ingredient, MasterIngredient, LocalizedDishContent } from '../types';
 import type { Language } from './languageService';
+import { CHINESE_RECIPE_TRANSLATIONS } from './recipeLocalizationDictionary';
 
 /**
  * Extensive bidirectional ingredient translation dictionary
@@ -251,6 +252,62 @@ export const INGREDIENT_TRANSLATION_MAP: Record<string, string> = {
   'dried bean curd': '腐竹 / 豆皮'
 };
 
+// Asian & Chinese Kitchen Staples
+const EXTRA_CHINESE_TRANSLATIONS: Record<string, string> = {
+  'water': '清水 / 水',
+  'salt': '食盐 / 食鹽 / 精盐',
+  'sugar': '白糖 / 砂糖 / 冰糖',
+  'sesame oil': '芝麻香油 / 芝麻油 / 香油',
+  'soy sauce': '生抽酱油 / 生抽 / 醬油',
+  'dark soy sauce': '老抽 / 老抽酱油 / 老抽醬油',
+  'oyster sauce': '蚝油 / 蠔油',
+  'white pepper': '白胡椒粉 / 白胡椒',
+  'black pepper': '黑胡椒粉 / 黑胡椒',
+  'five spice powder': '五香粉',
+  'rice wine': '米酒 / 料酒',
+  'cornstarch': '玉米澱粉 / 太白粉 / 生粉',
+  'eggs': '鸡蛋 / 雞蛋',
+  'garlic': '大蒜 / 蒜瓣 / 蒜头',
+  'ginger': '生薑 / 姜 / 鲜姜',
+  'scallion': '香蔥 / 青蔥 / 蔥 / 小葱',
+  'green onion': '小葱 / 香葱 / 青葱 / 葱',
+  'onion': '洋葱 / 洋蔥',
+  'cucumber': '小黃瓜 / 小黄瓜 / 黄瓜',
+  'silk gourd': '絲瓜 / 丝瓜',
+  'tofu': '豆腐 / 嫩豆腐 / 板豆腐',
+  'okra': '秋葵 / 黃秋葵',
+  'bitter melon': '苦瓜',
+  'bamboo shoots': '竹筍 / 竹笋',
+  'shimeji mushrooms': '鴻禧菇 / 鸿喜菇 / 白玉菇',
+  'king oyster mushroom': '杏鮑菇 / 杏鲍菇',
+  'enoki mushrooms': '金針菇 / 金针菇',
+  'shiitake mushrooms': '香菇 / 冬菇',
+  'wood ear mushroom': '木耳 / 黑木耳',
+  'potato': '馬鈴薯 / 土豆 / 马铃薯',
+  'cabbage': '高麗菜 / 卷心菜 / 包菜',
+  'chinese cabbage': '大白菜 / 白菜 / 娃娃菜',
+  'green beans': '四季豆 / 刀豆 / 扁豆 / 醜豆',
+  'bean sprouts': '豆芽菜 / 豆芽 / 绿豆芽',
+  'bok choy': '青江菜 / 油菜 / 上海青',
+  'a choy': 'A菜 / 台湾油麦菜',
+  'komatsuna': '小松菜',
+  'sweet potato': '地瓜 / 番薯 / 红薯',
+  'pumpkin': '南瓜 / 栗南瓜',
+  'lily bulbs': '百合 / 鲜百合',
+  'curry roux': '咖哩塊 / 咖喱块',
+  'pork chops': '肉排 / 豬排 / 猪排',
+  'minced pork': '豬絞肉 / 猪绞肉 / 猪肉馅',
+  'pork strips': '肉丝 / 猪肉丝 / 豬柳',
+  'minced beef': '牛絞肉 / 牛绞肉 / 牛肉馅',
+  'chicken thigh': '美國雞腿 / 雞腿 / 鸡腿',
+  'chicken wings': '鸡翅 / 雞翅',
+  'squid': '花枝 / 鮮魷 / 鱿鱼',
+  'glass noodles': '冬粉 / 粉丝 / 粉丝细粉',
+  'cooking oil': '食用油 / 植物油 / 沙拉油 / 料理油 / 油'
+};
+
+Object.assign(INGREDIENT_TRANSLATION_MAP, EXTRA_CHINESE_TRANSLATIONS);
+
 // Reverse lookup for Chinese -> English
 const REVERSE_INGREDIENT_MAP = new Map<string, string>();
 Object.entries(INGREDIENT_TRANSLATION_MAP).forEach(([en, zh]) => {
@@ -447,10 +504,39 @@ export function getLocalizedIngredientName(name?: string, preferredLang?: Langua
     return clean; // Fast fallback to prevent O(N) regex overhead in huge lists
   } else {
     // English mode
+    // 1. Check if ingredient has English in parentheses e.g. '苦瓜 (Bitter Melon)'
+    const embeddedEn = clean.match(/\(([^)]*[a-zA-Z]{3,}[^)]*)\)/);
+    if (embeddedEn) {
+      const en = embeddedEn[1].trim();
+      return en.charAt(0).toUpperCase() + en.slice(1);
+    }
+
+    // 2. Direct exact match in reverse lookup dictionary
     if (REVERSE_INGREDIENT_MAP.has(cleanLower)) {
       const en = REVERSE_INGREDIENT_MAP.get(cleanLower)!;
       return en.charAt(0).toUpperCase() + en.slice(1);
     }
+
+    // 3. Strip trailing measurements / brackets / notes and check
+    const strippedZh = cleanLower
+      .replace(/^\[[^\]]+\]\s*/, '')
+      .replace(/\s+\d+.*$/, '')
+      .replace(/\s*\([^)]*\)/g, '')
+      .trim();
+    if (strippedZh && REVERSE_INGREDIENT_MAP.has(strippedZh)) {
+      const en = REVERSE_INGREDIENT_MAP.get(strippedZh)!;
+      return en.charAt(0).toUpperCase() + en.slice(1);
+    }
+
+    // 4. Substring matching for common Chinese terms
+    if (/[\u4e00-\u9fa5]/.test(clean)) {
+      for (const [zhKey, enVal] of REVERSE_INGREDIENT_MAP.entries()) {
+        if (zhKey.length >= 2 && cleanLower.includes(zhKey)) {
+          return enVal.charAt(0).toUpperCase() + enVal.slice(1);
+        }
+      }
+    }
+
     return clean;
   }
 }
@@ -573,7 +659,27 @@ export function getLocalizedDish(
         sourceLanguage: baseLang
       };
     }
-    // 4. Untranslated fallback
+    // 4. Scraped / Master library Chinese recipes dictionary lookup
+    else if (
+      (dish.id && CHINESE_RECIPE_TRANSLATIONS[dish.id]) ||
+      CHINESE_RECIPE_TRANSLATIONS[safeDishName]
+    ) {
+      const match = (dish.id && CHINESE_RECIPE_TRANSLATIONS[dish.id]) || CHINESE_RECIPE_TRANSLATIONS[safeDishName];
+      const localizedIngredients = safeIngredients.map((ing) => ({
+        ...ing,
+        name: getLocalizedIngredientName(ing.name, preferredLang) || ing.name
+      }));
+
+      result = {
+        name: preferredLang === 'en' ? match.en : match.zh,
+        instructions: safeInstructions,
+        tags: safeTags,
+        ingredients: localizedIngredients,
+        isUntranslated: false,
+        sourceLanguage: 'zh-CN'
+      };
+    }
+    // 5. Untranslated fallback
     else {
       const localizedIngredients = safeIngredients.map((ing) => ({
         ...ing,

@@ -17,8 +17,7 @@ import {
   AlertTriangle,
   Check,
   ChevronRight,
-  Scale,
-  ShieldAlert
+  Scale
 } from 'lucide-react';
 import { updateFamilyPinFromSettings, fetchFamilyCloudData, deleteFamilyAccountAndData } from '../../services/firebase';
 import { purgeFamilyLocalStorage } from '../../services/storage';
@@ -649,29 +648,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* ─── Legal & Disclaimers ─── */}
       <SectionCard title={language === 'zh-CN' ? '法律条款与免责声明' : 'Legal & Disclaimers'}>
-        <div className="space-y-2">
-          <button
-            type="button"
-            onClick={() => {
-              setLegalInitialTab('allergies');
-              setIsLegalModalOpen(true);
-            }}
-            className="flex w-full items-center justify-between rounded-xl border border-[#EDE8DF] bg-[#FAF8F5] p-3 text-left transition hover:border-[#FFD13B]/70 dark:border-[#3D362E] dark:bg-[#221E1A] cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <ShieldAlert className="h-4 w-4 text-rose-500" />
-              <div>
-                <p className="text-[13px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB]">
-                  {language === 'zh-CN' ? '过敏与健康免责声明' : 'Allergen & Health Disclaimer'}
-                </p>
-                <p className="text-[11px] text-[#A89F95]">
-                  {language === 'zh-CN' ? '算法估算说明、非医疗建议及责任豁免' : 'Algorithmic estimations, not medical advice'}
-                </p>
-              </div>
-            </div>
-            <ChevronRight className="h-4 w-4 text-[#A89F95]" />
-          </button>
-
+        <div>
           <button
             type="button"
             onClick={() => {
@@ -684,10 +661,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <Scale className="h-4 w-4 text-[#FFD13B]" />
               <div>
                 <p className="text-[13px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB]">
-                  {language === 'zh-CN' ? '服务条款与食品安全说明' : 'Terms of Service & Food Safety'}
+                  {language === 'zh-CN' ? '服务条款、隐私与免责声明' : 'Terms of Service, Privacy & Health Disclaimer'}
                 </p>
                 <p className="text-[11px] text-[#A89F95]">
-                  {language === 'zh-CN' ? '澳大利亚法及国际适用条款、责任限制' : 'Australian & International terms, liability limits'}
+                  {language === 'zh-CN' ? '算法估算说明、食品安全、澳大利亚及国际适用责任限制' : 'Algorithmic estimations, food safety, Australian & international terms'}
                 </p>
               </div>
             </div>

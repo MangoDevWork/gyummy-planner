@@ -33,18 +33,21 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'avocado oil',
       'salad oil',
       'grapeseed oil',
-      'sesame oil',
-      'toasted sesame oil',
       '食用油',
       '植物油',
       '橄榄油',
-      '香油',
-      '芝麻油',
       '花生油',
       '菜籽油',
       '玉米油'
     ],
     negatives: [
+      'sesame oil',
+      'toasted sesame oil',
+      'pure sesame oil',
+      'asian sesame oil',
+      '香油',
+      '芝麻油',
+      '芝麻香油',
       'oyster sauce',
       'chili oil',
       'truffle oil',
@@ -55,6 +58,32 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       '红油',
       '辣椒油',
       '蚝油'
+    ]
+  },
+  {
+    groupName: 'Sesame Oil',
+    keywords: [
+      'sesame oil',
+      'toasted sesame oil',
+      'pure sesame oil',
+      'asian sesame oil',
+      '芝麻油',
+      '香油',
+      '芝麻香油',
+      '熟芝麻油'
+    ],
+    negatives: [
+      'cooking oil',
+      'vegetable oil',
+      'canola oil',
+      'olive oil',
+      'chili oil',
+      'chili sesame oil',
+      'sesame seeds',
+      'sesame paste',
+      '芝麻酱',
+      '白芝麻',
+      '黑芝麻'
     ]
   },
   {
@@ -97,17 +126,14 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       'cracked black pepper',
       'coarse black pepper',
       'freshly ground black pepper',
-      'pepper powder',
       'black pepper powder',
-      'white pepper',
-      'white pepper powder',
       '黑胡椒',
       '黑胡椒粉',
-      '白胡椒',
-      '白胡椒粉',
-      '胡椒粉'
+      '黑胡椒粒'
     ],
     negatives: [
+      'white pepper',
+      '白胡椒',
       'bell pepper',
       'chili pepper',
       'cayenne pepper',
@@ -128,26 +154,57 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
     ]
   },
   {
-    groupName: 'Soy Sauce',
+    groupName: 'White Pepper',
     keywords: [
-      'soy sauce',
+      'white pepper',
+      'white pepper powder',
+      'ground white pepper',
+      'white peppercorn',
+      'white peppercorns',
+      '白胡椒',
+      '白胡椒粉',
+      '白胡椒粒'
+    ],
+    negatives: [
+      'black pepper',
+      '黑胡椒',
+      'bell pepper',
+      'chili pepper',
+      'cayenne pepper',
+      'red pepper',
+      'green pepper',
+      'yellow pepper',
+      'capsicum',
+      'pepperoni',
+      '彩椒',
+      '甜椒',
+      '青椒',
+      '红椒',
+      '辣椒'
+    ]
+  },
+  {
+    groupName: 'Light Soy Sauce',
+    keywords: [
       'light soy sauce',
-      'dark soy sauce',
       'low sodium soy sauce',
       'all purpose soy sauce',
-      'tamari',
       'regular soy sauce',
       'shoyu',
       'japanese soy sauce',
       'seasoning soy sauce',
       '生抽',
-      '老抽',
-      '酱油',
-      '味极鲜',
       '生抽酱油',
-      '老抽酱油'
+      '味极鲜',
+      '酱油'
     ],
     negatives: [
+      'dark soy sauce',
+      'sweet soy sauce',
+      'mushroom dark soy sauce',
+      '老抽',
+      '老抽酱油',
+      '甜酱油',
       'soy milk',
       'soybean',
       'soybeans',
@@ -155,6 +212,24 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
       '豆浆',
       '大豆',
       '黄豆'
+    ]
+  },
+  {
+    groupName: 'Dark Soy Sauce',
+    keywords: [
+      'dark soy sauce',
+      'mushroom dark soy sauce',
+      '老抽',
+      '老抽酱油',
+      '草菇老抽'
+    ],
+    negatives: [
+      'light soy sauce',
+      'low sodium soy sauce',
+      '生抽',
+      '味极鲜',
+      'soy milk',
+      '豆浆'
     ]
   },
   {
@@ -278,25 +353,53 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
     ]
   },
   {
-    groupName: 'Starch & Flour',
+    groupName: 'Thickening Starch',
     keywords: [
       'cornstarch',
       'corn starch',
       'corn flour',
       'tapioca starch',
       'potato starch',
+      '生粉',
+      '玉米淀粉',
+      '土豆淀粉',
+      '太白粉',
+      '淀粉'
+    ],
+    negatives: [
+      'all purpose flour',
+      'plain flour',
+      'wheat flour',
+      'bread flour',
+      'cake flour',
+      '面粉',
+      '中筋面粉',
+      '低筋面粉',
+      '高筋面粉'
+    ]
+  },
+  {
+    groupName: 'Flour (Baking & Coating)',
+    keywords: [
       'all purpose flour',
       'all-purpose flour',
       'plain flour',
       'wheat flour',
+      'bread flour',
+      'cake flour',
+      '中筋面粉',
+      '面粉',
+      '低筋面粉',
+      '高筋面粉'
+    ],
+    negatives: [
+      'cornstarch',
+      'tapioca starch',
+      'potato starch',
+      '生粉',
       '玉米淀粉',
       '土豆淀粉',
       '太白粉',
-      '生粉',
-      '中筋面粉',
-      '面粉'
-    ],
-    negatives: [
       'flour tortilla',
       'rice flour',
       'almond flour',
@@ -304,25 +407,46 @@ const PANTRY_EQUIVALENCE_GROUPS: EquivalenceGroup[] = [
     ]
   },
   {
-    groupName: 'Vinegar',
+    groupName: 'Light / Rice / White Vinegar',
     keywords: [
-      'vinegar',
       'rice vinegar',
       'white vinegar',
       'apple cider vinegar',
-      'black vinegar',
-      'chinkiang vinegar',
       'distilled vinegar',
-      'red wine vinegar',
       'white wine vinegar',
       '白醋',
-      '米醋',
-      '香醋',
-      '陈醋',
-      '醋'
+      '米醋'
     ],
     negatives: [
+      'black vinegar',
+      'chinkiang vinegar',
+      'aged vinegar',
+      '香醋',
+      '陈醋',
+      '黑醋',
+      '镇江香醋',
       'balsamic vinegar glaze'
+    ]
+  },
+  {
+    groupName: 'Black / Chinkiang Vinegar',
+    keywords: [
+      'black vinegar',
+      'chinkiang vinegar',
+      'aged vinegar',
+      'chinese black vinegar',
+      '香醋',
+      '陈醋',
+      '黑醋',
+      '镇江香醋'
+    ],
+    negatives: [
+      'white vinegar',
+      'rice vinegar',
+      'apple cider vinegar',
+      'distilled vinegar',
+      '白醋',
+      '米醋'
     ]
   },
   {

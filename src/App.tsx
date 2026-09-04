@@ -15,6 +15,7 @@ import { SettingsView } from './components/settings/SettingsView';
 import { AuthModal } from './components/auth/AuthModal';
 import { LandingLoginPage } from './components/auth/LandingLoginPage';
 import { FirstTimeOnboardingGuide } from './components/auth/FirstTimeOnboardingGuide';
+import { PersonalisationModal } from './components/personalisation/PersonalisationModal';
 
 import { loadMasterSystemRecipes, mergeSystemWithUserDishes, getCachedSystemRecipes } from './services/systemRecipesService';
 import { loadDarkModePreference, applyDarkMode } from './services/darkMode';
@@ -29,6 +30,7 @@ export function App() {
   const [isDishCreatorOpen, setIsDishCreatorOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isOnboardingGuideOpen, setIsOnboardingGuideOpen] = useState(false);
+  const [isPersonalisationOpen, setIsPersonalisationOpen] = useState(false);
   const [isSystemGuideActive, setIsSystemGuideActive] = useState(false);
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -512,6 +514,7 @@ export function App() {
                 onToggleFamilyRecipe={handleToggleFamilyRecipe}
                 onToggleFavoriteDish={handleToggleFavoriteDish}
                 onGoToGrocery={handleGoToGrocery}
+                onOpenPersonalisation={() => setIsPersonalisationOpen(true)}
               />
             )}
 
@@ -653,6 +656,35 @@ export function App() {
               setIsOnboardingGuideOpen(false);
               setActiveTab('dishes');
               setIsSystemGuideActive(true);
+            }}
+          />
+
+          {/* Family Personalisation Modal */}
+          <PersonalisationModal
+            isOpen={isPersonalisationOpen}
+            onClose={() => setIsPersonalisationOpen(false)}
+            currentMember={appData.currentProfile?.memberName || appData.familyMembers[0] || 'Me'}
+            familyMembers={appData.familyMembers}
+            memberProfiles={appData.memberProfiles || {}}
+            familyPersonalisation={appData.familyPersonalisation ?? { strictAllergyFilter: true }}
+            onSavePersonalisation={(profiles, familyPrefs) => {
+              const updated = {
+                ...appData,
+                memberProfiles: profiles,
+                familyPersonalisation: familyPrefs
+              };
+              setAppData(updated);
+              saveAppData(updated);
+            }}
+            onAddFamilyMember={(name) => {
+              if (!appData.familyMembers.includes(name)) {
+                const updated = {
+                  ...appData,
+                  familyMembers: [...appData.familyMembers, name]
+                };
+                setAppData(updated);
+                saveAppData(updated);
+              }
             }}
           />
         </div>

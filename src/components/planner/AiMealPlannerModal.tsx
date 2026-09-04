@@ -17,7 +17,11 @@ import {
   ShieldCheck,
   Plus,
   Minus,
-  Trash2
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  Settings2,
+  Sliders
 } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import {
@@ -52,6 +56,7 @@ interface AiMealPlannerModalProps {
     daysCount: number
   ) => void;
   onGoToGrocery?: (startISO: string, endISO: string) => void;
+  onOpenPersonalisation?: () => void;
 }
 
 export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
@@ -65,20 +70,51 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   familyMembers = [],
   recentMealPlan = {},
   onApplyMealPlan,
-  onGoToGrocery
+  onGoToGrocery,
+  onOpenPersonalisation
 }) => {
   const { language } = useLanguage();
 
   // ─── STEP 1: PRE-FLIGHT VOLATILE SETTINGS ───
-  const defaultDiners = Math.max(1, familyMembers.length || 2);
+  const defaultDiners = Math.max(1, familyMembers.length || 1);
   const [dinersCount, setDinersCount] = useState<number>(defaultDiners);
   const [durationDays, setDurationDays] = useState<number>(7);
-  const [includedDays, setIncludedDays] = useState<number[]>([1, 2, 3, 4, 5, 6, 0]); // All 7 days by default
-  const [focus, setFocus] = useState<AiPlannerFocus>('balanced');
-  const [mode, setMode] = useState<AiPlannerMode>('best_of_both');
-  const [defaultStaple, setDefaultStaple] = useState<MealAccompaniment>('jasmine_rice');
+  const [includedDays, setIncludedDays] = useState<number[]>(() =>
+    familyPersonalisation?.defaultCookingDays && familyPersonalisation.defaultCookingDays.length > 0
+      ? familyPersonalisation.defaultCookingDays
+      : [1, 2, 3, 4, 5, 6, 0]
+  );
+  const [focus, setFocus] = useState<AiPlannerFocus>(() =>
+    familyPersonalisation?.defaultDietaryFocus || 'balanced'
+  );
+  const [mode, setMode] = useState<AiPlannerMode>(() =>
+    familyPersonalisation?.defaultPlanningStrategy || 'best_of_both'
+  );
+  const [defaultStaple, setDefaultStaple] = useState<MealAccompaniment>(() =>
+    familyPersonalisation?.defaultStaple || 'jasmine_rice'
+  );
+  const [isDetailsExpanded, setIsDetailsExpanded] = useState<boolean>(false);
 
-  // Master System Dishess State (ensuring all 3,000+ recipes are available offline)
+  // Sync state whenever modal opens or family settings change
+  React.useEffect(() => {
+    if (isOpen) {
+      setDinersCount(Math.max(1, familyMembers.length || 1));
+      if (familyPersonalisation?.defaultStaple) {
+        setDefaultStaple(familyPersonalisation.defaultStaple);
+      }
+      if (familyPersonalisation?.defaultCookingDays && familyPersonalisation.defaultCookingDays.length > 0) {
+        setIncludedDays(familyPersonalisation.defaultCookingDays);
+      }
+      if (familyPersonalisation?.defaultDietaryFocus) {
+        setFocus(familyPersonalisation.defaultDietaryFocus);
+      }
+      if (familyPersonalisation?.defaultPlanningStrategy) {
+        setMode(familyPersonalisation.defaultPlanningStrategy);
+      }
+    }
+  }, [isOpen, familyMembers.length, familyPersonalisation]);
+
+  // Master System Dishes State (ensuring all 3,000+ recipes are available offline)
   const [effectiveSystemDishes, setEffectiveSystemDishes] = useState<Dish[]>(() => {
     if (allSystemDishes && allSystemDishes.length >= 50) return allSystemDishes;
     const cached = getCachedSystemRecipes();
@@ -383,6 +419,25 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
     return { label: language === 'zh-CN' ? '主荤主菜' : 'Main Protein', emoji: '🥩', color: 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300' };
   };
 
+  const getStapleLabel = (s: MealAccompaniment) => {
+    const opt = ACCOMPANIMENT_OPTIONS[s];
+    if (!opt) return s;
+    return language === 'zh-CN' ? opt.labelZh : opt.labelEn;
+  };
+
+  const getFocusLabel = (f: AiPlannerFocus) => {
+    switch (f) {
+      case 'quick':
+        return language === 'zh-CN' ? '⚡ 快手省时' : '⚡ Weeknight Fast';
+      case 'high_protein':
+        return language === 'zh-CN' ? '💪 高蛋白' : '💪 High Protein';
+      case 'light':
+        return language === 'zh-CN' ? '🥗 轻食低卡' : '🥗 Light & Fresh';
+      default:
+        return language === 'zh-CN' ? '⚖️ 均衡营养' : '⚖️ Balanced';
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="flex h-full max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-[#EDE8DF] bg-[#FAF8F5] shadow-2xl dark:border-[#3D362E] dark:bg-[#1E1B18] animate-in zoom-in-95 duration-200">
@@ -395,11 +450,11 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
             </div>
             <div>
               <h2 className="text-base font-black text-[#2D2640] dark:text-[#F0EDE8]">
-                {language === 'zh-CN' ? '100% 离线 AI 膳食排餐' : '100% Offline AI Meal Planner'}
+                {language === 'zh-CN' ? '快速智能排餐' : 'Quick Meal Plan'}
               </h2>
               <p className="text-[11px] font-semibold text-[#8A7A70] dark:text-[#9A8A7E]">
                 {currentStep === 'config'
-                  ? (language === 'zh-CN' ? '智能计算就餐人数与菜道数量 · 包含米饭面条搭配' : 'Diner headcount intelligence + Rice/Bread/Noodles pairing')
+                  ? (language === 'zh-CN' ? '极简快速排餐 · 智能计算餐桌菜道与主食搭配' : 'Instant smart meal planning · Auto-balanced dishes & staples')
                   : (language === 'zh-CN' ? '支持单道菜无损替换 · 点击主食标签可自由调整' : 'Swap any dish individually · Tap staple chip to customize')}
               </p>
             </div>
@@ -417,10 +472,10 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {currentStep === 'config' ? (
-            /* ─── STEP 1: PRE-FLIGHT SETTINGS SCREEN ─── */
+            /* ─── STEP 1: PRE-FLIGHT SETTINGS SCREEN (BIFURCATED ONBOARDING PATTERN) ─── */
             <div className="space-y-4">
               
-              {/* Diners Stepper Card with Headcount Recommendation */}
+              {/* 1. ESSENTIAL: Diners Stepper Card with Headcount Recommendation */}
               <div className="rounded-2xl border border-[#EDE8DF] bg-white p-4 shadow-xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -468,51 +523,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                 </div>
               </div>
 
-              {/* Default Staple Accompaniment (Rice, Bread, Noodles, Low-Carb) */}
-              <div className="rounded-2xl border border-[#EDE8DF] bg-white p-4 shadow-xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🍚</span>
-                    <div>
-                      <h3 className="text-xs font-black uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
-                        {language === 'zh-CN' ? '家庭默认主食搭配' : 'Default Staple Accompaniment'}
-                      </h3>
-                      <p className="text-[10.5px] text-[#8A7A70] dark:text-[#9A8A7E]">
-                        {language === 'zh-CN' ? '炒饭炒面类自带主食，炒菜类自动搭配所选主食' : 'One-pot meals include starch; component dishes pair with staple'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { id: 'jasmine_rice', emoji: '🍚', en: 'Steamed Rice', zh: '白米饭' },
-                    { id: 'brown_rice', emoji: '🌾', en: 'Brown Rice', zh: '糙米饭' },
-                    { id: 'bread_buns', emoji: '🥖', en: 'Bread / Buns', zh: '佐餐欧包/馒头' },
-                    { id: 'plain_noodles', emoji: '🍜', en: 'Noodles', zh: '佐餐面条/米粉' },
-                    { id: 'cauliflower_rice', emoji: '🥗', en: 'Cauliflower Rice', zh: '低碳花椰菜米' },
-                    { id: 'none_low_carb', emoji: '🥩', en: 'No Starch (Keto)', zh: '无米面 (纯菜肉)' }
-                  ].map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => setDefaultStaple(s.id as MealAccompaniment)}
-                      className={`p-2 rounded-xl border text-left transition cursor-pointer flex items-center gap-2 ${
-                        defaultStaple === s.id
-                          ? 'border-[#FFD13B] bg-[#FFF8E6] dark:bg-[#2A1E00] ring-1 ring-[#FFD13B]/40'
-                          : 'border-[#EDE8DF] bg-[#FAF8F5] dark:border-[#38332E] dark:bg-[#1E1B18]'
-                      }`}
-                    >
-                      <span className="text-base">{s.emoji}</span>
-                      <span className="text-xs font-black text-[#2D2640] dark:text-[#F0EDE8]">
-                        {language === 'zh-CN' ? s.zh : s.en}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Planning Horizon / Duration */}
+              {/* 2. ESSENTIAL: Planning Horizon / Duration */}
               <div className="rounded-2xl border border-[#EDE8DF] bg-white p-4 shadow-xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2.5">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-[#FFD13B]" />
@@ -544,74 +555,10 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                 </div>
               </div>
 
-              {/* Cooking Days vs Dine Out */}
-              <div className="rounded-2xl border border-[#EDE8DF] bg-white p-4 shadow-xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
-                    {language === 'zh-CN' ? '本周烹饪日程 (可点选取消外食日)' : 'Cooking Days (Tap to skip dine-out nights)'}
-                  </h3>
-                  <span className="text-[10px] text-[#9A8A7E] dark:text-[#7A6E64]">
-                    {includedDays.length} {language === 'zh-CN' ? '天在家吃' : 'days cooking'}
-                  </span>
-                </div>
-
-                <div className="flex gap-1.5">
-                  {daysOfWeekLabels.map((d) => {
-                    const isSelected = includedDays.includes(d.num);
-                    return (
-                      <button
-                        key={d.num}
-                        type="button"
-                        onClick={() => toggleDay(d.num)}
-                        className={`flex-1 py-2 rounded-xl text-xs font-black transition cursor-pointer border ${
-                          isSelected
-                            ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
-                            : 'bg-[#F5F0E8] text-[#A89F95] border-[#EDE8DF] line-through dark:bg-[#2E2A26] dark:border-[#38332E] opacity-60'
-                        }`}
-                      >
-                        {language === 'zh-CN' ? d.zh.slice(1) : d.en}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Weekly Focus */}
-              <div className="rounded-2xl border border-[#EDE8DF] bg-white p-4 shadow-xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2">
-                <h3 className="text-xs font-black uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
-                  {language === 'zh-CN' ? '本周膳食侧重' : 'Weekly Dietary Focus'}
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { id: 'balanced', icon: '⚖️', label: language === 'zh-CN' ? '均衡营养' : 'Balanced', desc: '500-750 kcal' },
-                    { id: 'quick', icon: '⚡', label: language === 'zh-CN' ? '快手省时' : 'Weeknight Fast', desc: '≤ 25 min' },
-                    { id: 'high_protein', icon: '💪', label: language === 'zh-CN' ? '高蛋白' : 'High Protein', desc: '≥ 35g protein' },
-                    { id: 'light', icon: '🥗', label: language === 'zh-CN' ? '轻食低卡' : 'Light & Fresh', desc: '≤ 480 kcal' }
-                  ].map((f) => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      onClick={() => setFocus(f.id as AiPlannerFocus)}
-                      className={`p-2.5 rounded-xl border text-left transition cursor-pointer ${
-                        focus === f.id
-                          ? 'border-[#FFD13B] bg-[#FFF8E6] dark:bg-[#2A1E00] ring-1 ring-[#FFD13B]/40'
-                          : 'border-[#EDE8DF] bg-[#FAF8F5] dark:border-[#38332E] dark:bg-[#1E1B18]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span>{f.icon}</span>
-                        <span className="text-xs font-black text-[#2D2640] dark:text-[#F0EDE8]">{f.label}</span>
-                      </div>
-                      <p className="text-[10px] text-[#8A7A70] dark:text-[#9A8A7E] mt-0.5">{f.desc}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Mode Strategy Cards */}
+              {/* 3. ESSENTIAL: Strategy: Family Classics or Something New? */}
               <div className="space-y-2">
                 <h3 className="text-xs font-black uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
-                  {language === 'zh-CN' ? '选择排餐灵感模式' : 'Choose AI Planning Strategy'}
+                  {language === 'zh-CN' ? '家常熟菜还是灵感新菜？' : 'Family Classics or Something New?'}
                 </h3>
 
                 {/* Best of Both */}
@@ -628,7 +575,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                       <span className="text-lg">🌟</span>
                       <div>
                         <h4 className="text-xs font-black text-[#2D2640] dark:text-[#F0EDE8]">
-                          {language === 'zh-CN' ? '黄金组合 (Best of Both · 推荐)' : 'Best of Both (Hybrid · Recommended)'}
+                          {language === 'zh-CN' ? '黄金组合 (Best of Both · 推荐)' : 'Best of Both (Recommended)'}
                         </h4>
                         <p className="text-[10.5px] text-[#8A7A70] dark:text-[#9A8A7E]">
                           {language === 'zh-CN' ? '工作日做熟悉的家常菜，周末尝试 2~3 道精选灵感新菜' : 'Family favorites on busy weeknights + inspiring discoveries on weekends'}
@@ -639,7 +586,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                   </div>
                 </div>
 
-                {/* Easy Meals */}
+                {/* Family Classics */}
                 <div
                   onClick={() => setMode('easy_meals')}
                   className={`p-3.5 rounded-2xl border transition cursor-pointer ${
@@ -653,7 +600,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                       <span className="text-lg">🏠</span>
                       <div>
                         <h4 className="text-xs font-black text-[#2D2640] dark:text-[#F0EDE8]">
-                          {language === 'zh-CN' ? '家常熟菜 (Easy Meals)' : 'Easy Meals (Family Classics)'}
+                          {language === 'zh-CN' ? '家常熟菜 (Family Classics)' : 'Family Classics'}
                         </h4>
                         <p className="text-[10.5px] text-[#8A7A70] dark:text-[#9A8A7E]">
                           {language === 'zh-CN' ? '高度优先您家庭菜谱中的私房菜与常做菜，口味熟悉，省心省事' : 'Focuses primarily on dishes in your Family Cookbook and top staples'}
@@ -664,7 +611,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                   </div>
                 </div>
 
-                {/* Give Me Ideas */}
+                {/* Something New (Give Me Ideas) */}
                 <div
                   onClick={() => setMode('give_me_ideas')}
                   className={`p-3.5 rounded-2xl border transition cursor-pointer ${
@@ -678,7 +625,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                       <span className="text-lg">✨</span>
                       <div>
                         <h4 className="text-xs font-black text-[#2D2640] dark:text-[#F0EDE8]">
-                          {language === 'zh-CN' ? '灵感发现 (Give Me Ideas)' : 'Give Me Ideas (Library Discovery)'}
+                          {language === 'zh-CN' ? '灵感新菜 (Something New)' : 'Something New'}
                         </h4>
                         <p className="text-[10.5px] text-[#8A7A70] dark:text-[#9A8A7E]">
                           {language === 'zh-CN' ? '从 3,000+ 甄选菜谱中探索未做过的美味，彻底告别“今晚吃什么”' : 'Fresh, balanced recipes curated from the 3,000+ master library'}
@@ -688,7 +635,186 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                     {mode === 'give_me_ideas' && <Check className="h-4 w-4 text-[#7A5C00] dark:text-[#FFD13B] stroke-[3]" />}
                   </div>
                 </div>
+              </div>
 
+              {/* 4. COLLAPSED DETAILED SECTION: Bifurcated Accordion */}
+              <div className="rounded-2xl border border-[#EDE8DF] bg-white shadow-xs dark:border-[#3D362E] dark:bg-[#252220] overflow-hidden transition-all">
+                {/* Accordion Toggle Header */}
+                <div
+                  onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
+                  className="flex items-center justify-between p-3.5 cursor-pointer hover:bg-[#FAF8F5] dark:hover:bg-[#2E2A26] transition"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Sliders className="h-4 w-4 text-[#FFD13B] shrink-0" />
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-black uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
+                        {language === 'zh-CN' ? '更多偏好设置' : 'Additional Preferences'}
+                      </h3>
+                      {!isDetailsExpanded && (
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                          <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] font-bold">
+                            🍚 {getStapleLabel(defaultStaple)}
+                          </span>
+                          <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] font-bold">
+                            🗓️ {includedDays.length} {language === 'zh-CN' ? '天做饭' : 'Days Cooking'}
+                          </span>
+                          <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] font-bold">
+                            {getFocusLabel(focus)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    <span className="text-[11px] font-bold text-[#7A5C00] dark:text-[#FFD13B]">
+                      {isDetailsExpanded
+                        ? (language === 'zh-CN' ? '收起' : 'Collapse')
+                        : (language === 'zh-CN' ? '自定义' : 'Customize')}
+                    </span>
+                    {isDetailsExpanded ? (
+                      <ChevronUp className="h-4 w-4 text-[#7A6E64] dark:text-[#9A9088]" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-[#7A6E64] dark:text-[#9A9088]" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Expanded Detailed Content */}
+                {isDetailsExpanded && (
+                  <div className="border-t border-[#EDE8DF] dark:border-[#3D362E] p-3.5 space-y-4 bg-[#FAF8F5]/60 dark:bg-[#1E1B18]/60 animate-in fade-in-50 duration-200">
+                    
+                    {/* Settings Shortcut Button to Personalisation */}
+                    {onOpenPersonalisation && (
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FFF8E6] dark:bg-[#2A1E00] border border-[#FFD13B]/40">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-sm shrink-0">⚙️</span>
+                          <p className="text-[11px] font-bold text-[#7A5C00] dark:text-[#FFD13B] truncate">
+                            {language === 'zh-CN' ? '将偏好设为默认值？' : 'Set permanent defaults for future plans?'}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClose();
+                            onOpenPersonalisation();
+                          }}
+                          className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] text-[11px] font-black transition cursor-pointer shadow-2xs"
+                        >
+                          <Settings2 className="h-3 w-3" />
+                          <span>{language === 'zh-CN' ? '个性化设置' : 'Personalisation'}</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Default Staple Accompaniment (Rice, Bread, Noodles, Low-Carb) */}
+                    <div className="rounded-xl border border-[#EDE8DF] bg-white p-3 shadow-2xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-base">🍚</span>
+                          <h4 className="text-xs font-black uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
+                            {language === 'zh-CN' ? '默认主食搭配' : 'Default Staple Accompaniment'}
+                          </h4>
+                        </div>
+                      </div>
+                      <p className="text-[10.5px] text-[#8A7A70] dark:text-[#9A8A7E]">
+                        {language === 'zh-CN' ? '炒饭炒面类自带主食，炒菜类自动搭配所选主食' : 'One-pot meals include starch; component dishes pair with staple'}
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { id: 'jasmine_rice', emoji: '🍚', en: 'Steamed Rice', zh: '白米饭' },
+                          { id: 'brown_rice', emoji: '🌾', en: 'Brown Rice', zh: '糙米饭' },
+                          { id: 'bread_buns', emoji: '🥖', en: 'Bread / Buns', zh: '佐餐欧包/馒头' },
+                          { id: 'plain_noodles', emoji: '🍜', en: 'Noodles', zh: '佐餐面条/米粉' },
+                          { id: 'cauliflower_rice', emoji: '🥗', en: 'Cauliflower Rice', zh: '低碳花椰菜米' },
+                          { id: 'none_low_carb', emoji: '🥩', en: 'No Starch (Keto)', zh: '无米面 (纯菜肉)' }
+                        ].map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => setDefaultStaple(s.id as MealAccompaniment)}
+                            className={`p-2 rounded-xl border text-left transition cursor-pointer flex items-center gap-2 ${
+                              defaultStaple === s.id
+                                ? 'border-[#FFD13B] bg-[#FFF8E6] dark:bg-[#2A1E00] ring-1 ring-[#FFD13B]/40'
+                                : 'border-[#EDE8DF] bg-[#FAF8F5] dark:border-[#38332E] dark:bg-[#1E1B18]'
+                            }`}
+                          >
+                            <span className="text-base">{s.emoji}</span>
+                            <span className="text-xs font-black text-[#2D2640] dark:text-[#F0EDE8]">
+                              {language === 'zh-CN' ? s.zh : s.en}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Cooking Days vs Dine Out */}
+                    <div className="rounded-xl border border-[#EDE8DF] bg-white p-3 shadow-2xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-black uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
+                          {language === 'zh-CN' ? '烹饪日程 (可点选取消外食日)' : 'Cooking Days (Tap to skip dine-out nights)'}
+                        </h4>
+                        <span className="text-[10px] text-[#9A8A7E] dark:text-[#7A6E64]">
+                          {includedDays.length} {language === 'zh-CN' ? '天在家吃' : 'days cooking'}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-1.5">
+                        {daysOfWeekLabels.map((d) => {
+                          const isSelected = includedDays.includes(d.num);
+                          return (
+                            <button
+                              key={d.num}
+                              type="button"
+                              onClick={() => toggleDay(d.num)}
+                              className={`flex-1 py-2 rounded-xl text-xs font-black transition cursor-pointer border ${
+                                isSelected
+                                  ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10 shadow-xs'
+                                  : 'bg-[#F5F0E8] text-[#A89F95] border-[#EDE8DF] line-through dark:bg-[#2E2A26] dark:border-[#38332E] opacity-60'
+                              }`}
+                            >
+                              {language === 'zh-CN' ? d.zh.slice(1) : d.en}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Weekly Focus */}
+                    <div className="rounded-xl border border-[#EDE8DF] bg-white p-3 shadow-2xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
+                        {language === 'zh-CN' ? '膳食侧重' : 'Dietary Focus'}
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { id: 'balanced', icon: '⚖️', label: language === 'zh-CN' ? '均衡营养' : 'Balanced', desc: '500-750 kcal' },
+                          { id: 'quick', icon: '⚡', label: language === 'zh-CN' ? '快手省时' : 'Weeknight Fast', desc: '≤ 25 min' },
+                          { id: 'high_protein', icon: '💪', label: language === 'zh-CN' ? '高蛋白' : 'High Protein', desc: '≥ 35g protein' },
+                          { id: 'light', icon: '🥗', label: language === 'zh-CN' ? '轻食低卡' : 'Light & Fresh', desc: '≤ 480 kcal' }
+                        ].map((f) => (
+                          <button
+                            key={f.id}
+                            type="button"
+                            onClick={() => setFocus(f.id as AiPlannerFocus)}
+                            className={`p-2.5 rounded-xl border text-left transition cursor-pointer ${
+                              focus === f.id
+                                ? 'border-[#FFD13B] bg-[#FFF8E6] dark:bg-[#2A1E00] ring-1 ring-[#FFD13B]/40'
+                                : 'border-[#EDE8DF] bg-[#FAF8F5] dark:border-[#38332E] dark:bg-[#1E1B18]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <span>{f.icon}</span>
+                              <span className="text-xs font-black text-[#2D2640] dark:text-[#F0EDE8]">{f.label}</span>
+                            </div>
+                            <p className="text-[10px] text-[#8A7A70] dark:text-[#9A8A7E] mt-0.5">{f.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                )}
               </div>
 
             </div>
@@ -956,7 +1082,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 fill-[#2D2640]" />
-                  <span>{language === 'zh-CN' ? `生成 ${includedDays.length} 天完整膳食计划 (${dinersCount}人份) ✨` : `Generate ${includedDays.length}-Day Plan (${dinersCount} Diners) ✨`}</span>
+                  <span>{language === 'zh-CN' ? `⚡ 快速排餐 (${includedDays.length}天 · ${dinersCount}人份)` : `⚡ Quick Plan (${dinersCount} Diners · ${includedDays.length} Days)`}</span>
                 </>
               )}
             </button>
