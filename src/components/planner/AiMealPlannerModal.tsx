@@ -99,11 +99,18 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   const [isDetailsExpanded, setIsDetailsExpanded] = useState<boolean>(false);
 
   const prevIsOpenRef = React.useRef(false);
+  const prevFamilyPersRef = React.useRef(familyPersonalisation);
 
-  // Sync state ONLY when modal transitions from closed to open!
+  // Sync state when modal opens OR when familyPersonalisation changes
   React.useEffect(() => {
-    if (!prevIsOpenRef.current && isOpen) {
+    const isOpening = !prevIsOpenRef.current && isOpen;
+    const persChanged = prevFamilyPersRef.current !== familyPersonalisation;
+
+    if (isOpening) {
       setDinersCount(Math.max(1, familyMembers.length || 1));
+    }
+
+    if (isOpening || (isOpen && persChanged)) {
       setDefaultStaple(familyPersonalisation?.defaultStaple || 'jasmine_rice');
       setIncludedDays(
         familyPersonalisation?.defaultCookingDays && familyPersonalisation.defaultCookingDays.length > 0
@@ -117,6 +124,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
       );
     }
     prevIsOpenRef.current = isOpen;
+    prevFamilyPersRef.current = familyPersonalisation;
   }, [isOpen, familyMembers.length, familyPersonalisation]);
 
   // Master System Dishes State (ensuring all 3,000+ recipes are available offline)

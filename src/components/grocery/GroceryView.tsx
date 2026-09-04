@@ -25,6 +25,7 @@ interface GroceryViewProps {
   groceryList: AppData['groceryList'];
   onUpdateGroceryList: (newList: AppData['groceryList']) => void;
   onTogglePantryItem?: (ingName: string) => void;
+  autoTriggerKey?: number;
 }
 
 const COMMON_UNITS = ['g', 'kg', 'ml', 'L', 'tbsp', 'tsp', 'pcs', 'slices', 'can', 'packet', 'stalks', 'cloves', 'cup', 'pinch'];
@@ -36,7 +37,8 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
   pantryIngredients,
   groceryList,
   onUpdateGroceryList,
-  onTogglePantryItem
+  onTogglePantryItem,
+  autoTriggerKey
 }) => {
   const { language, t, formatCategory } = useLanguage();
   const [filter, setFilter] = useState<'pending' | 'checked' | 'all'>('pending');
@@ -132,6 +134,23 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
     setIsDateEditorOpen(false);
     showToast(`🛒 Generated ${newItems.length} items from planned meals.`);
   };
+
+  // Synchronize range dates whenever startDate / endDate props change
+  React.useEffect(() => {
+    if (startDate) setRangeStart(startDate);
+    if (endDate) setRangeEnd(endDate);
+  }, [startDate, endDate]);
+
+  // Automatically trigger Generate Grocery List once when autoTriggerKey changes
+  const prevTriggerRef = React.useRef(autoTriggerKey);
+  React.useEffect(() => {
+    if (autoTriggerKey !== undefined && autoTriggerKey !== prevTriggerRef.current && autoTriggerKey > 0) {
+      prevTriggerRef.current = autoTriggerKey;
+      const effectiveStart = startDate || rangeStart || defaultToday;
+      const effectiveEnd = endDate || rangeEnd || defaultNextWeek;
+      handleGenerate(effectiveStart, effectiveEnd);
+    }
+  }, [autoTriggerKey, startDate, endDate, rangeStart, rangeEnd]);
 
   // Quick Date Presets
   const handleApplyDatePreset = (preset: 'this_week' | 'next_week' | 'next_7_days') => {

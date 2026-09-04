@@ -480,6 +480,8 @@ export function subscribeToFamilyCloudData(
         const receivedCore = {
           familyName: data.familyName || familyName,
           familyMembers: membersList,
+          memberProfiles: data.memberProfiles || {},
+          familyPersonalisation: data.familyPersonalisation || {},
           dishes: (data.dishes || []).map((d: any) => ({
             id: d.id,
             name: d.name || '',

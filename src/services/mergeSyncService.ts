@@ -1,4 +1,4 @@
-import type { AppData, Dish, GroceryItem, MealPlan, MealScheduleConfig } from '../types';
+import type { AppData, Dish, GroceryItem, MealPlan, MealScheduleConfig, FamilyPersonalisation } from '../types';
 import { matchPantryIngredient } from './pantryMatching';
 
 /**
@@ -169,20 +169,34 @@ export function mergeAppData(local: AppData, remote: Partial<AppData>): AppData 
     }
   });
 
-  const mergedFamilyPersonalisation = {
-    strictAllergyFilter: local.familyPersonalisation?.strictAllergyFilter ?? remote.familyPersonalisation?.strictAllergyFilter ?? true,
+  const localFP = local.familyPersonalisation;
+  const remoteFP = remote.familyPersonalisation;
+
+  const mergedFamilyPersonalisation: FamilyPersonalisation = {
+    strictAllergyFilter: localFP?.strictAllergyFilter ?? remoteFP?.strictAllergyFilter ?? true,
     householdAllergies: Array.from(new Set([
-      ...(local.familyPersonalisation?.householdAllergies || []),
-      ...(remote.familyPersonalisation?.householdAllergies || [])
+      ...(localFP?.householdAllergies || []),
+      ...(remoteFP?.householdAllergies || [])
     ])),
     householdCuisines: Array.from(new Set([
-      ...(local.familyPersonalisation?.householdCuisines || []),
-      ...(remote.familyPersonalisation?.householdCuisines || [])
+      ...(localFP?.householdCuisines || []),
+      ...(remoteFP?.householdCuisines || [])
     ])),
     householdCategories: Array.from(new Set([
-      ...(local.familyPersonalisation?.householdCategories || []),
-      ...(remote.familyPersonalisation?.householdCategories || [])
-    ]))
+      ...(localFP?.householdCategories || []),
+      ...(remoteFP?.householdCategories || [])
+    ])),
+    spiceTolerance: (localFP?.spiceTolerance || remoteFP?.spiceTolerance || 'mild') as any,
+    cookingForKids: Boolean(localFP?.cookingForKids ?? remoteFP?.cookingForKids ?? false),
+    weeknightSpeed: (localFP?.weeknightSpeed || remoteFP?.weeknightSpeed || 'quick') as any,
+    defaultStaple: (localFP?.defaultStaple || remoteFP?.defaultStaple || 'jasmine_rice') as any,
+    defaultCookingDays: (localFP?.defaultCookingDays && localFP.defaultCookingDays.length > 0)
+      ? localFP.defaultCookingDays
+      : (remoteFP?.defaultCookingDays && remoteFP.defaultCookingDays.length > 0)
+      ? remoteFP.defaultCookingDays
+      : [1, 2, 3, 4, 5, 6, 0],
+    defaultDietaryFocus: (localFP?.defaultDietaryFocus || remoteFP?.defaultDietaryFocus || 'balanced') as any,
+    defaultPlanningStrategy: (localFP?.defaultPlanningStrategy || remoteFP?.defaultPlanningStrategy || 'best_of_both') as any,
   };
 
   return {

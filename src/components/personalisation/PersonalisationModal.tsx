@@ -98,28 +98,34 @@ export const PersonalisationModal: React.FC<PersonalisationModalProps> = ({
 
   const [activeMember, setActiveMember] = useState<string>(currentMember || familyMembers[0] || 'Member');
   const [localProfiles, setLocalProfiles] = useState<Record<string, MemberPreferences>>(memberProfiles || {});
-  const [localFamilyPersonalisation, setLocalFamilyPersonalisation] = useState<FamilyPersonalisation>(
-    familyPersonalisation || {
-      strictAllergyFilter: true,
-      householdAllergies: [],
-      householdCuisines: [],
-      householdCategories: []
-    }
-  );
+  const defaultFamilyPersonalisation: FamilyPersonalisation = {
+    strictAllergyFilter: true,
+    householdAllergies: [],
+    householdCuisines: [],
+    householdCategories: [],
+    spiceTolerance: 'mild',
+    cookingForKids: false,
+    weeknightSpeed: 'quick',
+    defaultStaple: 'jasmine_rice',
+    defaultCookingDays: [1, 2, 3, 4, 5, 6, 0],
+    defaultDietaryFocus: 'balanced',
+    defaultPlanningStrategy: 'best_of_both'
+  };
+
+  const [localFamilyPersonalisation, setLocalFamilyPersonalisation] = useState<FamilyPersonalisation>(() => ({
+    ...defaultFamilyPersonalisation,
+    ...(familyPersonalisation || {})
+  }));
 
   const prevIsOpenRef = React.useRef(false);
   React.useEffect(() => {
     if (!prevIsOpenRef.current && isOpen) {
       setActiveMember(currentMember || familyMembers[0] || 'Member');
       setLocalProfiles(memberProfiles || {});
-      setLocalFamilyPersonalisation(
-        familyPersonalisation || {
-          strictAllergyFilter: true,
-          householdAllergies: [],
-          householdCuisines: [],
-          householdCategories: []
-        }
-      );
+      setLocalFamilyPersonalisation({
+        ...defaultFamilyPersonalisation,
+        ...(familyPersonalisation || {})
+      });
     }
     prevIsOpenRef.current = isOpen;
   }, [isOpen, currentMember, familyMembers, memberProfiles, familyPersonalisation]);

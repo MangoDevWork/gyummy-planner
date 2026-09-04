@@ -314,8 +314,10 @@ export function isDishFamilySafe(
   }
   if (containsDislikedIngredients(dish, dislikedList)) return false;
 
-  // 3. Family Safe Spice Level
-  const effectiveSpice = spiceOverride || familyPersonalisation?.spiceTolerance || (familyPersonalisation?.cookingForKids ? 'none' : 'mild');
+  // 3. Family Safe Spice Level: explicit override in Quick Meal Plan takes strict priority over family defaults
+  const effectiveSpice = spiceOverride !== undefined
+    ? spiceOverride
+    : (familyPersonalisation?.spiceTolerance || (familyPersonalisation?.cookingForKids ? 'none' : 'mild'));
   const maxSpice = spiceToleranceToNumber(effectiveSpice);
   const dishSpice = dish.spiceLevel || 0;
   if (dishSpice > maxSpice) return false;

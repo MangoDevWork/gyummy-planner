@@ -204,7 +204,30 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
         strictAllergyFilter: true,
         householdAllergies: [],
         householdCuisines: [],
-        householdCategories: []
+        householdCategories: [],
+        spiceTolerance: 'mild',
+        cookingForKids: false,
+        weeknightSpeed: 'quick',
+        defaultStaple: 'jasmine_rice',
+        defaultCookingDays: [1, 2, 3, 4, 5, 6, 0],
+        defaultDietaryFocus: 'balanced',
+        defaultPlanningStrategy: 'best_of_both'
+      };
+    } else {
+      parsed.familyPersonalisation = {
+        strictAllergyFilter: parsed.familyPersonalisation.strictAllergyFilter ?? true,
+        householdAllergies: parsed.familyPersonalisation.householdAllergies || [],
+        householdCuisines: parsed.familyPersonalisation.householdCuisines || [],
+        householdCategories: parsed.familyPersonalisation.householdCategories || [],
+        spiceTolerance: parsed.familyPersonalisation.spiceTolerance || 'mild',
+        cookingForKids: Boolean(parsed.familyPersonalisation.cookingForKids),
+        weeknightSpeed: parsed.familyPersonalisation.weeknightSpeed || 'quick',
+        defaultStaple: parsed.familyPersonalisation.defaultStaple || 'jasmine_rice',
+        defaultCookingDays: parsed.familyPersonalisation.defaultCookingDays && parsed.familyPersonalisation.defaultCookingDays.length > 0
+          ? parsed.familyPersonalisation.defaultCookingDays
+          : [1, 2, 3, 4, 5, 6, 0],
+        defaultDietaryFocus: parsed.familyPersonalisation.defaultDietaryFocus || 'balanced',
+        defaultPlanningStrategy: parsed.familyPersonalisation.defaultPlanningStrategy || 'best_of_both'
       };
     }
 

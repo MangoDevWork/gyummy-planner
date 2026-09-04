@@ -481,7 +481,14 @@ export function getInitialAppData(currentProfile: AppData['currentProfile'] | nu
       strictAllergyFilter: true,
       householdAllergies: [],
       householdCuisines: [],
-      householdCategories: []
+      householdCategories: [],
+      spiceTolerance: 'mild',
+      cookingForKids: false,
+      weeknightSpeed: 'quick',
+      defaultStaple: 'jasmine_rice',
+      defaultCookingDays: [1, 2, 3, 4, 5, 6, 0],
+      defaultDietaryFocus: 'balanced',
+      defaultPlanningStrategy: 'best_of_both'
     },
     dishes: INITIAL_DISHES,
     masterIngredients: DEFAULT_MASTER_INGREDIENTS,

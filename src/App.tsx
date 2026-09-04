@@ -32,6 +32,7 @@ export function App() {
   const [isOnboardingGuideOpen, setIsOnboardingGuideOpen] = useState(false);
   const [isPersonalisationOpen, setIsPersonalisationOpen] = useState(false);
   const [isSystemGuideActive, setIsSystemGuideActive] = useState(false);
+  const [autoGenerateGroceryTrigger, setAutoGenerateGroceryTrigger] = useState(0);
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     // On first load, check if there's an active profile and restore their preference
@@ -419,25 +420,33 @@ export function App() {
   };
 
   const handleGoToGrocery = (startDate: string, endDate: string) => {
-    const userLang = loadMemberLanguage(appData.currentProfile?.memberName);
-    const items = generateGroceryList(
-      appData.dishes,
-      appData.mealPlan,
-      startDate,
-      endDate,
-      appData.groceryList.items,
-      appData.pantryIngredients || [],
-      userLang
-    );
-    setAppData((prev) => ({
-      ...prev,
-      groceryList: {
-        ...prev.groceryList,
+    setAppData((prev) => {
+      const userLang = loadMemberLanguage(prev.currentProfile?.memberName);
+      const items = generateGroceryList(
+        prev.dishes,
+        prev.mealPlan,
         startDate,
         endDate,
-        items
-      }
-    }));
+        prev.groceryList?.items || [],
+        prev.pantryIngredients || [],
+        userLang
+      );
+      const updatedList = {
+        startDate,
+        endDate,
+        items,
+        undoStack: []
+      };
+      saveAppData({
+        ...prev,
+        groceryList: updatedList
+      });
+      return {
+        ...prev,
+        groceryList: updatedList
+      };
+    });
+    setAutoGenerateGroceryTrigger((prev) => prev + 1);
     setActiveTab('grocery');
   };
 
@@ -562,6 +571,7 @@ export function App() {
                 pantryIngredients={appData.pantryIngredients || []}
                 groceryList={appData.groceryList}
                 onUpdateGroceryList={handleUpdateGroceryList}
+                autoTriggerKey={autoGenerateGroceryTrigger}
                 onTogglePantryItem={(ingName) => {
                   const clean = ingName.trim();
                   if (!clean) return;
