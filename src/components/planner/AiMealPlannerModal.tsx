@@ -66,7 +66,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   familyCookbookDishes,
   allSystemDishes,
   memberProfiles = {},
-  familyPersonalisation = { strictAllergyFilter: true },
+  familyPersonalisation,
   familyMembers = [],
   recentMealPlan = {},
   onApplyMealPlan,
@@ -99,18 +99,12 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   const [isDetailsExpanded, setIsDetailsExpanded] = useState<boolean>(false);
 
   const prevIsOpenRef = React.useRef(false);
-  const prevFamilyPersRef = React.useRef(familyPersonalisation);
 
-  // Sync state when modal opens OR when familyPersonalisation changes
+  // Sync state ONLY when modal transitions from closed to open!
+  // Never re-sync while the modal is open, allowing user manual overrides to stay strictly active.
   React.useEffect(() => {
-    const isOpening = !prevIsOpenRef.current && isOpen;
-    const persChanged = prevFamilyPersRef.current !== familyPersonalisation;
-
-    if (isOpening) {
+    if (!prevIsOpenRef.current && isOpen) {
       setDinersCount(Math.max(1, familyMembers.length || 1));
-    }
-
-    if (isOpening || (isOpen && persChanged)) {
       setDefaultStaple(familyPersonalisation?.defaultStaple || 'jasmine_rice');
       setIncludedDays(
         familyPersonalisation?.defaultCookingDays && familyPersonalisation.defaultCookingDays.length > 0
@@ -124,8 +118,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
       );
     }
     prevIsOpenRef.current = isOpen;
-    prevFamilyPersRef.current = familyPersonalisation;
-  }, [isOpen, familyMembers.length, familyPersonalisation]);
+  }, [isOpen]);
 
   // Master System Dishes State (ensuring all 3,000+ recipes are available offline)
   const [effectiveSystemDishes, setEffectiveSystemDishes] = useState<Dish[]>(() => {
