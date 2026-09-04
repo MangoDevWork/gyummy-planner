@@ -93,25 +93,30 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   const [defaultStaple, setDefaultStaple] = useState<MealAccompaniment>(() =>
     familyPersonalisation?.defaultStaple || 'jasmine_rice'
   );
+  const [spiceTolerance, setSpiceTolerance] = useState<'none' | 'mild' | 'medium' | 'spicy'>(() =>
+    familyPersonalisation?.spiceTolerance || (familyPersonalisation?.cookingForKids ? 'none' : 'mild')
+  );
   const [isDetailsExpanded, setIsDetailsExpanded] = useState<boolean>(false);
 
-  // Sync state whenever modal opens or family settings change
+  const prevIsOpenRef = React.useRef(false);
+
+  // Sync state ONLY when modal transitions from closed to open!
   React.useEffect(() => {
-    if (isOpen) {
+    if (!prevIsOpenRef.current && isOpen) {
       setDinersCount(Math.max(1, familyMembers.length || 1));
-      if (familyPersonalisation?.defaultStaple) {
-        setDefaultStaple(familyPersonalisation.defaultStaple);
-      }
-      if (familyPersonalisation?.defaultCookingDays && familyPersonalisation.defaultCookingDays.length > 0) {
-        setIncludedDays(familyPersonalisation.defaultCookingDays);
-      }
-      if (familyPersonalisation?.defaultDietaryFocus) {
-        setFocus(familyPersonalisation.defaultDietaryFocus);
-      }
-      if (familyPersonalisation?.defaultPlanningStrategy) {
-        setMode(familyPersonalisation.defaultPlanningStrategy);
-      }
+      setDefaultStaple(familyPersonalisation?.defaultStaple || 'jasmine_rice');
+      setIncludedDays(
+        familyPersonalisation?.defaultCookingDays && familyPersonalisation.defaultCookingDays.length > 0
+          ? familyPersonalisation.defaultCookingDays
+          : [1, 2, 3, 4, 5, 6, 0]
+      );
+      setFocus(familyPersonalisation?.defaultDietaryFocus || 'balanced');
+      setMode(familyPersonalisation?.defaultPlanningStrategy || 'best_of_both');
+      setSpiceTolerance(
+        familyPersonalisation?.spiceTolerance || (familyPersonalisation?.cookingForKids ? 'none' : 'mild')
+      );
     }
+    prevIsOpenRef.current = isOpen;
   }, [isOpen, familyMembers.length, familyPersonalisation]);
 
   // Master System Dishes State (ensuring all 3,000+ recipes are available offline)
@@ -199,6 +204,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
         includedDays,
         targetSlotId: 'slot_dinner',
         defaultStaple,
+        spiceToleranceOverride: spiceTolerance,
         familyCookbookDishes,
         allSystemDishes: systemPool,
         memberProfiles,
@@ -230,6 +236,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
           startDateISO,
           includedDays,
           defaultStaple,
+          spiceToleranceOverride: spiceTolerance,
           familyCookbookDishes,
           allSystemDishes: effectiveSystemDishes,
           memberProfiles,
@@ -270,6 +277,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
           startDateISO,
           includedDays,
           defaultStaple,
+          spiceToleranceOverride: spiceTolerance,
           familyCookbookDishes,
           allSystemDishes: effectiveSystemDishes,
           memberProfiles,
@@ -320,6 +328,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
         startDateISO,
         includedDays,
         defaultStaple,
+        spiceToleranceOverride: spiceTolerance,
         familyCookbookDishes,
         allSystemDishes: effectiveSystemDishes,
         memberProfiles,
@@ -435,6 +444,21 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
         return language === 'zh-CN' ? '🥗 轻食低卡' : '🥗 Light & Fresh';
       default:
         return language === 'zh-CN' ? '⚖️ 均衡营养' : '⚖️ Balanced';
+    }
+  };
+
+  const getSpiceLabel = (s: 'none' | 'mild' | 'medium' | 'spicy') => {
+    switch (s) {
+      case 'none':
+        return language === 'zh-CN' ? '🌶️ 不辣' : '🌶️ No Spice';
+      case 'mild':
+        return language === 'zh-CN' ? '🌶️ 微辣' : '🌶️ Mild';
+      case 'medium':
+        return language === 'zh-CN' ? '🌶️ 中辣' : '🌶️ Medium';
+      case 'spicy':
+        return language === 'zh-CN' ? '🌶️ 特辣' : '🌶️ Fiery';
+      default:
+        return language === 'zh-CN' ? '🌶️ 微辣' : '🌶️ Mild';
     }
   };
 
@@ -661,6 +685,9 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                           <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] font-bold">
                             {getFocusLabel(focus)}
                           </span>
+                          <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-[#F5F0E8] dark:bg-[#2E2A26] text-[#7A6E64] dark:text-[#9A9088] font-bold">
+                            {getSpiceLabel(spiceTolerance)}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -810,6 +837,50 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                             <p className="text-[10px] text-[#8A7A70] dark:text-[#9A8A7E] mt-0.5">{f.desc}</p>
                           </button>
                         ))}
+                      </div>
+                    </div>
+
+                    {/* Family Safe Spice Level Override */}
+                    <div className="rounded-xl border border-[#EDE8DF] bg-white p-3 shadow-2xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-base">🌶️</span>
+                          <h4 className="text-xs font-black uppercase tracking-wider text-[#2D2640] dark:text-[#F0EDE8]">
+                            {language === 'zh-CN' ? '全家安全辣度上限' : 'Family Safe Spice Level'}
+                          </h4>
+                        </div>
+                        <span className="text-[10px] font-bold text-[#2D6A4A] dark:text-[#4CAF82] bg-[#E8F5ED] dark:bg-[#0D2E1A] px-2 py-0.5 rounded-md border border-[#A8D8BC]">
+                          {language === 'zh-CN' ? '🛡️ 全家安全' : '🛡️ Family Safe'}
+                        </span>
+                      </div>
+                      <p className="text-[10.5px] text-[#8A7A70] dark:text-[#9A8A7E]">
+                        {language === 'zh-CN' ? 'AI 严格只排符合所选辣度且无过敏原的菜品' : 'AI strictly plans meals matching this spice ceiling with zero allergens'}
+                      </p>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                        {[
+                          { id: 'none', emoji: '🟢', zh: '不辣', en: 'No Spice' },
+                          { id: 'mild', emoji: '🟡', zh: '微辣', en: 'Mild' },
+                          { id: 'medium', emoji: '🟠', zh: '中辣', en: 'Medium' },
+                          { id: 'spicy', emoji: '🔴', zh: '特辣', en: 'Fiery' }
+                        ].map((spice) => {
+                          const isSelected = spiceTolerance === spice.id;
+                          return (
+                            <button
+                              key={spice.id}
+                              type="button"
+                              onClick={() => setSpiceTolerance(spice.id as any)}
+                              className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center justify-center gap-1 shadow-2xs ${
+                                isSelected
+                                  ? 'border-[#FFD13B] bg-[#FFF8E6] text-[#2D2640] dark:bg-[#2A1E00] dark:text-[#FFD13B] ring-1 ring-[#FFD13B]/50'
+                                  : 'border-[#EDE8DF] bg-[#FAF8F5] dark:border-[#38332E] dark:bg-[#1E1B18] text-[#7A6E64] dark:text-[#9A9088]'
+                              }`}
+                            >
+                              <span>{spice.emoji}</span>
+                              <span>{language === 'zh-CN' ? spice.zh : spice.en}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 

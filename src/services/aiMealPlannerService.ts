@@ -5,7 +5,7 @@ import type {
   FamilyPersonalisation,
   NutritionInfo
 } from '../types';
-import { detectDishAllergens, getFamilyAllergens } from './personalisationService';
+import { checkDishAllergenRisk } from './personalisationService';
 
 export type AiPlannerMode = 'easy_meals' | 'give_me_ideas' | 'best_of_both';
 export type AiPlannerFocus = 'balanced' | 'quick' | 'high_protein' | 'light';
@@ -203,6 +203,7 @@ export interface AiPlannerOptions {
   includedDays?: number[]; // [0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat]
   targetSlotId?: string; // default: 'slot_dinner'
   defaultStaple?: MealAccompaniment;
+  spiceToleranceOverride?: 'none' | 'mild' | 'medium' | 'spicy';
   familyCookbookDishes: Dish[];
   allSystemDishes: Dish[];
   memberProfiles?: Record<string, MemberPreferences>;
@@ -268,6 +269,58 @@ function containsDislikedIngredients(dish: Dish, dislikedList: string[]): boolea
     if (!term) return false;
     return combinedText.includes(term);
   });
+}
+
+/**
+ * Convert string or number spice tolerance to a numeric ceiling (0=none, 1=mild, 2=medium, 3=spicy)
+ */
+export function spiceToleranceToNumber(tol?: 'none' | 'mild' | 'medium' | 'spicy' | number): number {
+  if (typeof tol === 'number') return tol;
+  switch (tol) {
+    case 'none': return 0;
+    case 'mild': return 1;
+    case 'medium': return 2;
+    case 'spicy': return 3;
+    default: return 1; // Default to mild (safe)
+  }
+}
+
+/**
+ * Strict Family Safety check:
+ * 1. Zero allergens for any family member (or household rules)
+ * 2. No disliked ingredients of any member
+ * 3. Does not exceed the family's safe spice level ceiling
+ */
+export function isDishFamilySafe(
+  dish: Dish,
+  memberProfiles?: Record<string, MemberPreferences>,
+  familyMembers: string[] = [],
+  familyPersonalisation?: FamilyPersonalisation,
+  spiceOverride?: 'none' | 'mild' | 'medium' | 'spicy'
+): boolean {
+  if (!dish || !dish.name) return false;
+  if (dish.dishRole === 'sauce_condiment') return false;
+
+  // 1. Strict Allergen Safety: Any allergen affecting any family member or household rule blocks the dish
+  const allergenRisk = checkDishAllergenRisk(dish, memberProfiles, familyMembers, familyPersonalisation);
+  if (allergenRisk.hasRisk) return false;
+
+  // 2. Disliked Ingredients: Exclude dishes containing disliked ingredients
+  const dislikedList: string[] = [];
+  if (memberProfiles) {
+    Object.values(memberProfiles).forEach((p) => {
+      if (p.dislikedIngredients) dislikedList.push(...p.dislikedIngredients);
+    });
+  }
+  if (containsDislikedIngredients(dish, dislikedList)) return false;
+
+  // 3. Family Safe Spice Level
+  const effectiveSpice = spiceOverride || familyPersonalisation?.spiceTolerance || (familyPersonalisation?.cookingForKids ? 'none' : 'mild');
+  const maxSpice = spiceToleranceToNumber(effectiveSpice);
+  const dishSpice = dish.spiceLevel || 0;
+  if (dishSpice > maxSpice) return false;
+
+  return true;
 }
 
 /**
@@ -353,38 +406,17 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
     recentMealPlan = {}
   } = options;
 
-  // 1. Household constraints
-  const familyAllergens = getFamilyAllergens(familyMembers, memberProfiles, familyPersonalisation);
-
-  const allDislikedIngredients = new Set<string>();
-  Object.values(memberProfiles).forEach((p) => {
-    (p.dislikedIngredients || []).forEach((item) => allDislikedIngredients.add(item));
-  });
-  const dislikedList = Array.from(allDislikedIngredients);
-
-  const maxSpice = typeof familyPersonalisation.spiceTolerance === 'number'
-    ? familyPersonalisation.spiceTolerance
-    : 3;
-
   const preferKids = Boolean(familyPersonalisation.cookingForKids);
 
-  // 2. Safety filter
+  // 1. Safety filter - Strictly enforces Family Safe rules (Allergens, Dislikes, Spice)
   const isDishSafe = (dish: Dish): boolean => {
-    if (!dish || !dish.name) return false;
-    if (dish.dishRole === 'sauce_condiment') return false;
-
-    if (familyPersonalisation.strictAllergyFilter) {
-      const dishAlgs = detectDishAllergens(dish);
-      const isUnsafe = dishAlgs.some((alg) => familyAllergens.includes(alg));
-      if (isUnsafe) return false;
-    }
-
-    if (containsDislikedIngredients(dish, dislikedList)) return false;
-
-    const dishSpice = dish.spiceLevel || 0;
-    if (dishSpice > maxSpice) return false;
-
-    return true;
+    return isDishFamilySafe(
+      dish,
+      memberProfiles,
+      familyMembers,
+      familyPersonalisation,
+      options.spiceToleranceOverride
+    );
   };
 
   const safeCookbook = familyCookbookDishes.filter(isDishSafe);
@@ -732,22 +764,10 @@ export function swapSingleMealDish(
     if (targetRole === 'vegetable_side' && d.dishRole !== 'vegetable_side') return false;
     if (targetRole === 'soup' && d.dishRole !== 'soup') return false;
 
-    // Check allergies
-    if (options.familyPersonalisation?.strictAllergyFilter) {
-      const familyAllergens = getFamilyAllergens(
-        options.familyMembers || [],
-        options.memberProfiles,
-        options.familyPersonalisation
-      );
-      const dishAlgs = detectDishAllergens(d);
-      if (dishAlgs.some((alg) => familyAllergens.includes(alg))) return false;
+    // Strict Family Safety check: Allergens, Dislikes, and Spice Ceiling
+    if (!isDishFamilySafe(d, options.memberProfiles, options.familyMembers || [], options.familyPersonalisation, options.spiceToleranceOverride)) {
+      return false;
     }
-
-    // Check spice
-    const maxSpice = typeof options.familyPersonalisation?.spiceTolerance === 'number'
-      ? options.familyPersonalisation.spiceTolerance
-      : 3;
-    if ((d.spiceLevel || 0) > maxSpice) return false;
 
     return true;
   });
@@ -922,21 +942,10 @@ export function addDishToMeal(
     if (!d || currentDishIds.has(d.id) || otherDayDishIds.has(d.id)) return false;
     if (d.dishRole === 'sauce_condiment') return false;
 
-    // Safety checks
-    if (options.familyPersonalisation?.strictAllergyFilter) {
-      const familyAllergens = getFamilyAllergens(
-        options.familyMembers || [],
-        options.memberProfiles,
-        options.familyPersonalisation
-      );
-      const dishAlgs = detectDishAllergens(d);
-      if (dishAlgs.some((alg) => familyAllergens.includes(alg))) return false;
+    // Strict Family Safety check: Allergens, Dislikes, and Spice Ceiling
+    if (!isDishFamilySafe(d, options.memberProfiles, options.familyMembers || [], options.familyPersonalisation, options.spiceToleranceOverride)) {
+      return false;
     }
-
-    const maxSpice = typeof options.familyPersonalisation?.spiceTolerance === 'number'
-      ? options.familyPersonalisation.spiceTolerance
-      : 3;
-    if ((d.spiceLevel || 0) > maxSpice) return false;
 
     const role = inferDishRole(d);
     if (role !== preferredRole) return false;
@@ -959,6 +968,9 @@ export function addDishToMeal(
     const fbCandidates = fallbackPool.filter((d) => {
       if (!d || currentDishIds.has(d.id)) return false;
       if (d.dishRole === 'sauce_condiment') return false;
+      if (!isDishFamilySafe(d, options.memberProfiles, options.familyMembers || [], options.familyPersonalisation, options.spiceToleranceOverride)) {
+        return false;
+      }
       return true;
     });
     if (fbCandidates.length > 0) {

@@ -107,6 +107,23 @@ export const PersonalisationModal: React.FC<PersonalisationModalProps> = ({
     }
   );
 
+  const prevIsOpenRef = React.useRef(false);
+  React.useEffect(() => {
+    if (!prevIsOpenRef.current && isOpen) {
+      setActiveMember(currentMember || familyMembers[0] || 'Member');
+      setLocalProfiles(memberProfiles || {});
+      setLocalFamilyPersonalisation(
+        familyPersonalisation || {
+          strictAllergyFilter: true,
+          householdAllergies: [],
+          householdCuisines: [],
+          householdCategories: []
+        }
+      );
+    }
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, currentMember, familyMembers, memberProfiles, familyPersonalisation]);
+
   const [allergenSearch, setAllergenSearch] = useState('');
   const [activeAllergenCat, setActiveAllergenCat] = useState<AllergenCategory>('major');
   const [newMemberName, setNewMemberName] = useState('');

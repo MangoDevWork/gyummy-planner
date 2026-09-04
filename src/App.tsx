@@ -578,7 +578,10 @@ export function App() {
             {activeTab === 'settings' && (
               <SettingsView
                 appData={appData}
-                onUpdateAppData={setAppData}
+                onUpdateAppData={(updatedData: AppData) => {
+                  setAppData(updatedData);
+                  saveAppData(updatedData);
+                }}
                 onOpenProfileModal={() => setIsProfileModalOpen(true)}
                 onLogout={handleLogout}
                 isDarkMode={isDarkMode}
