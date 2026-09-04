@@ -12,8 +12,7 @@ import {
   BookmarkCheck,
   BookmarkPlus,
   CalendarPlus,
-  Edit3,
-  Trash2
+  Edit3
 } from 'lucide-react';
 import { exportToZip } from '../../services/zipExportService';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -30,7 +29,7 @@ interface DishDetailModalProps {
   familyPersonalisation?: FamilyPersonalisation;
   onClose: () => void;
   onEdit: (dish: Dish) => void;
-  onDelete: (dishId: string) => void;
+  onDelete?: (dishId: string) => void;
   onToggleFavorite: (dishId: string) => void;
   onToggleFamilyCookbook?: (dish: Dish) => void;
   onQuickPlan?: (dish: Dish) => void;
@@ -51,14 +50,13 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
   familyPersonalisation,
   onClose,
   onEdit,
-  onDelete,
   onToggleFavorite,
   onToggleFamilyCookbook,
   onQuickPlan,
   onShowToast,
   selectAction
 }) => {
-  const { language, t, formatCategory, formatCuisine } = useLanguage();
+  const { language, formatCategory, formatCuisine } = useLanguage();
   const [servingMultiplier, setServingMultiplier] = useState(1);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [showLegalModal, setShowLegalModal] = useState(false);
@@ -152,22 +150,14 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
             </button>
 
             <div className="flex items-center gap-1.5">
-              {onToggleFamilyCookbook && (
-                <button
-                  type="button"
-                  onClick={() => onToggleFamilyCookbook(dish)}
-                  className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/80 dark:bg-[#28231E]/80 backdrop-blur transition-transform active:scale-95 cursor-pointer shadow-sm ${
-                    isInFamilyCookbook ? 'text-[#2D2640] dark:text-[#F0EDE8]' : 'text-[#B8AFA4] dark:text-[#9A8A7E]'
-                  }`}
-                  title={isInFamilyCookbook ? 'In Cookbook' : 'Save to Cookbook'}
-                >
-                  {isInFamilyCookbook ? (
-                    <BookmarkCheck className="h-4 w-4 fill-[#2D2640] dark:fill-[#F0EDE8] text-white dark:text-[#28231E]" />
-                  ) : (
-                    <BookmarkPlus className="h-4 w-4" />
-                  )}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => onEdit(dish)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 dark:bg-[#28231E]/80 text-[#2D2640] dark:text-[#F0EDE8] backdrop-blur transition-transform active:scale-95 cursor-pointer shadow-sm hover:bg-white"
+                title={language === 'zh-CN' ? '编辑菜谱' : 'Edit Recipe'}
+              >
+                <Edit3 className="h-4 w-4" />
+              </button>
 
               <button
                 type="button"
@@ -452,20 +442,10 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
             <button
               type="button"
               onClick={() => onEdit(dish)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[#E8DDD5] bg-[#F5F0E8] text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8] text-xs font-semibold cursor-pointer"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[#E8DDD5] bg-[#F5F0E8] text-[#2D2640] dark:border-[#3A332C] dark:bg-[#201C18] dark:text-[#F0EDE8] text-xs font-semibold cursor-pointer hover:bg-[#EDE7DE] transition"
             >
               <Edit3 className="w-3.5 h-3.5" />
-              <span>{t('common.edit')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm(`Delete "${dish.name}"?`)) onDelete(dish.id);
-              }}
-              className="p-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold cursor-pointer transition"
-              title="Delete dish"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
+              <span>{language === 'zh-CN' ? '编辑此菜谱' : 'Edit Recipe'}</span>
             </button>
           </div>
         </div>
@@ -483,7 +463,29 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
             </button>
           ) : (
             <div className="flex gap-2">
-              {onQuickPlan && (
+              {onToggleFamilyCookbook ? (
+                <button
+                  type="button"
+                  onClick={() => onToggleFamilyCookbook(dish)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-transform active:scale-95 cursor-pointer shadow-md ${
+                    isInFamilyCookbook
+                      ? 'bg-[#F5F0E8] text-[#7A6E64] dark:bg-[#2A2420] dark:text-[#D0C8C0] border border-[#EDE8DF] dark:border-[#3A332C] hover:bg-[#EFE9E0]'
+                      : 'bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] border border-[#2D2640]/10'
+                  }`}
+                >
+                  {isInFamilyCookbook ? (
+                    <>
+                      <BookmarkCheck className="w-4 h-4 text-[#7A6E64] dark:text-[#D0C8C0]" />
+                      <span>{language === 'zh-CN' ? '从家庭菜谱移除' : 'Remove from Cookbook'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <BookmarkPlus className="w-4 h-4 text-[#2D2640]" />
+                      <span>{language === 'zh-CN' ? '加入家庭菜谱' : 'Add to Cookbook'}</span>
+                    </>
+                  )}
+                </button>
+              ) : onQuickPlan ? (
                 <button
                   type="button"
                   onClick={() => onQuickPlan(dish)}
@@ -492,7 +494,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
                   <CalendarPlus className="w-4 h-4" strokeWidth={2.4} />
                   <span>{language === 'zh-CN' ? '加入排餐' : 'Add to Plan'}</span>
                 </button>
-              )}
+              ) : null}
             </div>
           )}
         </div>

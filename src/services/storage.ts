@@ -247,9 +247,10 @@ export function saveAppData(data: AppData, skipCloudPush = false): void {
       const familyKey = getFamilyStorageKey(data.currentProfile.familyName);
 
       const persistedDishes = data.dishes.filter((d) => {
-        if (d.isFamilyRecipe === false && (!d.favoritedByMembers || d.favoritedByMembers.length === 0)) {
-          return false;
-        }
+        // Always persist user custom / edited recipes
+        const isCustom = d.id.startsWith('dish_') || d.id.startsWith('custom_');
+        if (isCustom) return true;
+        // For system recipes, persist if in family cookbook or favorited
         return Boolean(d.isFamilyRecipe || (d.favoritedByMembers && d.favoritedByMembers.length > 0));
       });
 

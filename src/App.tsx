@@ -230,10 +230,12 @@ export function App() {
       } else {
         updatedDishes = [dish, ...prev.dishes];
       }
-      return {
+      const updatedData = {
         ...prev,
         dishes: updatedDishes
       };
+      saveAppData(updatedData);
+      return updatedData;
     });
   };
 
@@ -262,16 +264,18 @@ export function App() {
         updatedMealPlan[date] = day;
       });
 
-      return {
+      const updatedData = {
         ...prev,
         dishes: updatedDishes,
         mealPlan: updatedMealPlan
       };
+      saveAppData(updatedData);
+      return updatedData;
     });
   };
 
   // Toggle user-specific favorite
-  const handleToggleFavoriteDish = (dishId: string) => {
+  const handleToggleFavoriteDish = (dishId: string, dishObj?: Dish) => {
     const currentMember = appData.currentProfile?.memberName;
     if (!currentMember) {
       setIsProfileModalOpen(true);
@@ -279,41 +283,71 @@ export function App() {
     }
 
     setAppData((prev) => {
-      const updatedDishes = prev.dishes.map((dish) => {
-        if (dish.id !== dishId) return dish;
-        const currentFavorites = dish.favoritedByMembers || [];
-        const isFav = currentFavorites.includes(currentMember);
-        const updatedFavs = isFav
-          ? currentFavorites.filter((m) => m !== currentMember)
-          : [...currentFavorites, currentMember];
+      const existing = prev.dishes.find((d) => d.id === dishId);
+      let updatedDishes: Dish[];
+      if (existing) {
+        updatedDishes = prev.dishes.map((dish) => {
+          if (dish.id !== dishId) return dish;
+          const currentFavorites = dish.favoritedByMembers || [];
+          const isFav = currentFavorites.includes(currentMember);
+          const updatedFavs = isFav
+            ? currentFavorites.filter((m) => m !== currentMember)
+            : [...currentFavorites, currentMember];
 
-        return {
-          ...dish,
-          favoritedByMembers: updatedFavs
+          return {
+            ...dish,
+            favoritedByMembers: updatedFavs
+          };
+        });
+      } else if (dishObj) {
+        const newEntry: Dish = {
+          ...dishObj,
+          isFamilyRecipe: false,
+          favoritedByMembers: [currentMember]
         };
-      });
+        updatedDishes = [newEntry, ...prev.dishes];
+      } else {
+        updatedDishes = prev.dishes;
+      }
 
-      return {
+      const updatedData = {
         ...prev,
         dishes: updatedDishes
       };
+      saveAppData(updatedData);
+      return updatedData;
     });
   };
 
   // Toggle Family Cookbook inclusion
-  const handleToggleFamilyRecipe = (dishId: string) => {
+  const handleToggleFamilyRecipe = (dishId: string, dishObj?: Dish) => {
     setAppData((prev) => {
-      const updatedDishes = prev.dishes.map((dish) => {
-        if (dish.id !== dishId) return dish;
-        return {
-          ...dish,
-          isFamilyRecipe: dish.isFamilyRecipe === false ? true : false
+      const existing = prev.dishes.find((d) => d.id === dishId);
+      let updatedDishes: Dish[];
+      if (existing) {
+        updatedDishes = prev.dishes.map((dish) => {
+          if (dish.id !== dishId) return dish;
+          return {
+            ...dish,
+            isFamilyRecipe: dish.isFamilyRecipe === false ? true : false
+          };
+        });
+      } else if (dishObj) {
+        const newEntry: Dish = {
+          ...dishObj,
+          isFamilyRecipe: true
         };
-      });
-      return {
+        updatedDishes = [newEntry, ...prev.dishes];
+      } else {
+        updatedDishes = prev.dishes;
+      }
+
+      const updatedData = {
         ...prev,
         dishes: updatedDishes
       };
+      saveAppData(updatedData);
+      return updatedData;
     });
   };
 

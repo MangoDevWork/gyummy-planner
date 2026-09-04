@@ -652,7 +652,12 @@ export const DishesView: React.FC<DishesViewProps> = ({
           setSelectedDish(null);
         }}
         onToggleFavorite={onToggleFavoriteDish}
-        onToggleFamilyCookbook={(d) => onToggleFamilyRecipe?.(d.id)}
+        onToggleFamilyCookbook={(d) => {
+          onToggleFamilyRecipe?.(d.id);
+          setSelectedDish((prev) =>
+            prev && prev.id === d.id ? { ...prev, isFamilyRecipe: !prev.isFamilyRecipe } : prev
+          );
+        }}
         onQuickPlan={(d) => {
           setSelectedDish(null);
           onQuickPlanDish?.(d);
@@ -672,6 +677,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
           onSaveDish(d);
           setIsCreatorOpen(false);
           setEditingDish(null);
+          setSelectedDish(d);
         }}
       />
     </div>

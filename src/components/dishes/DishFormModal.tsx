@@ -37,7 +37,22 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
   const [prepTimeMinutes, setPrepTimeMinutes] = useState<number | undefined>(initialDish?.prepTimeMinutes || 20);
   const [imageEmoji, setImageEmoji] = useState(initialDish?.imageEmoji || '🍲');
   const [imageUrl, setImageUrl] = useState(initialDish?.imageUrl || '');
-  const [instructions, setInstructions] = useState(initialDish?.instructions || '');
+  
+  const initialSteps = (() => {
+    if (initialDish?.stepList && initialDish.stepList.length > 0) {
+      return initialDish.stepList;
+    }
+    if (initialDish?.instructions) {
+      const parsed = initialDish.instructions
+        .split('\n\n')
+        .flatMap((p) => p.split('\n'))
+        .map((s) => s.trim().replace(/^\d+[\.\)]\s*/, ''))
+        .filter(Boolean);
+      if (parsed.length > 0) return parsed;
+    }
+    return [''];
+  })();
+  const [steps, setSteps] = useState<string[]>(initialSteps);
   const [tagsInput, setTagsInput] = useState(initialDish?.tags?.join(', ') || '');
   const [isFamilyRecipe, setIsFamilyRecipe] = useState(initialDish?.isFamilyRecipe ?? true);
 
@@ -107,6 +122,24 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
       return;
     }
     setIngredients(ingredients.filter((_, i) => i !== index));
+  };
+
+  const handleAddStep = () => {
+    setSteps([...steps, '']);
+  };
+
+  const handleRemoveStep = (index: number) => {
+    if (steps.length === 1) {
+      setSteps(['']);
+      return;
+    }
+    setSteps(steps.filter((_, i) => i !== index));
+  };
+
+  const handleStepChange = (index: number, text: string) => {
+    const updated = [...steps];
+    updated[index] = text;
+    setSteps(updated);
   };
 
   const handleIngredientChange = (index: number, field: keyof Ingredient, value: any) => {
@@ -179,6 +212,9 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
       delete translations[targetTranslationLang];
     }
 
+    const validSteps = steps.map((s) => s.trim()).filter((s) => s.length > 0);
+    const formattedInstructions = validSteps.map((s, i) => `${i + 1}. ${s}`).join('\n\n');
+
     const savedDish: Dish = {
       id: initialDish?.id || `dish_${Date.now()}`,
       canonicalId: initialDish?.canonicalId || initialDish?.id || `dish_${Date.now()}`,
@@ -190,7 +226,8 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
       prepTimeMinutes: prepTimeMinutes ? Number(prepTimeMinutes) : undefined,
       imageEmoji,
       imageUrl: imageUrl || undefined,
-      instructions: instructions.trim(),
+      instructions: formattedInstructions,
+      stepList: validSteps.length > 0 ? validSteps : undefined,
       tags,
       favoritedByMembers: initialDish?.favoritedByMembers || [],
       isFamilyRecipe,
@@ -289,25 +326,25 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
             />
 
             {imageUrl ? (
-              <div className="relative rounded-xl overflow-hidden border border-[#EAE6DF] group">
+              <div className="relative rounded-xl overflow-hidden border border-[#EAE6DF]">
                 <img
                   src={imageUrl}
                   alt="Recipe Preview"
-                  className="w-full h-36 object-cover"
+                  className="w-full h-40 object-cover"
                 />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                <div className="absolute bottom-2 right-2 flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => recipePhotoInputRef.current?.click()}
-                    className="px-3 py-1.5 bg-white text-slate-900 text-xs font-bold rounded-xl shadow-xs flex items-center gap-1 hover:bg-slate-50 cursor-pointer"
+                    className="px-3 py-1.5 bg-[#FFD13B] text-[#2D2640] border border-[#2D2640]/10 text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 hover:bg-[#FFC200] active:scale-95 transition cursor-pointer"
                   >
-                    <Camera className="w-3.5 h-3.5 text-slate-700" />
-                    <span>{language === 'zh-CN' ? '更换' : 'Change'}</span>
+                    <Camera className="w-3.5 h-3.5 text-[#2D2640]" />
+                    <span>{language === 'zh-CN' ? '更换照片' : 'Change'}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setImageUrl('')}
-                    className="px-3 py-1.5 bg-rose-600 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1 hover:bg-rose-700 cursor-pointer"
+                    className="px-2.5 py-1.5 bg-rose-600 text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1 hover:bg-rose-700 active:scale-95 transition cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>{language === 'zh-CN' ? '删除' : 'Remove'}</span>
@@ -616,18 +653,56 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
             </button>
           </div>
 
-          {/* Cooking Instructions / Notes */}
-          <div className="border-t border-[#EAE6DF] pt-3">
-            <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              {t('dishes.instructionsSection')}
-            </label>
-            <textarea
-              rows={4}
-              placeholder={language === 'zh-CN' ? '1. 鸡肉腌制10分钟...&#10;2. 热油下锅煎至金黄...&#10;3. 淋入酱汁大火收汁...' : "1. Season chicken...&#10;2. Pan sear in oil for 6 mins...&#10;3. Glaze with sauce..."}
-              value={instructions}
-              onChange={(e) => setInstructions(e.target.value)}
-              className="w-full text-xs font-medium p-3 rounded-xl border border-[#EAE6DF] bg-white text-slate-900 focus:outline-hidden focus:border-slate-400 shadow-2xs"
-            />
+          {/* Cooking Instructions Step-by-Step */}
+          <div className="border-t border-[#EAE6DF] pt-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                {language === 'zh-CN' ? '烹饪步骤 (Cooking Instruction)' : 'Cooking Instruction'}
+              </label>
+              <span className="text-[11px] text-slate-500 font-medium">
+                {steps.length} {steps.length === 1 ? (language === 'zh-CN' ? '个步骤' : 'step') : (language === 'zh-CN' ? '个步骤' : 'steps')}
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
+              {steps.map((step, idx) => (
+                <div key={idx} className="flex items-start gap-2 bg-white p-2.5 rounded-xl border border-[#EAE6DF] shadow-2xs">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-[#FFD13B] text-[#2D2640] text-xs font-bold flex items-center justify-center mt-0.5 shadow-2xs">
+                    {idx + 1}
+                  </span>
+                  <textarea
+                    rows={2}
+                    value={step}
+                    onChange={(e) => handleStepChange(idx, e.target.value)}
+                    placeholder={
+                      language === 'zh-CN'
+                        ? `步骤 ${idx + 1} 说明...`
+                        : `Step ${idx + 1} instructions...`
+                    }
+                    className="flex-1 text-xs font-medium p-2 rounded-lg border border-[#EAE6DF] bg-[#FAF8F5] text-slate-900 focus:bg-white focus:outline-hidden focus:border-slate-400 resize-y"
+                  />
+                  {steps.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveStep(idx)}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition shrink-0 cursor-pointer"
+                      title={language === 'zh-CN' ? '删除此步骤' : 'Remove step'}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddStep}
+              className="w-full py-2.5 rounded-xl border border-dashed border-slate-300 hover:border-slate-500 bg-white text-slate-600 hover:text-slate-900 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{language === 'zh-CN' ? '+ 添加下一步' : '+ Add Step'}</span>
+            </button>
           </div>
 
           {/* Optional Multilingual Translation Accordion */}

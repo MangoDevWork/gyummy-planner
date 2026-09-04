@@ -300,9 +300,10 @@ export async function pushAppDataToCloud(
   // Filter dishes:
   // Only sync recipes that belong to this Family Cookbook (isFamilyRecipe !== false) or are favorited
   const persistedDishes = (data.dishes || []).filter((d) => {
-    if (d.isFamilyRecipe === false && (!d.favoritedByMembers || d.favoritedByMembers.length === 0)) {
-      return false;
-    }
+    // Always persist user custom / edited recipes
+    const isCustom = d.id && (d.id.startsWith('dish_') || d.id.startsWith('custom_'));
+    if (isCustom) return true;
+    // For system recipes, persist if in family cookbook or favorited
     return Boolean(d.isFamilyRecipe || (d.favoritedByMembers && d.favoritedByMembers.length > 0));
   });
 
