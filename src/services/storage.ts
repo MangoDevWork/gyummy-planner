@@ -5,10 +5,19 @@ import { matchPantryIngredient } from './pantryMatching';
 import { STARTER_RECIPE_TRANSLATIONS, getLocalizedDish } from './dataLocalizationService';
 import { sanitizeIngredient, sanitizeMasterIngredient, cleanIngredientName } from './ingredientSanitizer';
 import { pushAppDataToCloud } from './firebase';
+import {
+  getIdbFamilyData,
+  setIdbFamilyData,
+  deleteIdbFamilyData,
+  extractAndStoreIdbImages,
+  hydrateDishesWithIdbImages
+} from './indexedDbStorage';
 
 const ACTIVE_PROFILE_KEY = 'gyummy_active_profile_v2';
 const FAMILY_DATA_PREFIX = 'gyummy_family_data_v2_';
 const LEGACY_STORAGE_KEY = 'gyummy_planner_data_v1';
+
+let memoryAppDataCache: AppData | null = null;
 
 export function getActiveProfile(): UserProfile | null {
   try {
@@ -44,6 +53,14 @@ export function getFamilyStorageKey(familyName: string): string {
 export function loadAppData(profileOverride?: UserProfile | null): AppData {
   try {
     const currentProfile = profileOverride !== undefined ? profileOverride : getActiveProfile();
+
+    if (
+      memoryAppDataCache &&
+      memoryAppDataCache.currentProfile?.familyName === currentProfile?.familyName
+    ) {
+      return memoryAppDataCache;
+    }
+
     const familyKey = currentProfile ? getFamilyStorageKey(currentProfile.familyName) : null;
     
     let raw = familyKey ? localStorage.getItem(familyKey) : null;
@@ -279,6 +296,12 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
     }
 
     parsed.currentProfile = currentProfile;
+    memoryAppDataCache = parsed;
+
+    // Asynchronously extract any existing base64 images into IndexedDB image store
+    if (Array.isArray(parsed.dishes)) {
+      extractAndStoreIdbImages(parsed.dishes).catch(() => {});
+    }
 
     return parsed;
   } catch (err) {
@@ -287,11 +310,65 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
   }
 }
 
+/**
+ * Hydrates full AppData from IndexedDB on startup and migrates localStorage if needed.
+ */
+export async function initStorageWithIndexedDb(profileOverride?: UserProfile | null): Promise<AppData | null> {
+  try {
+    const profile = profileOverride !== undefined ? profileOverride : getActiveProfile();
+    if (!profile?.familyName) return null;
+
+    const familyId = profile.familyName;
+
+    // 1. Check if IndexedDB has family data
+    let idbData = await getIdbFamilyData(familyId);
+
+    // 2. If IndexedDB is empty, migrate from localStorage
+    if (!idbData) {
+      const familyKey = getFamilyStorageKey(familyId);
+      const raw = localStorage.getItem(familyKey);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as AppData;
+          if (parsed && Array.isArray(parsed.dishes)) {
+            idbData = parsed;
+            await setIdbFamilyData(familyId, parsed);
+            await extractAndStoreIdbImages(parsed.dishes);
+          }
+        } catch {
+          // fallback
+        }
+      }
+    }
+
+    // 3. Hydrate any dishes that need images from IndexedDB image store
+    if (idbData && Array.isArray(idbData.dishes)) {
+      idbData.dishes = await hydrateDishesWithIdbImages(idbData.dishes);
+      memoryAppDataCache = idbData;
+      return idbData;
+    }
+
+    // 4. Fallback: check if memory cache exists and hydrate it
+    if (memoryAppDataCache && Array.isArray(memoryAppDataCache.dishes)) {
+      memoryAppDataCache.dishes = await hydrateDishesWithIdbImages(memoryAppDataCache.dishes);
+      return memoryAppDataCache;
+    }
+
+    return null;
+  } catch (err) {
+    console.warn('initStorageWithIndexedDb error:', err);
+    return null;
+  }
+}
+
 export function saveAppData(data: AppData, skipCloudPush = false): void {
   try {
+    memoryAppDataCache = data;
+
     if (data.currentProfile) {
       setActiveProfile(data.currentProfile);
-      const familyKey = getFamilyStorageKey(data.currentProfile.familyName);
+      const familyName = data.currentProfile.familyName;
+      const familyKey = getFamilyStorageKey(familyName);
 
       const starterIds = new Set(INITIAL_DISHES.map((d) => d.id));
       const persistedDishes = data.dishes.filter((d) => {
@@ -303,24 +380,57 @@ export function saveAppData(data: AppData, skipCloudPush = false): void {
         return Boolean(d.isFamilyRecipe || (d.favoritedByMembers && d.favoritedByMembers.length > 0));
       });
 
-      const payloadToSave = {
+      // 1. Asynchronously offload custom base64 images into IndexedDB image store
+      extractAndStoreIdbImages(persistedDishes).catch((err) => {
+        console.warn('Error saving images to IndexedDB:', err);
+      });
+
+      // 2. Asynchronously save full AppData to IndexedDB
+      const fullIdbPayload: AppData = {
         ...data,
         customIngredients: data.customIngredients || [],
         masterIngredients: undefined, // Never serialize 42,000 lines of system masterIngredients
         dishes: persistedDishes
       };
+      setIdbFamilyData(familyName, fullIdbPayload).catch((err) => {
+        console.warn('Error saving to IndexedDB:', err);
+      });
 
-      localStorage.setItem(familyKey, JSON.stringify(payloadToSave));
+      // 3. Prepare lean fallback payload for localStorage:
+      // STRIP giant base64 images so localStorage only stores lightweight text metadata (< 40KB)!
+      const leanDishes = persistedDishes.map((dish) => {
+        if (dish.imageUrl && dish.imageUrl.startsWith('data:image/')) {
+          return {
+            ...dish,
+            imageUrl: undefined,
+            hasCustomImage: true
+          };
+        }
+        return dish;
+      });
 
-      // Push to Firebase Cloud (debounced) if not skipped
+      const leanPayload = {
+        ...data,
+        customIngredients: data.customIngredients || [],
+        masterIngredients: undefined,
+        dishes: leanDishes
+      };
+
+      try {
+        localStorage.setItem(familyKey, JSON.stringify(leanPayload));
+      } catch (quotaErr) {
+        console.warn('LocalStorage quota warning (full data safely preserved in IndexedDB):', quotaErr);
+      }
+
+      // 4. Push to Firebase Cloud (debounced) if not skipped
       if (!skipCloudPush) {
-        pushAppDataToCloud(data.currentProfile.familyName, payloadToSave);
+        pushAppDataToCloud(familyName, data);
       }
     } else {
       setActiveProfile(null);
     }
   } catch (err) {
-    console.error('Error saving data to storage:', err);
+    console.error('Error in saveAppData:', err);
   }
 }
 
@@ -330,7 +440,9 @@ export function clearAllAppData(): void {
     if (profile) {
       const familyKey = getFamilyStorageKey(profile.familyName);
       localStorage.removeItem(familyKey);
+      deleteIdbFamilyData(profile.familyName).catch(() => {});
     }
+    memoryAppDataCache = null;
     localStorage.removeItem(ACTIVE_PROFILE_KEY);
     localStorage.removeItem(LEGACY_STORAGE_KEY);
   } catch (err) {

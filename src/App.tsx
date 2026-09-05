@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { AppData, Dish, GroceryCategory, MasterIngredient, MealPlan, MealScheduleConfig, MealScheduleEntry, UserProfile } from './types';
-import { loadAppData, saveAppData, generateGroceryList, setActiveProfile, resetActiveSession } from './services/storage';
+import { loadAppData, saveAppData, initStorageWithIndexedDb, generateGroceryList, setActiveProfile, resetActiveSession } from './services/storage';
 import { getInitialAppData } from './services/seedData';
 import { DEFAULT_MASTER_INGREDIENTS } from './services/masterIngredients';
 import { LanguageProvider } from './i18n/LanguageContext';
@@ -58,6 +58,26 @@ export function App() {
       setIsDarkMode(false);
     }
   }, [appData.currentProfile?.memberName]);
+
+  // Hydrate full offline data and recipe images from IndexedDB on startup
+  useEffect(() => {
+    let isMounted = true;
+    initStorageWithIndexedDb(appData.currentProfile).then((idbData) => {
+      if (isMounted && idbData) {
+        setAppData((prev) => {
+          const systemDishes = getCachedSystemRecipes();
+          return {
+            ...prev,
+            ...idbData,
+            dishes: mergeSystemWithUserDishes(idbData.dishes || [], systemDishes)
+          };
+        });
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [appData.currentProfile?.familyName]);
 
   // Subscribe to Cloud Firestore real-time updates for the current family
   useEffect(() => {

@@ -11,8 +11,9 @@ import {
   type Firestore,
   type Unsubscribe
 } from 'firebase/firestore';
-import type { AppData } from '../types';
+import type { AppData, Dish } from '../types';
 import { INITIAL_DISHES } from './seedData';
+import { getIdbRecipeImage, setIdbRecipeImage } from './indexedDbStorage';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDDbz3VrrVTxsXX-iCbwj2LxuSHdup5h10',
@@ -82,6 +83,47 @@ export interface FamilyAuthResult {
 }
 
 /**
+ * Hydrates custom images for dishes that have hasCustomImage=true or missing imageUrl
+ */
+export async function hydrateRemoteDishImages(familyName: string, dishes: Dish[]): Promise<Dish[]> {
+  if (!db || !familyName || !Array.isArray(dishes)) return dishes;
+  const familyId = sanitizeFamilyId(familyName);
+
+  const hydrated = await Promise.all(
+    dishes.map(async (dish) => {
+      // If already has a valid imageUrl, return as-is
+      if (dish.imageUrl) return dish;
+      if (!dish.hasCustomImage) return dish;
+
+      // 1. Check local IndexedDB first (instant, zero network cost)
+      const localImg = await getIdbRecipeImage(dish.id);
+      if (localImg) {
+        return { ...dish, imageUrl: localImg };
+      }
+
+      // 2. Fetch from Firestore subcollection: families/{familyId}/recipe_images/{dishId}
+      try {
+        const imageDocRef = doc(db, 'families', familyId, 'recipe_images', dish.id);
+        const snap = await getDoc(imageDocRef);
+        if (snap.exists()) {
+          const imgData = snap.data();
+          if (imgData?.imageUrl) {
+            await setIdbRecipeImage(dish.id, imgData.imageUrl);
+            return { ...dish, imageUrl: imgData.imageUrl };
+          }
+        }
+      } catch (err) {
+        console.warn(`Could not fetch remote image for dish ${dish.id}:`, err);
+      }
+
+      return dish;
+    })
+  );
+
+  return hydrated;
+}
+
+/**
  * Fetch existing family document from Cloud Firestore directly
  */
 export async function fetchFamilyCloudData(familyName: string): Promise<Partial<AppData> | null> {
@@ -94,8 +136,10 @@ export async function fetchFamilyCloudData(familyName: string): Promise<Partial<
     if (!snap.exists()) return null;
 
     const data = snap.data();
+    const dishes = await hydrateRemoteDishImages(familyName, (data.dishes || []) as Dish[]);
+
     return {
-      dishes: data.dishes || [],
+      dishes,
       mealSchedules: data.mealSchedules || [],
       mealPlan: data.mealPlan || {},
       pantryIngredients: data.pantryIngredients || [],
@@ -336,36 +380,46 @@ export async function pushAppDataToCloud(
     return val;
   };
 
+  // Collect any custom base64 images that should be synced into the subcollection
+  const customImagesToSync = persistedDishes.filter(
+    (d) => d.imageUrl && d.imageUrl.startsWith('data:image/')
+  );
+
   // Build the minimal data payload
   const rawPayload = {
     familyName: data.currentProfile?.familyName || familyName,
     familyMembers: data.familyMembers || [],
-    dishes: persistedDishes.map((d) => ({
-      id: d.id,
-      name: d.name || '',
-      category: d.category || 'Main',
-      cuisine: d.cuisine || 'Chinese',
-      servings: typeof d.servings === 'number' ? d.servings : 2,
-      prepTimeMinutes: typeof d.prepTimeMinutes === 'number' ? d.prepTimeMinutes : 20,
-      imageUrl: d.imageUrl || null,
-      imageEmoji: d.imageEmoji || null,
-      isFamilyRecipe: Boolean(d.isFamilyRecipe),
-      favoritedByMembers: d.favoritedByMembers || [],
-      timesPlanned: typeof d.timesPlanned === 'number' ? d.timesPlanned : 0,
-      lastPlannedAt: d.lastPlannedAt || null,
-      allergens: d.allergens || [],
-      ingredients: (d.ingredients || []).map((ing) => ({
-        id: ing.id || '',
-        name: ing.name || '',
-        amount: ing.amount !== undefined ? ing.amount : null,
-        unit: ing.unit || '',
-        category: ing.category || 'Produce'
-      })),
-      instructions: typeof d.instructions === 'string' ? d.instructions : (Array.isArray(d.instructions as any) ? (d.instructions as any).join('\n') : ''),
-      tags: d.tags || [],
-      translations: d.translations || null,
-      language: d.language || 'en'
-    })),
+    dishes: persistedDishes.map((d) => {
+      const isBase64 = Boolean(d.imageUrl && d.imageUrl.startsWith('data:image/'));
+      return {
+        id: d.id,
+        name: d.name || '',
+        category: d.category || 'Main',
+        cuisine: d.cuisine || 'Chinese',
+        servings: typeof d.servings === 'number' ? d.servings : 2,
+        prepTimeMinutes: typeof d.prepTimeMinutes === 'number' ? d.prepTimeMinutes : 20,
+        // Large base64 images are stored in recipe_images subcollection, not inlined in main doc!
+        imageUrl: isBase64 ? null : (d.imageUrl || null),
+        hasCustomImage: Boolean(isBase64 || d.hasCustomImage),
+        imageEmoji: d.imageEmoji || null,
+        isFamilyRecipe: Boolean(d.isFamilyRecipe),
+        favoritedByMembers: d.favoritedByMembers || [],
+        timesPlanned: typeof d.timesPlanned === 'number' ? d.timesPlanned : 0,
+        lastPlannedAt: d.lastPlannedAt || null,
+        allergens: d.allergens || [],
+        ingredients: (d.ingredients || []).map((ing) => ({
+          id: ing.id || '',
+          name: ing.name || '',
+          amount: ing.amount !== undefined ? ing.amount : null,
+          unit: ing.unit || '',
+          category: ing.category || 'Produce'
+        })),
+        instructions: typeof d.instructions === 'string' ? d.instructions : (Array.isArray(d.instructions as any) ? (d.instructions as any).join('\n') : ''),
+        tags: d.tags || [],
+        translations: d.translations || null,
+        language: d.language || 'en'
+      };
+    }),
     memberProfiles: data.memberProfiles || {},
     familyPersonalisation: data.familyPersonalisation || {
       strictAllergyFilter: true,
@@ -428,6 +482,24 @@ export async function pushAppDataToCloud(
       lastPushedPayloadHash = currentHash;
       onSyncStateChange?.('synced');
 
+      // Asynchronously sync any custom recipe images to subcollection: families/{familyId}/recipe_images/{dishId}
+      if (customImagesToSync.length > 0) {
+        Promise.all(
+          customImagesToSync.map(async (dish) => {
+            try {
+              const imageDocRef = doc(db, 'families', familyId, 'recipe_images', dish.id);
+              await setDoc(imageDocRef, {
+                dishId: dish.id,
+                imageUrl: dish.imageUrl,
+                updatedAt: new Date().toISOString()
+              }, { merge: true });
+            } catch (imgErr) {
+              console.warn(`Failed to sync custom image for ${dish.id}:`, imgErr);
+            }
+          })
+        ).catch(() => {});
+      }
+
       // Asynchronously stage user-created custom recipes into the community pool for monthly review
       const customDishes = (data.dishes || []).filter(
         (d) => d && d.id && (d.id.startsWith('dish_1') || d.id.startsWith('custom_')) && d.isFamilyRecipe !== false
@@ -481,28 +553,31 @@ export function subscribeToFamilyCloudData(
           ? data.familyMembers
           : (Array.isArray(data.members) ? data.members : []);
 
+        const rawDishes = (data.dishes || []).map((d: any) => ({
+          id: d.id,
+          name: d.name || '',
+          category: d.category || 'Main',
+          cuisine: d.cuisine || 'Chinese',
+          servings: typeof d.servings === 'number' ? d.servings : 2,
+          prepTimeMinutes: typeof d.prepTimeMinutes === 'number' ? d.prepTimeMinutes : 20,
+          imageUrl: d.imageUrl || null,
+          hasCustomImage: Boolean(d.hasCustomImage),
+          imageEmoji: d.imageEmoji || null,
+          isFamilyRecipe: Boolean(d.isFamilyRecipe),
+          favoritedByMembers: d.favoritedByMembers || [],
+          ingredients: d.ingredients || [],
+          instructions: d.instructions || [],
+          tags: d.tags || [],
+          translations: d.translations || null,
+          language: d.language || 'en'
+        }));
+
         const receivedCore = {
           familyName: data.familyName || familyName,
           familyMembers: membersList,
           memberProfiles: data.memberProfiles || {},
           familyPersonalisation: data.familyPersonalisation || {},
-          dishes: (data.dishes || []).map((d: any) => ({
-            id: d.id,
-            name: d.name || '',
-            category: d.category || 'Main',
-            cuisine: d.cuisine || 'Chinese',
-            servings: typeof d.servings === 'number' ? d.servings : 2,
-            prepTimeMinutes: typeof d.prepTimeMinutes === 'number' ? d.prepTimeMinutes : 20,
-            imageUrl: d.imageUrl || null,
-            imageEmoji: d.imageEmoji || null,
-            isFamilyRecipe: Boolean(d.isFamilyRecipe),
-            favoritedByMembers: d.favoritedByMembers || [],
-            ingredients: d.ingredients || [],
-            instructions: d.instructions || [],
-            tags: d.tags || [],
-            translations: d.translations || null,
-            language: d.language || 'en'
-          })),
+          dishes: rawDishes,
           mealSchedules: data.mealSchedules || [],
           mealPlan: data.mealPlan || {},
           pantryIngredients: data.pantryIngredients || [],
@@ -519,10 +594,24 @@ export function subscribeToFamilyCloudData(
               inPantry: Boolean(item.inPantry),
               sourceDishes: item.sourceDishes || [],
               isManual: Boolean(item.isManual)
-            }))
+            })),
+            undoStack: []
           },
           settings: data.settings || {}
         };
+
+        // 1. Immediately deliver received remote data
+        onRemoteDataReceived(receivedCore);
+
+        // 2. Asynchronously hydrate any custom images from local IndexedDB or remote subcollection
+        hydrateRemoteDishImages(familyName, rawDishes).then((hydrated) => {
+          if (hydrated.some((d, idx) => d.imageUrl !== rawDishes[idx]?.imageUrl)) {
+            onRemoteDataReceived({
+              ...receivedCore,
+              dishes: hydrated
+            });
+          }
+        }).catch(() => {});
 
         const newHash = JSON.stringify(receivedCore);
         if (lastPushedPayloadHash === newHash) {

@@ -77,6 +77,7 @@ export interface Dish {
   stepList?: string[];
   imageEmoji?: string;
   imageUrl?: string; // Base64 compressed image URL for recipe photo
+  hasCustomImage?: boolean; // True if dish has a custom photo stored in image store
   tags?: string[];
   favoritedByMembers: string[]; // List of member names in the family who marked this dish as favorite
   isFamilyRecipe?: boolean;     // True if added to this Family's Cookbook
