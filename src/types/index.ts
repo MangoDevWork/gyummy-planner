@@ -212,6 +212,7 @@ export interface AppData {
   familyPersonalisation?: FamilyPersonalisation;
   dishes: Dish[];
   masterIngredients?: MasterIngredient[];
+  customIngredients?: MasterIngredient[]; // User-created custom ingredients archive
   pantryIngredients: string[]; // List of ingredient names the family has in stock at home
   mealSchedules: MealScheduleConfig[];
   mealPlan: MealPlan;

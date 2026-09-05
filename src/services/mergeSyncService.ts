@@ -1,4 +1,4 @@
-import type { AppData, Dish, GroceryItem, MealPlan, MealScheduleConfig, FamilyPersonalisation } from '../types';
+import type { AppData, Dish, GroceryItem, MealPlan, MealScheduleConfig, FamilyPersonalisation, MasterIngredient } from '../types';
 import { matchPantryIngredient } from './pantryMatching';
 
 /**
@@ -110,6 +110,21 @@ export function mergeAppData(local: AppData, remote: Partial<AppData>): AppData 
     }
   });
 
+  // 5.1 Merge Custom Ingredients Archive
+  const customIngMap = new Map<string, MasterIngredient>();
+  (local.customIngredients || []).forEach((ci) => {
+    if (ci && ci.name) customIngMap.set(ci.name.toLowerCase().trim(), ci);
+  });
+  (remote.customIngredients || []).forEach((ci) => {
+    if (ci && ci.name) {
+      const key = ci.name.toLowerCase().trim();
+      if (!customIngMap.has(key)) {
+        customIngMap.set(key, ci);
+      }
+    }
+  });
+  const mergedCustomIngredients = Array.from(customIngMap.values());
+
   // 6. Merge Latest Grocery List Data
   // Combine items by ingredient name / item id and re-evaluate inPantry against merged pantry list
   const remoteGrocery = remote.groceryList;
@@ -217,6 +232,7 @@ export function mergeAppData(local: AppData, remote: Partial<AppData>): AppData 
     familyPersonalisation: mergedFamilyPersonalisation,
     dishes: mergedDishes,
     masterIngredients: updatedMasterIngredients,
+    customIngredients: mergedCustomIngredients,
     mealPlan: mergedMealPlan,
     mealSchedules: mergedMealSchedules.length > 0 ? mergedMealSchedules : local.mealSchedules,
     pantryIngredients: mergedPantryIngredients.length > 0 ? mergedPantryIngredients : local.pantryIngredients,

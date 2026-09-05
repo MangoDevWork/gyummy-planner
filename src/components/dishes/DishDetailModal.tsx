@@ -30,7 +30,7 @@ interface DishDetailModalProps {
   onClose: () => void;
   onEdit: (dish: Dish) => void;
   onDelete?: (dishId: string) => void;
-  onToggleFavorite: (dishId: string) => void;
+  onToggleFavorite: (dishId: string, dishObj?: Dish) => void;
   onToggleFamilyCookbook?: (dish: Dish) => void;
   onQuickPlan?: (dish: Dish) => void;
   onShowToast?: (msg: string) => void;
@@ -136,7 +136,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
             </span>
           )}
 
-          {dish.imageUrl && <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />}
+          {dish.imageUrl && <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/30 pointer-events-none" />}
 
           {/* Top Floating Buttons */}
           <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
@@ -170,7 +170,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
 
               <button
                 type="button"
-                onClick={() => onToggleFavorite(dish.id)}
+                onClick={() => onToggleFavorite(dish.id, dish)}
                 className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/80 dark:bg-[#28231E]/80 backdrop-blur transition-transform active:scale-95 cursor-pointer shadow-sm ${
                   isFavoritedByMe ? 'text-rose-500' : 'text-[#B8AFA4] dark:text-[#9A8A7E]'
                 }`}
@@ -212,7 +212,11 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
                 </span>
               )}
             </div>
-            <h2 className="text-xl font-bold text-[#2D2640] dark:text-[#F0EDE8] text-balance leading-tight drop-shadow-2xs">
+            <h2 className={`text-xl font-bold text-balance leading-tight ${
+              dish.imageUrl
+                ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]'
+                : 'text-[#2D2640] dark:text-[#F0EDE8] drop-shadow-2xs'
+            }`}>
               {localized.name}
             </h2>
           </div>

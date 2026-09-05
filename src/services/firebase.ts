@@ -391,6 +391,7 @@ export async function pushAppDataToCloud(
         isManual: Boolean(item.isManual)
       }))
     },
+    customIngredients: data.customIngredients || [],
     settings: data.settings || {}
   };
 

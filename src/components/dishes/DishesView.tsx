@@ -30,7 +30,7 @@ interface DishesViewProps {
   showSystemGuideHint?: boolean;
   onSaveDish: (dish: Dish) => void;
   onDeleteDish: (dishId: string) => void;
-  onToggleFavoriteDish: (dishId: string) => void;
+  onToggleFavoriteDish: (dishId: string, dishObj?: Dish) => void;
   onToggleFamilyRecipe?: (dishId: string, dishObj?: Dish) => void;
   onAddMasterIngredient?: (ing: MasterIngredient) => void;
   onImportDishes?: (dishes: Dish[]) => void;
@@ -118,6 +118,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
   onDeleteDish,
   onToggleFavoriteDish,
   onToggleFamilyRecipe,
+  onAddMasterIngredient,
   onQuickPlanDish,
   isCreatorOpen,
   setIsCreatorOpen,
@@ -148,6 +149,17 @@ export const DishesView: React.FC<DishesViewProps> = ({
 
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
+
+  // Keep selectedDish in sync when dishes update
+  useEffect(() => {
+    if (selectedDish) {
+      const updated = dishes.find((d) => d.id === selectedDish.id);
+      if (updated && updated !== selectedDish) {
+        setSelectedDish(updated);
+      }
+    }
+  }, [dishes]);
+
   const [systemRecipes, setSystemRecipes] = useState<Dish[]>([]);
   const [visibleCount, setVisibleCount] = useState<number>(INITIAL_BATCH_SIZE);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -657,7 +669,27 @@ export const DishesView: React.FC<DishesViewProps> = ({
           onDeleteDish(id);
           setSelectedDish(null);
         }}
-        onToggleFavorite={onToggleFavoriteDish}
+        onToggleFavorite={(id, dishObj) => {
+          const dishToToggle = dishObj || selectedDish || undefined;
+          onToggleFavoriteDish(id, dishToToggle);
+          const currentMember = currentProfile?.memberName || '';
+          if (currentMember) {
+            setSelectedDish((prev) => {
+              if (!prev || prev.id !== id) return prev;
+              const currentFavs = prev.favoritedByMembers || [];
+              const isFav = currentFavs.includes(currentMember);
+              const nextFavs = isFav
+                ? currentFavs.filter((m) => m !== currentMember)
+                : [...currentFavs, currentMember];
+              showToast(
+                isFav
+                  ? (language === 'zh-CN' ? `🤍 已取消收藏：${prev.name}` : `🤍 Removed "${prev.name}" from favorites`)
+                  : (language === 'zh-CN' ? `❤️ 已加入收藏：${prev.name}` : `❤️ Added "${prev.name}" to favorites`)
+              );
+              return { ...prev, favoritedByMembers: nextFavs };
+            });
+          }
+        }}
         onToggleFamilyCookbook={(d) => {
           onToggleFamilyRecipe?.(d.id, d);
           setSelectedDish((prev) => {
@@ -677,6 +709,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
         isOpen={isCreatorOpen || Boolean(editingDish)}
         initialDish={editingDish}
         masterIngredients={masterIngredients}
+        onAddMasterIngredient={onAddMasterIngredient}
         onClose={() => {
           setIsCreatorOpen(false);
           setEditingDish(null);

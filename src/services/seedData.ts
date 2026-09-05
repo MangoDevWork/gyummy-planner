@@ -760,6 +760,7 @@ export function getInitialAppData(currentProfile: AppData['currentProfile'] | nu
     },
     dishes: INITIAL_DISHES,
     masterIngredients: DEFAULT_MASTER_INGREDIENTS,
+    customIngredients: [],
     pantryIngredients: DEFAULT_PANTRY_INGREDIENTS,
     mealSchedules: DEFAULT_MEAL_SCHEDULES,
     mealPlan: emptyMealPlan,

@@ -194,6 +194,24 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
         category: ing.category || 'Other'
       }));
 
+    // Auto-archive any ingredient not yet in masterIngredients
+    if (onAddMasterIngredient) {
+      validIngredients.forEach((ing) => {
+        const exists = masterIngredients.some(
+          (m) => m.name.toLowerCase().trim() === ing.name.toLowerCase().trim()
+        );
+        if (!exists) {
+          onAddMasterIngredient({
+            id: `ing_custom_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            name: ing.name.trim(),
+            defaultValue: ing.amount,
+            defaultUnit: ing.unit || '',
+            category: ing.category || 'Produce'
+          });
+        }
+      });
+    }
+
     const tags = tagsInput
       .split(',')
       .map((t) => t.trim())
@@ -540,32 +558,53 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                       </div>
 
                       {/* Autocomplete Suggestions Dropdown */}
-                      {activeSuggestionRow === idx && matchingSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-8 mt-1 z-30 bg-white rounded-xl shadow-xl border border-[#EAE6DF] py-1.5 overflow-hidden">
-                          <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            {language === 'zh-CN' ? '食材库匹配项:' : 'Master Library Matches:'}
-                          </div>
+                      {activeSuggestionRow === idx && (matchingSuggestions.length > 0 || (normName.length >= 1 && !exactMatch)) && (
+                        <div className="absolute top-full left-0 right-8 mt-1 z-30 bg-white dark:bg-[#252220] rounded-xl shadow-xl border border-[#EDE8DF] dark:border-[#38332E] py-1.5 overflow-hidden">
+                          {matchingSuggestions.length > 0 && (
+                            <div className="px-3 py-1 text-[10px] font-bold text-[#9A8A7E] dark:text-[#7A6E64] uppercase tracking-wider">
+                              {language === 'zh-CN' ? '食材库匹配项:' : 'Master Library Matches:'}
+                            </div>
+                          )}
                           {matchingSuggestions.map((suggestion) => (
                             <button
                               key={suggestion.id}
                               type="button"
                               onClick={() => handleSelectSuggestion(idx, suggestion)}
-                              className="w-full text-left px-3 py-2 text-xs hover:bg-[#F4F1EA] text-slate-800 flex items-center justify-between transition cursor-pointer"
+                              className="w-full text-left px-3 py-2 text-xs hover:bg-[#F5F0E8] dark:hover:bg-[#2E2A26] text-[#2D2640] dark:text-[#F0EDE8] flex items-center justify-between transition cursor-pointer"
                             >
-                              <span className="font-semibold text-slate-900">{suggestion.name}</span>
-                              <span className="text-[10px] text-slate-500">
+                              <span className="font-semibold">{suggestion.name}</span>
+                              <span className="text-[10px] text-[#9A8A7E]">
                                 {suggestion.defaultValue ? `${suggestion.defaultValue} ` : ''}
                                 {suggestion.defaultUnit || ''} • {suggestion.category}
                               </span>
                             </button>
                           ))}
+                          {normName.length >= 1 && !exactMatch && onAddMasterIngredient && (
+                            <button
+                              type="button"
+                              disabled={isAddedToLib}
+                              onClick={() => {
+                                handleQuickAddToLibrary(idx);
+                                setActiveSuggestionRow(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-xs bg-[#FFF8E6] dark:bg-[#2A1E00] hover:bg-[#FFF3D6] dark:hover:bg-[#382800] text-[#7A5C00] dark:text-[#FFD13B] flex items-center justify-between border-t border-[#EDE8DF] dark:border-[#38332E] font-semibold transition cursor-pointer"
+                            >
+                              <span className="flex items-center gap-1.5">
+                                <BookmarkPlus className="w-3.5 h-3.5 text-[#FFD13B]" />
+                                {language === 'zh-CN' ? `+ 存入自定义食材 "${ing.name.trim()}"` : `+ Add custom ingredient "${ing.name.trim()}"`}
+                              </span>
+                              <span className="text-[10px] text-[#9A8A7E]">
+                                {isAddedToLib ? (language === 'zh-CN' ? '已收录' : 'Added') : (language === 'zh-CN' ? '存入食材库' : 'Save to Library')}
+                              </span>
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
 
-                    {/* Quick Add to Master Library */}
+                    {/* Quick Add to Master Library Helper */}
                     {ing.name.trim() && !exactMatch && onAddMasterIngredient && (
-                      <div className="flex items-center justify-between bg-[#F4F1EA] px-2.5 py-1.5 rounded-lg text-[11px] text-slate-700">
+                      <div className="flex items-center justify-between bg-[#FAF7F2] dark:bg-[#1E1B18] px-2.5 py-1.5 rounded-lg text-[11px] text-[#7A6E64] dark:text-[#9A8A7E] border border-[#EDE8DF] dark:border-[#38332E]">
                         <span>{language === 'zh-CN' ? '食材库暂未收录:' : 'Not in Library yet:'}</span>
                         <button
                           type="button"
@@ -573,19 +612,19 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
                           onClick={() => handleQuickAddToLibrary(idx)}
                           className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md transition cursor-pointer ${
                             isAddedToLib
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-[#2B2D42] text-white shadow-2xs'
+                              ? 'bg-[#E8F5ED] dark:bg-[#0D2E1A] text-[#2D6A4A] dark:text-[#4CAF82] border border-[#A8D8BC]'
+                              : 'bg-[#FFD13B] hover:bg-[#FFC200] text-[#2D2640] border border-[#2D2640]/10 shadow-2xs'
                           }`}
                         >
                           {isAddedToLib ? (
                             <>
                               <Check className="w-3 h-3" />
-                              <span>{language === 'zh-CN' ? '已收录' : 'Added'}</span>
+                              <span>{language === 'zh-CN' ? '已存入我的食材库' : 'In My Library'}</span>
                             </>
                           ) : (
                             <>
                               <BookmarkPlus className="w-3 h-3" />
-                              <span>{language === 'zh-CN' ? '+ 收录入库' : '+ Add to Library'}</span>
+                              <span>{language === 'zh-CN' ? '+ 存入我的食材库' : '+ Add to My Library'}</span>
                             </>
                           )}
                         </button>

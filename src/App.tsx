@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { AppData, Dish, MasterIngredient, MealPlan, MealScheduleConfig, MealScheduleEntry, UserProfile } from './types';
+import type { AppData, Dish, GroceryCategory, MasterIngredient, MealPlan, MealScheduleConfig, MealScheduleEntry, UserProfile } from './types';
 import { loadAppData, saveAppData, generateGroceryList, setActiveProfile, resetActiveSession } from './services/storage';
 import { getInitialAppData } from './services/seedData';
 import { DEFAULT_MASTER_INGREDIENTS } from './services/masterIngredients';
@@ -230,9 +230,41 @@ export function App() {
       } else {
         updatedDishes = [dish, ...prev.dishes];
       }
+
+      // Auto-archive any custom ingredients used in this dish
+      const currentCustom = [...(prev.customIngredients || [])];
+      const customMap = new Map<string, MasterIngredient>();
+      currentCustom.forEach((ci) => customMap.set(ci.name.toLowerCase().trim(), ci));
+      const defaultIngNames = new Set(DEFAULT_MASTER_INGREDIENTS.map((m) => m.name.toLowerCase().trim()));
+
+      let customUpdated = false;
+      (dish.ingredients || []).forEach((ing) => {
+        if (!ing || !ing.name) return;
+        const norm = ing.name.toLowerCase().trim();
+        if (!defaultIngNames.has(norm) && !customMap.has(norm)) {
+          const autoArchived: MasterIngredient = {
+            id: `custom_ing_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            name: ing.name.trim(),
+            category: (ing.category as GroceryCategory) || 'Produce',
+            defaultUnit: ing.unit || 'g',
+            defaultValue: ing.amount || null
+          };
+          customMap.set(norm, autoArchived);
+          currentCustom.unshift(autoArchived);
+          customUpdated = true;
+        }
+      });
+
+      const updatedCustomList = customUpdated ? currentCustom : (prev.customIngredients || []);
+      const updatedMasterList = customUpdated
+        ? [...updatedCustomList, ...(prev.masterIngredients || DEFAULT_MASTER_INGREDIENTS)]
+        : (prev.masterIngredients || DEFAULT_MASTER_INGREDIENTS);
+
       const updatedData = {
         ...prev,
-        dishes: updatedDishes
+        dishes: updatedDishes,
+        customIngredients: updatedCustomList,
+        masterIngredients: updatedMasterList
       };
       saveAppData(updatedData);
       return updatedData;
@@ -296,14 +328,16 @@ export function App() {
 
           return {
             ...dish,
-            favoritedByMembers: updatedFavs
+            favoritedByMembers: updatedFavs,
+            updatedAt: new Date().toISOString()
           };
         });
       } else if (dishObj) {
         const newEntry: Dish = {
           ...dishObj,
           isFamilyRecipe: false,
-          favoritedByMembers: [currentMember]
+          favoritedByMembers: [currentMember],
+          updatedAt: new Date().toISOString()
         };
         updatedDishes = [newEntry, ...prev.dishes];
       } else {
@@ -356,30 +390,51 @@ export function App() {
 
   // Master Ingredient handlers
   const handleSaveIngredients = (updatedIngredients: MasterIngredient[]) => {
-    setAppData((prev) => ({
-      ...prev,
-      masterIngredients: updatedIngredients
-    }));
+    setAppData((prev) => {
+      const defaultNames = new Set(DEFAULT_MASTER_INGREDIENTS.map((m) => m.name.toLowerCase().trim()));
+      const customOnly = updatedIngredients.filter((ing) => !defaultNames.has(ing.name.toLowerCase().trim()));
+      const updatedData = {
+        ...prev,
+        customIngredients: customOnly,
+        masterIngredients: updatedIngredients
+      };
+      saveAppData(updatedData);
+      return updatedData;
+    });
   };
 
   const handleUpdatePantryIngredients = (updatedPantry: string[]) => {
-    setAppData((prev) => ({
-      ...prev,
-      pantryIngredients: updatedPantry
-    }));
+    setAppData((prev) => {
+      const updatedData = {
+        ...prev,
+        pantryIngredients: updatedPantry
+      };
+      saveAppData(updatedData);
+      return updatedData;
+    });
   };
 
   const handleAddSingleMasterIngredient = (newIngredient: MasterIngredient) => {
     setAppData((prev) => {
-      const currentList = prev.masterIngredients || [];
-      const exists = currentList.some(
+      const currentCustom = prev.customIngredients || [];
+      const existsInCustom = currentCustom.some(
         (i) => i.name.trim().toLowerCase() === newIngredient.name.trim().toLowerCase()
       );
-      if (exists) return prev;
-      return {
+      const updatedCustom = existsInCustom ? currentCustom : [newIngredient, ...currentCustom];
+
+      const currentMaster = prev.masterIngredients || DEFAULT_MASTER_INGREDIENTS;
+      const existsInMaster = currentMaster.some(
+        (i) => i.name.trim().toLowerCase() === newIngredient.name.trim().toLowerCase()
+      );
+      const updatedMaster = existsInMaster ? currentMaster : [newIngredient, ...currentMaster];
+
+      const updatedData = {
         ...prev,
-        masterIngredients: [newIngredient, ...currentList]
+        customIngredients: updatedCustom,
+        masterIngredients: updatedMaster
       };
+      saveAppData(updatedData);
+      return updatedData;
     });
   };
 

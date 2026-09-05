@@ -88,20 +88,48 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
       return initial;
     }
 
-    // Upgrade and sync master ingredients to clean consolidated database
-    const customUserIngredients = (parsed.masterIngredients || []).filter((i) => i.id.startsWith('custom_ing_'));
-    const cleanMasterMap = new Map<string, MasterIngredient>();
-    
-    // Seed default master database
-    DEFAULT_MASTER_INGREDIENTS.forEach((ing) => {
-      cleanMasterMap.set(ing.name.toLowerCase().trim(), ing);
+    // Load user custom ingredients archive and recover any custom ingredients from dishes or previous state
+    const customUserMap = new Map<string, MasterIngredient>();
+    (parsed.customIngredients || []).forEach((ci) => {
+      if (ci && ci.name) customUserMap.set(ci.name.toLowerCase().trim(), ci);
     });
-    
-    // Add user custom ingredients
-    customUserIngredients.forEach((customIng) => {
-      const key = customIng.name.toLowerCase().trim();
+    (parsed.masterIngredients || []).forEach((mi) => {
+      if (mi && mi.id && (mi.id.startsWith('custom_') || mi.id.startsWith('ing_lib_'))) {
+        customUserMap.set(mi.name.toLowerCase().trim(), mi);
+      }
+    });
+
+    // Auto-archive any custom ingredients used in dishes so they are never lost on updates
+    const defaultIngNames = new Set(DEFAULT_MASTER_INGREDIENTS.map((m) => m.name.toLowerCase().trim()));
+    (parsed.dishes || []).forEach((dish) => {
+      (dish.ingredients || []).forEach((ing) => {
+        if (!ing || !ing.name) return;
+        const norm = ing.name.toLowerCase().trim();
+        if (!defaultIngNames.has(norm) && !customUserMap.has(norm)) {
+          const autoArchived: MasterIngredient = {
+            id: `custom_ing_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            name: ing.name.trim(),
+            category: (ing.category as GroceryCategory) || 'Produce',
+            defaultUnit: ing.unit || 'g',
+            defaultValue: ing.amount || null
+          };
+          customUserMap.set(norm, autoArchived);
+        }
+      });
+    });
+
+    const userCustomIngredients = Array.from(customUserMap.values());
+    parsed.customIngredients = userCustomIngredients;
+
+    // Seed master database: custom ingredients first, followed by default master database
+    const cleanMasterMap = new Map<string, MasterIngredient>();
+    userCustomIngredients.forEach((customIng) => {
+      cleanMasterMap.set(customIng.name.toLowerCase().trim(), customIng);
+    });
+    DEFAULT_MASTER_INGREDIENTS.forEach((ing) => {
+      const key = ing.name.toLowerCase().trim();
       if (!cleanMasterMap.has(key)) {
-        cleanMasterMap.set(key, customIng);
+        cleanMasterMap.set(key, ing);
       }
     });
 
@@ -277,6 +305,7 @@ export function saveAppData(data: AppData, skipCloudPush = false): void {
 
       const payloadToSave = {
         ...data,
+        customIngredients: data.customIngredients || [],
         masterIngredients: undefined, // Never serialize 42,000 lines of system masterIngredients
         dishes: persistedDishes
       };
