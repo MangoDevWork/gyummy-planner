@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { AppData, Dish, GroceryCategory, MasterIngredient, MealPlan, MealScheduleConfig, MealScheduleEntry, UserProfile } from './types';
 import { loadAppData, saveAppData, initStorageWithIndexedDb, generateGroceryList, setActiveProfile, resetActiveSession } from './services/storage';
 import { getInitialAppData } from './services/seedData';
@@ -26,6 +26,7 @@ import { calculateDishPlanStats } from './services/personalisationService';
 
 export function App() {
   const [appData, setAppData] = useState<AppData>(() => loadAppData());
+  const isRemoteUpdateRef = useRef(false);
   const [activeTab, setActiveTab] = useState<TabType>('planner');
   const [isDishCreatorOpen, setIsDishCreatorOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -64,6 +65,7 @@ export function App() {
     let isMounted = true;
     initStorageWithIndexedDb(appData.currentProfile).then((idbData) => {
       if (isMounted && idbData) {
+        isRemoteUpdateRef.current = true;
         setAppData((prev) => {
           const systemDishes = getCachedSystemRecipes();
           return {
@@ -87,6 +89,7 @@ export function App() {
     const unsubscribe = subscribeToFamilyCloudData(
       familyName,
       (remoteData) => {
+        isRemoteUpdateRef.current = true;
         setAppData((prev) => {
           const merged = mergeAppData(prev, remoteData);
           const systemDishes = getCachedSystemRecipes();
@@ -121,6 +124,7 @@ export function App() {
       // 2. Pull remote cloud data and smart-merge
       const remoteData = await fetchFamilyCloudData(familyName);
       if (remoteData) {
+        isRemoteUpdateRef.current = true;
         setAppData((prev) => {
           const merged = mergeAppData(prev, remoteData);
           const systemDishes = getCachedSystemRecipes();
@@ -143,6 +147,7 @@ export function App() {
   useEffect(() => {
     loadMasterSystemRecipes().then((systemRecipes) => {
       if (systemRecipes && systemRecipes.length > 50) {
+        isRemoteUpdateRef.current = true;
         setAppData((prev) => ({
           ...prev,
           dishes: mergeSystemWithUserDishes(prev.dishes, systemRecipes)
@@ -153,9 +158,18 @@ export function App() {
 
   // Sync to local storage and push debounced updates to cloud whenever user modifies appData
   useEffect(() => {
-    if (appData.currentProfile) {
-      saveAppData(appData);
+    if (!appData.currentProfile) return;
+
+    if (isRemoteUpdateRef.current) {
+      // Data change originated from remote Firestore snapshot, master recipes asset, or startup hydration.
+      // Save locally (IndexedDB/localStorage) without bouncing write back to cloud!
+      isRemoteUpdateRef.current = false;
+      saveAppData(appData, true);
+      return;
     }
+
+    // Genuine user modification: save locally and trigger debounced cloud push
+    saveAppData(appData, false);
   }, [appData]);
 
   // Check if first-time onboarding schedule setup should be presented
@@ -280,14 +294,12 @@ export function App() {
         ? [...updatedCustomList, ...(prev.masterIngredients || DEFAULT_MASTER_INGREDIENTS)]
         : (prev.masterIngredients || DEFAULT_MASTER_INGREDIENTS);
 
-      const updatedData = {
+      return {
         ...prev,
         dishes: updatedDishes,
         customIngredients: updatedCustomList,
         masterIngredients: updatedMasterList
       };
-      saveAppData(updatedData);
-      return updatedData;
     });
   };
 
@@ -316,13 +328,11 @@ export function App() {
         updatedMealPlan[date] = day;
       });
 
-      const updatedData = {
+      return {
         ...prev,
         dishes: updatedDishes,
         mealPlan: updatedMealPlan
       };
-      saveAppData(updatedData);
-      return updatedData;
     });
   };
 
@@ -364,12 +374,10 @@ export function App() {
         updatedDishes = prev.dishes;
       }
 
-      const updatedData = {
+      return {
         ...prev,
         dishes: updatedDishes
       };
-      saveAppData(updatedData);
-      return updatedData;
     });
   };
 
@@ -399,12 +407,10 @@ export function App() {
         updatedDishes = prev.dishes;
       }
 
-      const updatedData = {
+      return {
         ...prev,
         dishes: updatedDishes
       };
-      saveAppData(updatedData);
-      return updatedData;
     });
   };
 
@@ -413,25 +419,19 @@ export function App() {
     setAppData((prev) => {
       const defaultNames = new Set(DEFAULT_MASTER_INGREDIENTS.map((m) => m.name.toLowerCase().trim()));
       const customOnly = updatedIngredients.filter((ing) => !defaultNames.has(ing.name.toLowerCase().trim()));
-      const updatedData = {
+      return {
         ...prev,
         customIngredients: customOnly,
         masterIngredients: updatedIngredients
       };
-      saveAppData(updatedData);
-      return updatedData;
     });
   };
 
   const handleUpdatePantryIngredients = (updatedPantry: string[]) => {
-    setAppData((prev) => {
-      const updatedData = {
-        ...prev,
-        pantryIngredients: updatedPantry
-      };
-      saveAppData(updatedData);
-      return updatedData;
-    });
+    setAppData((prev) => ({
+      ...prev,
+      pantryIngredients: updatedPantry
+    }));
   };
 
   const handleAddSingleMasterIngredient = (newIngredient: MasterIngredient) => {
@@ -448,13 +448,11 @@ export function App() {
       );
       const updatedMaster = existsInMaster ? currentMaster : [newIngredient, ...currentMaster];
 
-      const updatedData = {
+      return {
         ...prev,
         customIngredients: updatedCustom,
         masterIngredients: updatedMaster
       };
-      saveAppData(updatedData);
-      return updatedData;
     });
   };
 
@@ -543,19 +541,14 @@ export function App() {
         prev.pantryIngredients || [],
         userLang
       );
-      const updatedList = {
-        startDate,
-        endDate,
-        items,
-        undoStack: []
-      };
-      saveAppData({
-        ...prev,
-        groceryList: updatedList
-      });
       return {
         ...prev,
-        groceryList: updatedList
+        groceryList: {
+          startDate,
+          endDate,
+          items,
+          undoStack: []
+        }
       };
     });
     setAutoGenerateGroceryTrigger((prev) => prev + 1);

@@ -335,6 +335,9 @@ export async function updateFamilyPinFromSettings(
 // Push synchronization with deep hash comparison & debouncing to minimize Firebase writes & quota usage
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let lastPushedPayloadHash: string | null = null;
+const syncedImageLengths = new Map<string, number>();
+let isWriteInFlight = false;
+let pendingWriteQueue: (() => Promise<void>) | null = null;
 
 export async function pushAppDataToCloud(
   familyName: string,
@@ -393,9 +396,9 @@ export async function pushAppDataToCloud(
     return val;
   };
 
-  // Collect any custom base64 images that should be synced into the subcollection
+  // Collect any custom base64 images that haven't been synced yet or have changed
   const customImagesToSync = persistedDishes.filter(
-    (d) => d.imageUrl && d.imageUrl.startsWith('data:image/')
+    (d) => d.imageUrl && d.imageUrl.startsWith('data:image/') && syncedImageLengths.get(d.id) !== d.imageUrl.length
   );
 
   // Build the minimal data payload
@@ -482,6 +485,13 @@ export async function pushAppDataToCloud(
   onSyncStateChange?.('syncing');
 
   const executeWrite = async () => {
+    // Prevent overlapping write streams to Firestore
+    if (isWriteInFlight) {
+      pendingWriteQueue = executeWrite;
+      return;
+    }
+    isWriteInFlight = true;
+
     try {
       await ensureFirebaseAuth();
       const familyId = sanitizeFamilyId(familyName);
@@ -498,42 +508,43 @@ export async function pushAppDataToCloud(
       lastPushedPayloadHash = currentHash;
       onSyncStateChange?.('synced');
 
-      // Asynchronously sync any custom recipe images to subcollection: families/{familyId}/recipe_images/{dishId}
+      // Sequentially sync any new or changed recipe images to subcollection
       if (customImagesToSync.length > 0) {
-        Promise.all(
-          customImagesToSync.map(async (dish) => {
-            try {
-              const imageDocRef = doc(db, 'families', familyId, 'recipe_images', dish.id);
-              await setDoc(imageDocRef, {
-                dishId: dish.id,
-                imageUrl: dish.imageUrl,
-                updatedAt: new Date().toISOString()
-              }, { merge: true });
-            } catch (imgErr) {
-              console.warn(`Failed to sync custom image for ${dish.id}:`, imgErr);
-            }
-          })
-        ).catch(() => {});
+        for (const dish of customImagesToSync) {
+          try {
+            const imageDocRef = doc(db, 'families', familyId, 'recipe_images', dish.id);
+            await setDoc(imageDocRef, {
+              dishId: dish.id,
+              imageUrl: dish.imageUrl,
+              updatedAt: new Date().toISOString()
+            }, { merge: true });
+            syncedImageLengths.set(dish.id, dish.imageUrl!.length);
+          } catch (imgErr) {
+            console.warn(`Failed to sync custom image for ${dish.id}:`, imgErr);
+          }
+        }
       }
-
-      // Asynchronously stage user-created custom recipes into the community pool for monthly review
-      const customDishes = (data.dishes || []).filter(
-        (d) => d && d.id && (d.id.startsWith('dish_1') || d.id.startsWith('custom_')) && d.isFamilyRecipe !== false
-      );
-      if (customDishes.length > 0) {
-        Promise.all(customDishes.map((dish) => submitCustomRecipeToCommunityPool(dish))).catch(() => {});
+    } catch (err: any) {
+      if (err?.code === 'resource-exhausted') {
+        console.warn('Firestore write stream busy; write will retry on next user change.');
+      } else {
+        console.error('Firebase cloud push error:', err);
       }
-    } catch (err) {
-      console.error('Firebase cloud push error:', err);
       onSyncStateChange?.('error');
-      throw err;
+    } finally {
+      isWriteInFlight = false;
+      if (pendingWriteQueue) {
+        const next = pendingWriteQueue;
+        pendingWriteQueue = null;
+        setTimeout(next, 1000);
+      }
     }
   };
 
   if (immediate) {
     return executeWrite();
   } else {
-    debounceTimer = setTimeout(executeWrite, 1000);
+    debounceTimer = setTimeout(executeWrite, 2000);
     return Promise.resolve();
   }
 }
