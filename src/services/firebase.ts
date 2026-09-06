@@ -345,12 +345,25 @@ export async function pushAppDataToCloud(
   // Only sync recipes that belong to this Family Cookbook (isFamilyRecipe !== false), custom/starter recipes, or favorited
   const starterIds = new Set(INITIAL_DISHES.map((d) => d.id));
   const persistedDishes = (data.dishes || []).filter((d) => {
-    // Always persist user custom / edited recipes and starter recipes
-    const isCustom = d.id && (d.id.startsWith('dish_') || d.id.startsWith('custom_'));
-    const isStarter = d.id && starterIds.has(d.id);
-    if (isCustom || isStarter) return true;
-    // For system recipes, persist if in family cookbook or favorited
-    return Boolean(d.isFamilyRecipe || (d.favoritedByMembers && d.favoritedByMembers.length > 0));
+    if (!d || !d.id) return false;
+
+    // 1. Scraped system library recipes:
+    // ONLY persist if the user explicitly added to Family Cookbook, favorited, or customized!
+    if (d.id.startsWith('dish_scraped_')) {
+      return Boolean(
+        d.isFamilyRecipe ||
+        (d.favoritedByMembers && d.favoritedByMembers.length > 0) ||
+        d.isUserEdited
+      );
+    }
+
+    // 2. Starter recipes from INITIAL_DISHES:
+    // Always persist so cookbook state / favorites are saved
+    if (starterIds.has(d.id)) return true;
+
+    // 3. User custom recipes created in app (e.g. dish_1725..., custom_..., dish_ai_...):
+    // Always persist
+    return true;
   });
 
   // Deep sanitization to ensure:
@@ -417,7 +430,10 @@ export async function pushAppDataToCloud(
         instructions: typeof d.instructions === 'string' ? d.instructions : (Array.isArray(d.instructions as any) ? (d.instructions as any).join('\n') : ''),
         tags: d.tags || [],
         translations: d.translations || null,
-        language: d.language || 'en'
+        language: d.language || 'en',
+        isUserEdited: Boolean(d.isUserEdited),
+        updatedAt: d.updatedAt || null,
+        createdAt: d.createdAt || null
       };
     }),
     memberProfiles: data.memberProfiles || {},
@@ -566,10 +582,16 @@ export function subscribeToFamilyCloudData(
           isFamilyRecipe: Boolean(d.isFamilyRecipe),
           favoritedByMembers: d.favoritedByMembers || [],
           ingredients: d.ingredients || [],
-          instructions: d.instructions || [],
+          instructions: typeof d.instructions === 'string' ? d.instructions : (Array.isArray(d.instructions) ? d.instructions.join('\n') : ''),
           tags: d.tags || [],
           translations: d.translations || null,
-          language: d.language || 'en'
+          language: d.language || 'en',
+          isUserEdited: Boolean(d.isUserEdited),
+          updatedAt: d.updatedAt || undefined,
+          createdAt: d.createdAt || undefined,
+          timesPlanned: typeof d.timesPlanned === 'number' ? d.timesPlanned : 0,
+          lastPlannedAt: d.lastPlannedAt || null,
+          allergens: d.allergens || []
         }));
 
         const receivedCore = {

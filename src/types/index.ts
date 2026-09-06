@@ -81,6 +81,7 @@ export interface Dish {
   tags?: string[];
   favoritedByMembers: string[]; // List of member names in the family who marked this dish as favorite
   isFamilyRecipe?: boolean;     // True if added to this Family's Cookbook
+  isUserEdited?: boolean;       // True if this recipe was customized or authored by the user
   timesPlanned?: number;        // Total number of times this dish has been scheduled in meal plans
   lastPlannedAt?: string;       // Date YYYY-MM-DD when this recipe was last scheduled
   allergens?: string[];         // Detected allergen identifiers (e.g. 'peanuts', 'cow_milk', 'shellfish_crustacean')

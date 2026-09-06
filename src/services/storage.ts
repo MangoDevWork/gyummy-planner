@@ -372,12 +372,25 @@ export function saveAppData(data: AppData, skipCloudPush = false): void {
 
       const starterIds = new Set(INITIAL_DISHES.map((d) => d.id));
       const persistedDishes = data.dishes.filter((d) => {
-        // Always persist user custom / edited recipes and starter recipes (even if removed from family cookbook)
-        const isCustom = d.id.startsWith('dish_') || d.id.startsWith('custom_');
-        const isStarter = starterIds.has(d.id);
-        if (isCustom || isStarter) return true;
-        // For system recipes, persist if in family cookbook or favorited
-        return Boolean(d.isFamilyRecipe || (d.favoritedByMembers && d.favoritedByMembers.length > 0));
+        if (!d || !d.id) return false;
+
+        // 1. Scraped system library recipes:
+        // ONLY persist if the user explicitly added to Family Cookbook, favorited, or customized!
+        if (d.id.startsWith('dish_scraped_')) {
+          return Boolean(
+            d.isFamilyRecipe ||
+            (d.favoritedByMembers && d.favoritedByMembers.length > 0) ||
+            d.isUserEdited
+          );
+        }
+
+        // 2. Starter recipes from INITIAL_DISHES:
+        // Always persist so cookbook state / favorites are saved
+        if (starterIds.has(d.id)) return true;
+
+        // 3. User custom recipes created in app (e.g. dish_1725..., custom_..., dish_ai_...):
+        // Always persist
+        return true;
       });
 
       // 1. Asynchronously offload custom base64 images into IndexedDB image store

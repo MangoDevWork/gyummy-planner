@@ -249,6 +249,7 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
       tags,
       favoritedByMembers: initialDish?.favoritedByMembers || [],
       isFamilyRecipe,
+      isUserEdited: true,
       ingredients: validIngredients,
       translations: Object.keys(translations).length > 0 ? translations : undefined,
       createdAt: initialDish?.createdAt || new Date().toISOString(),
