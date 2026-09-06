@@ -150,12 +150,16 @@ export const DishFormModal: React.FC<DishFormModalProps> = ({
 
   const handleSelectSuggestion = (index: number, master: MasterIngredient) => {
     const updated = [...ingredients];
+    const current = updated[index];
+    const hasRecipeAmount = typeof current.amount === 'number' && !isNaN(current.amount) && current.amount > 0;
+    const hasRecipeUnit = current.unit && current.unit.trim().length > 0;
+
     updated[index] = {
-      ...updated[index],
+      ...current,
       name: master.name,
-      amount: master.defaultValue !== null ? master.defaultValue : updated[index].amount,
-      unit: master.defaultUnit || updated[index].unit || 'pcs',
-      category: master.category || updated[index].category
+      amount: hasRecipeAmount ? current.amount : (master.defaultValue !== null ? master.defaultValue : current.amount),
+      unit: hasRecipeUnit ? current.unit : (master.defaultUnit || 'pcs'),
+      category: master.category || current.category
     };
     setIngredients(updated);
     setActiveSuggestionRow(null);

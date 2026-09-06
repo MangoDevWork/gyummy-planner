@@ -302,7 +302,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
     });
     return Array.from(map.entries()).map(([category, catItems]) => ({
       category,
-      items: catItems
+      items: catItems.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
     }));
   }, [filteredItems]);
 

@@ -577,20 +577,32 @@ export function getLocalizedIngredientName(name?: string, preferredLang?: Langua
     return clean; // Fast fallback to prevent O(N) regex overhead in huge lists
   } else {
     // English mode
-    // 1. Check if ingredient has English in parentheses e.g. '苦瓜 (Bitter Melon)'
+    // 1. Typos & canonical consolidations
+    if (/\barlic\s*cloves?\b/i.test(clean)) return 'Garlic Cloves';
+    if (/\barlic\b/i.test(clean)) return 'Garlic';
+    if (/extra\s*virgin\s*olive\s*oil/i.test(clean)) return 'Extra Virgin Olive Oil';
+    if (/canola\s*oil|vegetable\s*or\s*canola\s*oil/i.test(clean)) return 'Cooking Oil';
+    if (/(?:salt|食盐|盐)\s*(?:and|&amp;|&|\+)\s*(?:pepper|black pepper|white pepper|胡椒)|(?:pepper|black pepper|white pepper|胡椒)\s*(?:and|&amp;|&|\+)\s*(?:salt|食盐|盐)|(?:椒盐|黑胡椒盐)/i.test(clean)) {
+      return 'Salt & Pepper';
+    }
+    if (/^(?:食盐|食盐巴|食用盐|精盐|盐巴|盐)$/i.test(clean)) return 'Salt';
+    if (/^(?:油|食用油|植物油|沙拉油|炒菜油)$/i.test(clean)) return 'Cooking Oil';
+    if (/^(?:白糖|砂白糖|砂糖)$/i.test(clean)) return 'Sugar';
+
+    // 2. Check if ingredient has English in parentheses e.g. '苦瓜 (Bitter Melon)'
     const embeddedEn = clean.match(/\(([^)]*[a-zA-Z]{3,}[^)]*)\)/);
     if (embeddedEn) {
       const en = embeddedEn[1].trim();
       return en.charAt(0).toUpperCase() + en.slice(1);
     }
 
-    // 2. Direct exact match in reverse lookup dictionary
+    // 3. Direct exact match in reverse lookup dictionary
     if (REVERSE_INGREDIENT_MAP.has(cleanLower)) {
       const en = REVERSE_INGREDIENT_MAP.get(cleanLower)!;
       return en.charAt(0).toUpperCase() + en.slice(1);
     }
 
-    // 3. Strip trailing measurements / brackets / notes and check
+    // 4. Strip trailing measurements / brackets / notes and check
     const strippedZh = cleanLower
       .replace(/^\[[^\]]+\]\s*/, '')
       .replace(/\s+\d+.*$/, '')
@@ -601,7 +613,7 @@ export function getLocalizedIngredientName(name?: string, preferredLang?: Langua
       return en.charAt(0).toUpperCase() + en.slice(1);
     }
 
-    // 4. Substring matching for common Chinese terms
+    // 5. Substring matching for common Chinese terms
     if (/[\u4e00-\u9fa5]/.test(clean)) {
       for (const [zhKey, enVal] of REVERSE_INGREDIENT_MAP.entries()) {
         if (zhKey.length >= 2 && cleanLower.includes(zhKey)) {
@@ -678,11 +690,21 @@ export function getLocalizedDish(
 
   // 1. Direct match on dish's base authoring language
   if (baseLang === preferredLang) {
+    const localizedIngredients = safeIngredients.map((ing) => {
+      const transName = preferredLang === 'en'
+        ? (getLocalizedIngredientName(ing.name, 'en') || ing.name)
+        : ing.name;
+      return {
+        ...ing,
+        name: transName || ing.name
+      };
+    });
+
     result = {
       name: safeDishName,
       instructions: safeInstructions,
       tags: safeTags,
-      ingredients: safeIngredients,
+      ingredients: localizedIngredients,
       isUntranslated: false,
       sourceLanguage: baseLang
     };
@@ -836,12 +858,29 @@ export function formatDisplayIngredientName(rawName: string): string {
   let s = rawName.trim();
   s = s.replace(/^[–—\-\*\•\d\.\/\s½⅓¼¾⅔⅛+]+/g, '');
   if (/^emongrass/i.test(s)) s = s.replace(/^emongrass/i, 'Lemongrass');
+  if (/^arlic\s*cloves?/i.test(s)) s = s.replace(/^arlic\s*cloves?/i, 'Garlic Cloves');
   if (/^arlic/i.test(s)) s = s.replace(/^arlic/i, 'Garlic');
   if (/^amb shank/i.test(s)) s = s.replace(/^amb shank/i, 'Lamb Shank');
   if (/^amb\s+/i.test(s)) s = s.replace(/^amb\s+/i, 'Lamb ');
   s = s.replace(/\(\([^)]*\)\)/g, '');
-  s = s.replace(/\([^)]*\)/g, '');
-  s = s.replace(/,\s*(minced|chopped|diced|sliced|finely chopped|grated|peeled|drained|rinsed|shredded|crushed|to taste|optional|divided|at room temperature|melted|softened|beaten|for serving|to garnish|cut into.*|skinless.*|boneless.*|tenderised.*|for tenderising.*).*$/i, '');
+  s = s.replace(/\(\s*,\s*separated\s*\)/gi, '');
+  s = s.replace(/\(\s*(?:note|see note|separated|optional|for serving|to serve|garnish|divided|per burger|pork的|裝飾用|可省略|可选)[^)]*\)/gi, '');
+  s = s.replace(/[（(][^）)]*(?:裝飾用|可省略|可选|小|大|約\d+朵|\d+~?\d*朵|\d+棵|\d+把|\d+隻|\d+顆|\d+等份|每份\d+克|\d+條|\d+条|pork的\d+?%?)[^）)]*[）)]/gi, '');
+  // Keep preparation descriptors (minced, sliced, crushed, chopped, diced, grated, etc.)
+  // Strip ONLY non-prep instructional info:
+  s = s.replace(/,\s*(?:separated|divided|to taste|to season|optional|for serving|for garnish|to garnish|each|at room temperature|melted|softened|beaten)\b.*$/i, '');
+  s = s.replace(/\b(?:to taste|to season|PER burger)\b/gi, '');
+
+  if (/(?:salt|食盐|盐)\s*(?:and|&amp;|&|\+)\s*(?:pepper|black pepper|white pepper|胡椒)|(?:pepper|black pepper|white pepper|胡椒)\s*(?:and|&amp;|&|\+)\s*(?:salt|食盐|盐)|(?:椒盐|黑胡椒盐)/i.test(s)) {
+    return 'Salt & Pepper';
+  }
+  if (/extra\s*virgin\s*olive\s*oil/i.test(s)) {
+    return 'Extra Virgin Olive Oil';
+  }
+  if (/canola\s*oil|vegetable\s*or\s*canola\s*oil/i.test(s)) {
+    return 'Cooking Oil';
+  }
+
   s = s.replace(/^[\s,\-\.\/:\'"“”*#–—]+|[\s,\-\.\/:\'"“”*#–—]+$/g, '').trim();
   if (s.length > 0 && !/[\u4e00-\u9fa5]/.test(s.charAt(0))) {
     s = s.charAt(0).toUpperCase() + s.slice(1);

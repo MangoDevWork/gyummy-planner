@@ -2,7 +2,7 @@ import type { AppData, Dish, GroceryCategory, GroceryItem, MasterIngredient, Mea
 import { getInitialAppData, INITIAL_DISHES, DEFAULT_MEAL_SCHEDULES, DEFAULT_PANTRY_INGREDIENTS } from './seedData';
 import { DEFAULT_MASTER_INGREDIENTS } from './masterIngredients';
 import { matchPantryIngredient } from './pantryMatching';
-import { STARTER_RECIPE_TRANSLATIONS, getLocalizedDish } from './dataLocalizationService';
+import { STARTER_RECIPE_TRANSLATIONS, getLocalizedDish, formatDisplayIngredientName } from './dataLocalizationService';
 import { sanitizeIngredient, sanitizeMasterIngredient, cleanIngredientName } from './ingredientSanitizer';
 import { pushAppDataToCloud } from './firebase';
 import {
@@ -121,6 +121,7 @@ export function loadAppData(profileOverride?: UserProfile | null): AppData {
     (parsed.dishes || []).forEach((dish) => {
       (dish.ingredients || []).forEach((ing) => {
         if (!ing || !ing.name) return;
+        ing.name = formatDisplayIngredientName(ing.name);
         const norm = ing.name.toLowerCase().trim();
         if (!defaultIngNames.has(norm) && !customUserMap.has(norm)) {
           const autoArchived: MasterIngredient = {
@@ -492,6 +493,26 @@ function normalizeName(name: string): string {
   return name.trim().toLowerCase();
 }
 
+function normalizeUnit(unit?: string): string {
+  if (!unit) return '';
+  const u = unit.trim().toLowerCase();
+  if (['pcs', 'pc', 'piece', 'pieces', 'ea', 'each'].includes(u)) return 'pcs';
+  if (['tbsp', 'tbs', 'tablespoon', 'tablespoons'].includes(u)) return 'tbsp';
+  if (['tsp', 'teaspoon', 'teaspoons'].includes(u)) return 'tsp';
+  if (['g', 'gram', 'grams'].includes(u)) return 'g';
+  if (['kg', 'kgs', 'kilogram', 'kilograms'].includes(u)) return 'kg';
+  if (['ml', 'milliliter', 'milliliters'].includes(u)) return 'ml';
+  if (['l', 'liter', 'liters', 'litre', 'litres'].includes(u)) return 'L';
+  if (['cup', 'cups'].includes(u)) return 'cup';
+  if (['slice', 'slices'].includes(u)) return 'slice';
+  if (['clove', 'cloves'].includes(u)) return 'clove';
+  if (['stalk', 'stalks'].includes(u)) return 'stalk';
+  if (['can', 'cans'].includes(u)) return 'can';
+  if (['pack', 'packs', 'package', 'packages', 'pkg'].includes(u)) return 'pack';
+  if (['pinch', 'pinches'].includes(u)) return 'pinch';
+  return u;
+}
+
 /**
  * Smart Grocery List Aggregation
  * Case-insensitive name matching with Smart Pantry Substitution Engine.
@@ -550,9 +571,10 @@ export function generateGroceryList(
 
         localizedDish.ingredients.forEach((ing) => {
           const normName = normalizeName(ing.name);
-          const normUnit = (ing.unit || '').trim().toLowerCase();
+          const normUnit = normalizeUnit(ing.unit);
           
-          const key = `${normName}|${normUnit}|${ing.category}`;
+          // Key by normalized name and normalized unit
+          const key = `${normName}:::${normUnit}`;
 
           const ingAmount = typeof ing.amount === 'number' ? ing.amount * multiplier : null;
 
@@ -563,6 +585,9 @@ export function generateGroceryList(
             } else if (item.amount === null && typeof ingAmount === 'number') {
               item.amount = Math.round(ingAmount * 100) / 100;
             }
+            if (item.category === 'Other' && ing.category && ing.category !== 'Other') {
+              item.category = ing.category;
+            }
             item.sourceDishes.add(localizedDish.name);
           } else {
             const pantryMatch = matchPantryIngredient(ing.name, pantryIngredients);
@@ -570,7 +595,7 @@ export function generateGroceryList(
             aggregatedMap.set(key, {
               name: ing.name.trim(),
               amount: ingAmount !== null ? Math.round(ingAmount * 100) / 100 : null,
-              unit: ing.unit ? ing.unit.trim() : '',
+              unit: ing.unit ? ing.unit.trim() : (normUnit || ''),
               category: ing.category || 'Other',
               inPantry: pantryMatch.inPantry,
               pantrySubstituteNote: pantryMatch.substituteNote,
@@ -590,7 +615,7 @@ export function generateGroceryList(
     if (item.isManual) {
       manualItems.push(item);
     } else {
-      const key = `${normalizeName(item.name)}|${(item.unit || '').trim().toLowerCase()}|${item.category}`;
+      const key = `${normalizeName(item.name)}:::${normalizeUnit(item.unit)}`;
       existingCheckedMap.set(key, item.checked);
     }
   });
@@ -608,6 +633,9 @@ export function generateGroceryList(
     isManual: false,
     dateRange: { start: startDate, end: endDate }
   }));
+
+  // Sort generated items alphabetically by name
+  generatedItems.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
   return [...generatedItems, ...manualItems];
 }
