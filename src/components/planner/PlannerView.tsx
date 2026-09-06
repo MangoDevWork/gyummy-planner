@@ -617,6 +617,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         isOpen={isAiPlannerOpen}
         onClose={() => setIsAiPlannerOpen(false)}
         startDateISO={weekStartISO || todayISO}
+        mealSchedules={mealSchedules}
         familyCookbookDishes={dishes.filter((d) => d.isFamilyRecipe !== false)}
         allSystemDishes={systemDishes}
         memberProfiles={memberProfiles}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type {
   Dish,
   MealPlan,
+  MealScheduleConfig,
   MemberPreferences,
   FamilyPersonalisation,
   MealScheduleEntry
@@ -47,6 +48,7 @@ interface AiMealPlannerModalProps {
   startDateISO: string;
   familyCookbookDishes: Dish[];
   allSystemDishes: Dish[];
+  mealSchedules?: MealScheduleConfig[];
   memberProfiles?: Record<string, MemberPreferences>;
   familyPersonalisation?: FamilyPersonalisation;
   familyMembers?: string[];
@@ -65,6 +67,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   startDateISO,
   familyCookbookDishes,
   allSystemDishes,
+  mealSchedules = [],
   memberProfiles = {},
   familyPersonalisation,
   familyMembers = [],
@@ -144,9 +147,9 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
   const [planResult, setPlanResult] = useState<AiMealPlanResult | null>(null);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [swappingDishId, setSwappingDishId] = useState<string | null>(null);
-  const [swappingDate, setSwappingDate] = useState<string | null>(null);
-  const [addingDishDate, setAddingDishDate] = useState<string | null>(null);
-  const [editingStapleDate, setEditingStapleDate] = useState<string | null>(null);
+  const [swappingMealKey, setSwappingMealKey] = useState<string | null>(null);
+  const [addingDishMealKey, setAddingDishMealKey] = useState<string | null>(null);
+  const [editingStapleMealKey, setEditingStapleMealKey] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -203,7 +206,8 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
         durationDays,
         startDateISO,
         includedDays,
-        targetSlotId: 'slot_dinner',
+        targetSlotId: 'dinner',
+        mealSchedules,
         defaultStaple,
         spiceToleranceOverride: spiceTolerance,
         familyCookbookDishes,
@@ -219,7 +223,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
     }, 150);
   };
 
-  // Swap an individual dish in a dinner
+  // Swap an individual dish in a meal
   const handleSwapIndividualDish = (meal: PlannedDayMeal, dishIdToSwap: string) => {
     if (!planResult) return;
     setSwappingDishId(dishIdToSwap);
@@ -236,6 +240,8 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
           durationDays,
           startDateISO,
           includedDays,
+          targetSlotId: meal.slotId,
+          mealSchedules,
           defaultStaple,
           spiceToleranceOverride: spiceTolerance,
           familyCookbookDishes,
@@ -249,7 +255,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
 
       if (updated) {
         const nextSuggestions = planResult.suggestions.map((s) =>
-          s.dateISO === meal.dateISO ? updated : s
+          s.dateISO === meal.dateISO && s.slotId === meal.slotId ? updated : s
         );
 
         setPlanResult({
@@ -261,10 +267,11 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
     }, 120);
   };
 
-  // Swap the entire dinner combination for a single day
+  // Swap the entire meal combination for a single day slot
   const handleSwapWholeMeal = (meal: PlannedDayMeal) => {
     if (!planResult) return;
-    setSwappingDate(meal.dateISO);
+    const mealKey = `${meal.dateISO}_${meal.slotId}`;
+    setSwappingMealKey(mealKey);
 
     setTimeout(() => {
       const updated = swapWholeMealForDay(
@@ -277,6 +284,8 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
           durationDays,
           startDateISO,
           includedDays,
+          targetSlotId: meal.slotId,
+          mealSchedules,
           defaultStaple,
           spiceToleranceOverride: spiceTolerance,
           familyCookbookDishes,
@@ -290,7 +299,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
 
       if (updated) {
         const nextSuggestions = planResult.suggestions.map((s) =>
-          s.dateISO === meal.dateISO ? updated : s
+          s.dateISO === meal.dateISO && s.slotId === meal.slotId ? updated : s
         );
 
         setPlanResult({
@@ -298,16 +307,16 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
           suggestions: nextSuggestions
         });
       }
-      setSwappingDate(null);
+      setSwappingMealKey(null);
     }, 120);
   };
 
-  // Remove an individual dish from a dinner
+  // Remove an individual dish from a meal
   const handleRemoveDish = (meal: PlannedDayMeal, dishIdToRemove: string) => {
     if (!planResult) return;
     const updated = removeDishFromMeal(meal, dishIdToRemove, defaultStaple);
     const nextSuggestions = planResult.suggestions.map((s) =>
-      s.dateISO === meal.dateISO ? updated : s
+      s.dateISO === meal.dateISO && s.slotId === meal.slotId ? updated : s
     );
     setPlanResult({
       ...planResult,
@@ -315,10 +324,11 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
     });
   };
 
-  // AI plans and adds a complementary new dish to a dinner
+  // AI plans and adds a complementary new dish to a meal
   const handleAddDish = (meal: PlannedDayMeal) => {
     if (!planResult) return;
-    setAddingDishDate(meal.dateISO);
+    const mealKey = `${meal.dateISO}_${meal.slotId}`;
+    setAddingDishMealKey(mealKey);
 
     setTimeout(() => {
       const updated = addDishToMeal(meal, planResult.suggestions, {
@@ -328,6 +338,8 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
         durationDays,
         startDateISO,
         includedDays,
+        targetSlotId: meal.slotId,
+        mealSchedules,
         defaultStaple,
         spiceToleranceOverride: spiceTolerance,
         familyCookbookDishes,
@@ -340,24 +352,24 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
 
       if (updated) {
         const nextSuggestions = planResult.suggestions.map((s) =>
-          s.dateISO === meal.dateISO ? updated : s
+          s.dateISO === meal.dateISO && s.slotId === meal.slotId ? updated : s
         );
         setPlanResult({
           ...planResult,
           suggestions: nextSuggestions
         });
       }
-      setAddingDishDate(null);
+      setAddingDishMealKey(null);
     }, 120);
   };
 
-  // Change staple accompaniment for a single day
-  const handleChangeMealStaple = (dateISO: string, newStaple: MealAccompaniment) => {
+  // Change staple accompaniment for a single meal
+  const handleChangeMealStaple = (dateISO: string, slotId: string, newStaple: MealAccompaniment) => {
     if (!planResult) return;
     const stapleInfo = ACCOMPANIMENT_OPTIONS[newStaple] || ACCOMPANIMENT_OPTIONS.jasmine_rice;
 
     const nextSuggestions = planResult.suggestions.map((m) => {
-      if (m.dateISO !== dateISO) return m;
+      if (m.dateISO !== dateISO || m.slotId !== slotId) return m;
 
       const dishesCal = m.dishes.reduce((sum, d) => sum + (d.nutrition?.calories || 480), 0);
 
@@ -372,7 +384,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
       ...planResult,
       suggestions: nextSuggestions
     });
-    setEditingStapleDate(null);
+    setEditingStapleMealKey(null);
   };
 
   // Apply plan to calendar
@@ -578,6 +590,23 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                     </button>
                   ))}
                 </div>
+
+                {/* Meal Schedules Alignment Indicator */}
+                {mealSchedules && mealSchedules.length > 0 && (
+                  <div className="rounded-xl bg-[#FAF8F5] dark:bg-[#1E1B18] p-2.5 border border-[#EDE8DF] dark:border-[#38332E] flex items-center justify-between text-[11px]">
+                    <div className="flex items-center gap-1.5 text-[#7A6E64] dark:text-[#9A9088]">
+                      <span>🗓️</span>
+                      <span>
+                        {language === 'zh-CN'
+                          ? '按“自定义餐段”现有规划排餐'
+                          : 'Slots into your configured Meal Schedules'}
+                      </span>
+                    </div>
+                    <span className="font-bold text-[#7A5C00] dark:text-[#FFD13B]">
+                      {mealSchedules.filter((s) => s.defaultEnabled).map((s) => s.name).join(', ')}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* 3. ESSENTIAL: Strategy: Family Classics or Something New? */}
@@ -905,7 +934,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                       </span>
                     </div>
                     <span className="text-[10.5px] font-bold text-[#FFD13B] bg-[#2D2640] px-2 py-0.5 rounded-full">
-                      {planResult.totalDinners} {language === 'zh-CN' ? '顿完整晚餐' : 'full dinners'}
+                      {planResult.suggestions.length} {language === 'zh-CN' ? '顿膳食' : 'meals scheduled'}
                     </span>
                   </div>
 
@@ -949,14 +978,17 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
               {/* Day-by-Day Cards */}
               <div className="space-y-3">
                 {planResult?.suggestions.map((meal) => {
+                  const mealKey = `${meal.dateISO}_${meal.slotId}`;
                   const staple = ACCOMPANIMENT_OPTIONS[meal.accompaniment] || ACCOMPANIMENT_OPTIONS.jasmine_rice;
-                  const isEditingStaple = editingStapleDate === meal.dateISO;
+                  const isEditingStaple = editingStapleMealKey === mealKey;
+                  const isSwappingMeal = swappingMealKey === mealKey;
+                  const isAddingDish = addingDishMealKey === mealKey;
 
                   return (
                     <div
-                      key={meal.dateISO}
+                      key={mealKey}
                       className={`rounded-2xl border border-[#EDE8DF] bg-white p-3.5 shadow-xs dark:border-[#3D362E] dark:bg-[#252220] space-y-2.5 transition-all ${
-                        swappingDate === meal.dateISO ? 'opacity-40 scale-[0.98]' : ''
+                        isSwappingMeal ? 'opacity-40 scale-[0.98]' : ''
                       }`}
                     >
                       {/* Day Header Row */}
@@ -967,6 +999,9 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                           </span>
                           <span className="text-[11px] text-[#8A7A70] dark:text-[#9A8A7E]">
                             {meal.dateISO.slice(5)}
+                          </span>
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-lg bg-[#FFD13B] text-[#2D2640] border border-[#2D2640]/10 shadow-xs">
+                            {meal.slotName}
                           </span>
                           <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-[#FAF7F2] dark:bg-[#1E1B18] text-[#7A5C00] dark:text-[#FFD13B] border border-[#FFD13B]/30">
                             {meal.comboStructure}
@@ -981,12 +1016,12 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                           {/* Swap Whole Meal Button */}
                           <button
                             type="button"
-                            disabled={swappingDate === meal.dateISO || swappingDishId !== null}
+                            disabled={isSwappingMeal || swappingDishId !== null}
                             onClick={() => handleSwapWholeMeal(meal)}
                             className="flex items-center gap-1 py-1 px-2.5 rounded-xl border border-[#EDE8DF] bg-[#FAF7F2] text-[10.5px] font-bold text-[#2D2640] hover:bg-[#FFD13B] hover:border-[#2D2640]/10 dark:border-[#38332E] dark:bg-[#1E1B18] dark:text-[#F0EDE8] transition cursor-pointer shrink-0"
-                            title={language === 'zh-CN' ? '重新生成当天的整套搭配' : 'Regenerate entire dinner combination for this day'}
+                            title={language === 'zh-CN' ? `重新生成${meal.slotName}的整套搭配` : `Regenerate entire ${meal.slotName} combination`}
                           >
-                            <RotateCw className={`h-3 w-3 ${swappingDate === meal.dateISO ? 'animate-spin' : ''}`} />
+                            <RotateCw className={`h-3 w-3 ${isSwappingMeal ? 'animate-spin' : ''}`} />
                             <span>{language === 'zh-CN' ? '换整餐' : 'Swap Meal'}</span>
                           </button>
                         </div>
@@ -1009,7 +1044,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
 
                           <button
                             type="button"
-                            onClick={() => setEditingStapleDate(isEditingStaple ? null : meal.dateISO)}
+                            onClick={() => setEditingStapleMealKey(isEditingStaple ? null : mealKey)}
                             className="text-[10.5px] font-bold text-[#7A5C00] dark:text-[#FFD13B] hover:underline cursor-pointer"
                           >
                             {language === 'zh-CN' ? '调整主食 ▾' : 'Change ▾'}
@@ -1023,7 +1058,10 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                               <button
                                 key={opt.id}
                                 type="button"
-                                onClick={() => handleChangeMealStaple(meal.dateISO, opt.id)}
+                                onClick={() => {
+                                  handleChangeMealStaple(meal.dateISO, meal.slotId, opt.id);
+                                  setEditingStapleMealKey(null);
+                                }}
                                 className={`p-1.5 rounded-xl border text-left text-[11px] font-bold flex items-center gap-1.5 transition cursor-pointer ${
                                   meal.accompaniment === opt.id
                                     ? 'bg-[#FFD13B] text-[#2D2640] border-[#2D2640]/10'
@@ -1038,7 +1076,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                         )}
                       </div>
 
-                      {/* Dishes in this Dinner */}
+                      {/* Dishes in this Meal */}
                       <div className="space-y-2">
                         {meal.dishes.map((dish) => {
                           const isSwapping = swappingDishId === dish.id;
@@ -1097,7 +1135,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                                     type="button"
                                     onClick={() => handleRemoveDish(meal, dish.id)}
                                     className="flex items-center justify-center h-6 w-6 rounded-lg text-[#9A8A7E] hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition cursor-pointer"
-                                    title={language === 'zh-CN' ? '从本餐中移除此菜品' : 'Remove dish from this dinner'}
+                                    title={language === 'zh-CN' ? '从本餐中移除此菜品' : 'Remove dish from this meal'}
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </button>
@@ -1110,11 +1148,11 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                         {/* Add Dish Button (AI Plans Instantly) */}
                         <button
                           type="button"
-                          disabled={addingDishDate === meal.dateISO || meal.dishes.length >= 8}
+                          disabled={isAddingDish || meal.dishes.length >= 8}
                           onClick={() => handleAddDish(meal)}
                           className="flex w-full items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-dashed border-[#EDE8DF] bg-[#FAF8F5] text-[11px] font-bold text-[#7A6E64] hover:border-[#FFD13B] hover:text-[#2D2640] hover:bg-[#FFF8E6] dark:border-[#38332E] dark:bg-[#1E1B18] dark:text-[#9A9088] dark:hover:text-[#FFD13B] transition cursor-pointer disabled:opacity-50"
                         >
-                          {addingDishDate === meal.dateISO ? (
+                          {isAddingDish ? (
                             <>
                               <RotateCw className="h-3.5 w-3.5 animate-spin text-[#FFD13B]" />
                               <span>{language === 'zh-CN' ? 'AI 正在智能规划新菜...' : 'AI planning complementary dish...'}</span>
@@ -1122,7 +1160,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                           ) : (
                             <>
                               <Plus className="h-3.5 w-3.5 text-[#FFD13B]" />
-                              <span>{language === 'zh-CN' ? '+ AI 智能加一道菜 (荤素自动补位)' : '+ Add Dish (AI Plans Complementary Dish)'}</span>
+                              <span>{language === 'zh-CN' ? `+ 为${meal.slotName}加一道菜 (AI 智能优选)` : `+ Add Dish to ${meal.slotName} (AI Complementary)`}</span>
                             </>
                           )}
                         </button>

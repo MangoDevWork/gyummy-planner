@@ -393,25 +393,104 @@ const ALLERGEN_MAP = new Map<string, AllergenDefinition>();
 ALLERGEN_TAXONOMY.forEach((a) => ALLERGEN_MAP.set(a.id, a));
 
 /**
+ * Normalization map for allergen aliases across freeform inputs, presets, and standard taxonomy
+ */
+export const ALLERGEN_ALIAS_MAP: Record<string, string> = {
+  dairy: 'cow_milk',
+  milk: 'cow_milk',
+  cow_milk: 'cow_milk',
+  egg: 'eggs',
+  eggs: 'eggs',
+  peanut: 'peanuts',
+  peanuts: 'peanuts',
+  nut: 'tree_nuts',
+  nuts: 'tree_nuts',
+  tree_nut: 'tree_nuts',
+  tree_nuts: 'tree_nuts',
+  shellfish: 'shellfish_crustacean',
+  crustacean: 'shellfish_crustacean',
+  crustaceans: 'shellfish_crustacean',
+  shellfish_crustacean: 'shellfish_crustacean',
+  fish: 'finned_fish',
+  finned_fish: 'finned_fish',
+  gluten: 'wheat_gluten',
+  wheat: 'wheat_gluten',
+  wheat_gluten: 'wheat_gluten',
+  soy: 'soybeans',
+  soya: 'soybeans',
+  soybean: 'soybeans',
+  soybeans: 'soybeans',
+  sesame: 'sesame',
+  mollusc: 'molluscan_shellfish',
+  molluscs: 'molluscan_shellfish',
+  mollusk: 'molluscan_shellfish',
+  mollusks: 'molluscan_shellfish',
+  molluscan_shellfish: 'molluscan_shellfish',
+  oat: 'oats',
+  oats: 'oats',
+  buckwheat: 'buckwheat',
+  mustard: 'mustard',
+  celery: 'celery',
+  sulphite: 'sulphites',
+  sulphites: 'sulphites',
+  sulfite: 'sulphites',
+  sulfites: 'sulphites',
+  pork: 'pork',
+  beef: 'beef',
+  chicken: 'chicken_poultry',
+  poultry: 'chicken_poultry',
+  chicken_poultry: 'chicken_poultry',
+  lamb: 'lamb_mutton',
+  mutton: 'lamb_mutton',
+  lamb_mutton: 'lamb_mutton',
+  allium: 'alliums',
+  alliums: 'alliums',
+  garlic: 'alliums',
+  onion: 'alliums',
+  nightshade: 'nightshades',
+  nightshades: 'nightshades',
+  legume: 'legumes_pulses',
+  legumes: 'legumes_pulses',
+  pulse: 'legumes_pulses',
+  pulses: 'legumes_pulses',
+  legumes_pulses: 'legumes_pulses',
+  fruit: 'fruits_sensitive',
+  fruits: 'fruits_sensitive',
+  fruits_sensitive: 'fruits_sensitive'
+};
+
+export function normalizeAllergenId(id: string): string {
+  if (!id || typeof id !== 'string') return '';
+  const clean = id.toLowerCase().trim();
+  return ALLERGEN_ALIAS_MAP[clean] || clean;
+}
+
+/**
  * Get Allergen definition by ID
  */
 export function getAllergenById(id: string): AllergenDefinition | undefined {
-  return ALLERGEN_MAP.get(id);
+  const norm = normalizeAllergenId(id);
+  return ALLERGEN_MAP.get(norm) || ALLERGEN_MAP.get(id);
 }
 
 /**
  * High-Precision Recipe Allergen Detector
- * Analyzes structured ingredients, dish name, and tags across both English and Chinese
+ * Analyzes structured ingredients, dish name, and tags across both English and Chinese.
+ * Always combines pre-computed allergens with dynamic detection so no allergen is ever missed.
  */
 export function detectDishAllergens(dish: Dish): string[] {
   if (!dish) return [];
 
-  // If already pre-computed and stored, return
-  if (Array.isArray(dish.allergens) && dish.allergens.length > 0) {
-    return dish.allergens;
-  }
-
   const detected = new Set<string>();
+
+  // If already pre-computed and stored, normalize and seed detected set
+  if (Array.isArray(dish.allergens)) {
+    dish.allergens.forEach((a) => {
+      if (typeof a === 'string' && a.trim()) {
+        detected.add(normalizeAllergenId(a));
+      }
+    });
+  }
 
   // Build searchable text corpus for the dish
   const safeName = (dish.name || '').toLowerCase();
@@ -457,19 +536,23 @@ export function getFamilyAllergens(
 ): string[] {
   const set = new Set<string>();
 
+  const allMembers = Array.from(
+    new Set([...(familyMembers || []), ...Object.keys(memberProfiles || {})])
+  );
+
   // 1. Union of all member-declared allergies
   if (memberProfiles) {
-    familyMembers.forEach((member) => {
+    allMembers.forEach((member) => {
       const prefs = memberProfiles[member];
       if (prefs?.allergies) {
-        prefs.allergies.forEach((alg) => set.add(alg));
+        prefs.allergies.forEach((alg) => set.add(normalizeAllergenId(alg)));
       }
     });
   }
 
   // 2. Household-wide exclusions
   if (familyPersonalisation?.householdAllergies) {
-    familyPersonalisation.householdAllergies.forEach((alg) => set.add(alg));
+    familyPersonalisation.householdAllergies.forEach((alg) => set.add(normalizeAllergenId(alg)));
   }
 
   return Array.from(set);
@@ -488,20 +571,28 @@ export function checkDishAllergenRisk(
   dishAllergens: string[];
   affectedMembers: { memberName: string; allergens: string[] }[];
 } {
-  const dishAllergens = detectDishAllergens(dish);
-  const membersToCheck = familyMembers.length > 0 ? familyMembers : Object.keys(memberProfiles || {});
+  const rawDishAllergens = detectDishAllergens(dish);
+  const normalizedDishAllergens = new Set(rawDishAllergens.map(normalizeAllergenId));
+
+  // Inspect the union of familyMembers and memberProfiles so no declared member is missed
+  const allMembers = Array.from(
+    new Set([...(familyMembers || []), ...Object.keys(memberProfiles || {})])
+  );
   
-  if (dishAllergens.length === 0) {
-    return { hasRisk: false, dishAllergens, affectedMembers: [] };
+  if (rawDishAllergens.length === 0) {
+    return { hasRisk: false, dishAllergens: rawDishAllergens, affectedMembers: [] };
   }
 
   const affectedMembers: { memberName: string; allergens: string[] }[] = [];
 
-  if (memberProfiles && membersToCheck.length > 0) {
-    membersToCheck.forEach((member) => {
+  if (memberProfiles && allMembers.length > 0) {
+    allMembers.forEach((member) => {
       const prefs = memberProfiles[member];
       if (prefs?.allergies && prefs.allergies.length > 0) {
-        const triggered = prefs.allergies.filter((alg) => dishAllergens.includes(alg));
+        const triggered = prefs.allergies.filter((alg) => {
+          const norm = normalizeAllergenId(alg);
+          return normalizedDishAllergens.has(norm);
+        });
         if (triggered.length > 0) {
           affectedMembers.push({ memberName: member, allergens: triggered });
         }
@@ -510,7 +601,10 @@ export function checkDishAllergenRisk(
   }
 
   if (familyPersonalisation?.householdAllergies && familyPersonalisation.householdAllergies.length > 0) {
-    const triggeredHousehold = familyPersonalisation.householdAllergies.filter((alg) => dishAllergens.includes(alg));
+    const triggeredHousehold = familyPersonalisation.householdAllergies.filter((alg) => {
+      const norm = normalizeAllergenId(alg);
+      return normalizedDishAllergens.has(norm);
+    });
     if (triggeredHousehold.length > 0) {
       affectedMembers.push({ memberName: 'Family Rule', allergens: triggeredHousehold });
     }
@@ -518,7 +612,7 @@ export function checkDishAllergenRisk(
 
   return {
     hasRisk: affectedMembers.length > 0,
-    dishAllergens,
+    dishAllergens: rawDishAllergens,
     affectedMembers
   };
 }
