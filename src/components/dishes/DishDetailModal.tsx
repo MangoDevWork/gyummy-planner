@@ -139,7 +139,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
           {dish.imageUrl && <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/30 pointer-events-none" />}
 
           {/* Top Floating Buttons */}
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
+          <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10 pt-safe">
             <button
               type="button"
               onClick={onClose}
@@ -455,7 +455,7 @@ export const DishDetailModal: React.FC<DishDetailModalProps> = ({
         </div>
 
         {/* Sticky Bottom Actions */}
-        <div className="sticky bottom-0 z-20 border-t border-[#EDE8DF] bg-white/95 backdrop-blur-md px-4 py-3 dark:border-[#3A332C] dark:bg-[#28231E]/95">
+        <div className="sticky bottom-0 z-20 border-t border-[#EDE8DF] bg-white/95 backdrop-blur-md px-4 py-3 dark:border-[#3A332C] dark:bg-[#28231E]/95 pb-safe">
           {selectAction ? (
             <button
               type="button"

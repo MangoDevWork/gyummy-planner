@@ -15,14 +15,16 @@ import type { AppData, Dish } from '../types';
 import { INITIAL_DISHES } from './seedData';
 import { getIdbRecipeImage, setIdbRecipeImage } from './indexedDbStorage';
 
+const env = (typeof import.meta !== 'undefined' && (import.meta as any)?.env) || {};
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDDbz3VrrVTxsXX-iCbwj2LxuSHdup5h10',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'gyummy-75a5f.firebaseapp.com',
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || 'https://gyummy-75a5f-default-rtdb.firebaseio.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'gyummy-75a5f',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'gyummy-75a5f.firebasestorage.app',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '147446208643',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:147446208643:web:1dbe1c44cb5520bb22e3b6'
+  apiKey: env.VITE_FIREBASE_API_KEY || 'AIzaSyDDbz3VrrVTxsXX-iCbwj2LxuSHdup5h10',
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || 'gyummy-75a5f.firebaseapp.com',
+  databaseURL: env.VITE_FIREBASE_DATABASE_URL || 'https://gyummy-75a5f-default-rtdb.firebaseio.com',
+  projectId: env.VITE_FIREBASE_PROJECT_ID || 'gyummy-75a5f',
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || 'gyummy-75a5f.firebasestorage.app',
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || '147446208643',
+  appId: env.VITE_FIREBASE_APP_ID || '1:147446208643:web:1dbe1c44cb5520bb22e3b6'
 };
 
 export const DEFAULT_FAMILY_PIN = '0307';

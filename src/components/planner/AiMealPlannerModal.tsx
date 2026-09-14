@@ -1301,7 +1301,7 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
                       }`}
                     >
                       {/* Day Header Row */}
-                      <div className="flex items-center justify-between border-b border-[#EDE8DF] pb-3 dark:border-[#38332E] gap-2">
+                      <div className="flex items-center justify-between border-b border-[#EDE8DF] pb-3 dark:border-[#38332E] gap-2 flex-wrap sm:flex-nowrap">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-black text-[#2D2640] dark:text-[#F0EDE8]">
                             {meal.dayName}

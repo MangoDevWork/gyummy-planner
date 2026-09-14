@@ -276,24 +276,24 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         )}
 
         {/* Top Minimal Toolbar Row */}
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB]">
+        <div className="flex items-center justify-between gap-1.5 px-0.5 sm:px-1">
+          <div className="flex items-center gap-1.5 min-w-0 shrink">
+            <span className="text-[12.5px] sm:text-[13px] font-bold text-[#1E1B2E] dark:text-[#F5F2EB] shrink-0">
               {language === 'zh-CN' ? '周食谱排餐' : 'Weekly Plan'}
             </span>
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#FAF8F5] dark:bg-[#2A2520] text-[#786F66] dark:text-[#A39C90] border border-[#EDE8DF] dark:border-[#3D362E]">
+            <span className="text-[10.5px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#FAF8F5] dark:bg-[#2A2520] text-[#786F66] dark:text-[#A39C90] border border-[#EDE8DF] dark:border-[#3D362E] truncate max-w-[110px] sm:max-w-none">
               {weekRangeLabel}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
               onClick={() => setIsAiPlannerOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#FFD13B] text-[#2D2640] hover:bg-[#FFC200] font-black text-xs shadow-2xs transition active:scale-95 cursor-pointer"
+              className="flex items-center gap-1 px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-[#FFD13B] text-[#2D2640] hover:bg-[#FFC200] font-black text-[11px] sm:text-xs shadow-2xs transition active:scale-95 cursor-pointer shrink-0"
               title="Quick Meal Plan"
             >
-              <Sparkles className="h-3.5 w-3.5 fill-[#2D2640]" />
+              <Sparkles className="h-3.5 w-3.5 fill-[#2D2640] shrink-0" />
               <span>{language === 'zh-CN' ? '快速排餐' : 'Quick Plan'}</span>
             </button>
             <ToolbarButton onClick={handleShareMealPlan} title="Share week as message">

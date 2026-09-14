@@ -84,7 +84,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[#EDE8DF]/80 bg-white/90 backdrop-blur-md dark:border-[#3A332C]/80 dark:bg-[#28231E]/90">
+    <header className="sticky top-0 z-30 border-b border-[#EDE8DF]/80 bg-white/90 backdrop-blur-md dark:border-[#3A332C]/80 dark:bg-[#28231E]/90 pt-safe">
       <div className="max-w-md mx-auto flex items-center justify-between px-4 py-3">
         {/* Left: Avatar + branding */}
         <div className="flex items-center gap-3">

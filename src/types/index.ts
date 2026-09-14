@@ -124,6 +124,7 @@ export interface GroceryItem {
   name: string;
   amount: number | null;
   unit: string;
+  displayMeasurement?: string; // e.g. "1.5 tbsp, 6 tsp, 15 ml"
   category: GroceryCategory;
   checked: boolean;
   inPantry?: boolean;             // True if user declared this ingredient as in stock at home

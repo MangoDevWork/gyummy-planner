@@ -526,7 +526,7 @@ export const GroceryView: React.FC<GroceryViewProps> = ({
                         </p>
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="text-[11px] text-[#786F66] dark:text-[#A39C90]">
-                            {item.amount !== null ? item.amount : ''} {item.unit}
+                            {item.displayMeasurement || `${item.amount !== null ? item.amount : ''} ${item.unit}`.trim()}
                           </p>
 
                           {/* Pantry Substitute Note restored per user request */}

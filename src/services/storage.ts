@@ -530,18 +530,23 @@ export function generateGroceryList(
   const dishMap = new Map<string, Dish>();
   dishes.forEach((d) => dishMap.set(d.id, d));
 
-  const aggregatedMap = new Map<
-    string,
-    {
-      name: string;
-      amount: number | null;
-      unit: string;
-      category: GroceryCategory;
-      inPantry: boolean;
-      pantrySubstituteNote?: string;
-      sourceDishes: Set<string>;
-    }
-  >();
+  interface UnitAccumulator {
+    normalizedUnit: string;
+    displayUnit: string;
+    totalAmount: number | null;
+    hasNumericAmount: boolean;
+  }
+
+  interface AggregatedIngredientEntry {
+    displayName: string;
+    category: GroceryCategory;
+    inPantry: boolean;
+    pantrySubstituteNote?: string;
+    sourceDishes: Set<string>;
+    unitMeasurements: Map<string, UnitAccumulator>;
+  }
+
+  const aggregatedMap = new Map<string, AggregatedIngredientEntry>();
 
   const dates = Object.keys(mealPlan).filter((d) => d >= startDate && d <= endDate);
 
@@ -570,36 +575,57 @@ export function generateGroceryList(
         const localizedDish = getLocalizedDish(dish, preferredLang);
 
         localizedDish.ingredients.forEach((ing) => {
-          const normName = normalizeName(ing.name);
-          const normUnit = normalizeUnit(ing.unit);
-          
-          // Key by normalized name and normalized unit
-          const key = `${normName}:::${normUnit}`;
+          const cleanName = formatDisplayIngredientName(ing.name).trim();
+          const normName = normalizeName(cleanName);
+          if (!normName) return;
 
+          const normUnit = normalizeUnit(ing.unit);
+          const displayUnit = ing.unit ? ing.unit.trim() : (normUnit || '');
           const ingAmount = typeof ing.amount === 'number' ? ing.amount * multiplier : null;
 
-          if (aggregatedMap.has(key)) {
-            const item = aggregatedMap.get(key)!;
-            if (typeof item.amount === 'number' && typeof ingAmount === 'number') {
-              item.amount = Math.round((item.amount + ingAmount) * 100) / 100;
-            } else if (item.amount === null && typeof ingAmount === 'number') {
-              item.amount = Math.round(ingAmount * 100) / 100;
-            }
-            if (item.category === 'Other' && ing.category && ing.category !== 'Other') {
-              item.category = ing.category;
-            }
-            item.sourceDishes.add(localizedDish.name);
-          } else {
-            const pantryMatch = matchPantryIngredient(ing.name, pantryIngredients);
+          const pantryMatch = matchPantryIngredient(cleanName, pantryIngredients);
 
-            aggregatedMap.set(key, {
-              name: ing.name.trim(),
-              amount: ingAmount !== null ? Math.round(ingAmount * 100) / 100 : null,
-              unit: ing.unit ? ing.unit.trim() : (normUnit || ''),
+          let agg = aggregatedMap.get(normName);
+          if (!agg) {
+            agg = {
+              displayName: cleanName,
               category: ing.category || 'Other',
               inPantry: pantryMatch.inPantry,
               pantrySubstituteNote: pantryMatch.substituteNote,
-              sourceDishes: new Set([localizedDish.name])
+              sourceDishes: new Set([localizedDish.name]),
+              unitMeasurements: new Map()
+            };
+            aggregatedMap.set(normName, agg);
+          } else {
+            // Upgrade category if previously 'Other'
+            if (agg.category === 'Other' && ing.category && ing.category !== 'Other') {
+              agg.category = ing.category;
+            }
+            if (pantryMatch.inPantry) {
+              agg.inPantry = true;
+              if (pantryMatch.substituteNote && !agg.pantrySubstituteNote) {
+                agg.pantrySubstituteNote = pantryMatch.substituteNote;
+              }
+            }
+            agg.sourceDishes.add(localizedDish.name);
+          }
+
+          // Accumulate unit measurement
+          const existingUnit = agg.unitMeasurements.get(normUnit);
+          if (existingUnit) {
+            if (typeof ingAmount === 'number') {
+              existingUnit.totalAmount = Math.round(((existingUnit.totalAmount ?? 0) + ingAmount) * 100) / 100;
+              existingUnit.hasNumericAmount = true;
+            }
+            if (!existingUnit.displayUnit && displayUnit) {
+              existingUnit.displayUnit = displayUnit;
+            }
+          } else {
+            agg.unitMeasurements.set(normUnit, {
+              normalizedUnit: normUnit,
+              displayUnit,
+              totalAmount: ingAmount !== null ? Math.round(ingAmount * 100) / 100 : null,
+              hasNumericAmount: typeof ingAmount === 'number'
             });
           }
         });
@@ -615,24 +641,95 @@ export function generateGroceryList(
     if (item.isManual) {
       manualItems.push(item);
     } else {
-      const key = `${normalizeName(item.name)}:::${normalizeUnit(item.unit)}`;
-      existingCheckedMap.set(key, item.checked);
+      const clean = formatDisplayIngredientName(item.name);
+      const norm = normalizeName(clean);
+      if (item.checked) {
+        existingCheckedMap.set(norm, true);
+      } else if (!existingCheckedMap.has(norm)) {
+        existingCheckedMap.set(norm, false);
+      }
     }
   });
 
-  const generatedItems: GroceryItem[] = Array.from(aggregatedMap.entries()).map(([key, value], index) => ({
-    id: `groc_auto_${Date.now()}_${index}`,
-    name: value.name,
-    amount: value.amount,
-    unit: value.unit,
-    category: value.category,
-    checked: existingCheckedMap.get(key) || false,
-    inPantry: value.inPantry,
-    pantrySubstituteNote: value.pantrySubstituteNote,
-    sourceDishes: Array.from(value.sourceDishes),
-    isManual: false,
-    dateRange: { start: startDate, end: endDate }
-  }));
+  const UNIT_DISPLAY_PRIORITY: Record<string, number> = {
+    tbsp: 10,
+    tsp: 20,
+    cup: 30,
+    g: 40,
+    kg: 50,
+    ml: 60,
+    l: 70,
+    pcs: 80,
+    slice: 90,
+    clove: 100,
+    stalk: 110,
+    can: 120,
+    pack: 130,
+    pinch: 140
+  };
+
+  const generatedItems: GroceryItem[] = Array.from(aggregatedMap.entries()).map(([normName, entry], index) => {
+    // Sort unit measurements logically: numeric quantities first, then common culinary units (tbsp -> tsp -> ml), then alphabetical
+    const sortedUnits = Array.from(entry.unitMeasurements.values()).sort((a, b) => {
+      if (a.hasNumericAmount !== b.hasNumericAmount) {
+        return a.hasNumericAmount ? -1 : 1;
+      }
+      const pA = UNIT_DISPLAY_PRIORITY[a.normalizedUnit.toLowerCase()] ?? 999;
+      const pB = UNIT_DISPLAY_PRIORITY[b.normalizedUnit.toLowerCase()] ?? 999;
+      if (pA !== pB) return pA - pB;
+      return a.normalizedUnit.localeCompare(b.normalizedUnit);
+    });
+
+    const measurements: string[] = [];
+
+    sortedUnits.forEach((m) => {
+      let str = '';
+      if (m.hasNumericAmount && m.totalAmount !== null) {
+        str = m.displayUnit ? `${m.totalAmount} ${m.displayUnit}` : `${m.totalAmount}`;
+      } else if (m.displayUnit) {
+        str = m.displayUnit;
+      }
+      str = str.trim();
+      if (str) {
+        measurements.push(str);
+      }
+    });
+
+    const isSingleUnit = entry.unitMeasurements.size === 1 && measurements.length === 1;
+    let finalAmount: number | null = null;
+    let finalUnit: string = '';
+    let displayMeasurement: string = '';
+
+    if (isSingleUnit) {
+      const first = Array.from(entry.unitMeasurements.values())[0];
+      finalAmount = first.totalAmount;
+      finalUnit = first.displayUnit;
+      displayMeasurement = measurements[0] || (finalAmount !== null ? `${finalAmount} ${finalUnit}`.trim() : finalUnit);
+    } else if (measurements.length > 1) {
+      finalAmount = null;
+      finalUnit = measurements.join(', ');
+      displayMeasurement = measurements.join(', ');
+    } else if (measurements.length === 1) {
+      displayMeasurement = measurements[0];
+      finalUnit = measurements[0];
+      finalAmount = null;
+    }
+
+    return {
+      id: `groc_auto_${Date.now()}_${index}`,
+      name: entry.displayName,
+      amount: finalAmount,
+      unit: finalUnit,
+      displayMeasurement: displayMeasurement || undefined,
+      category: entry.category,
+      checked: existingCheckedMap.get(normName) || false,
+      inPantry: entry.inPantry,
+      pantrySubstituteNote: entry.pantrySubstituteNote,
+      sourceDishes: Array.from(entry.sourceDishes),
+      isManual: false,
+      dateRange: { start: startDate, end: endDate }
+    };
+  });
 
   // Sort generated items alphabetically by name
   generatedItems.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
