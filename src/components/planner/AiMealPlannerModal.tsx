@@ -221,8 +221,6 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
     prevIsOpenRef.current = isOpen;
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const headcountGuide = getHeadcountRecommendation(dinersCount);
 
   // Toggle multi-cuisine option
@@ -589,6 +587,8 @@ export const AiMealPlannerModal: React.FC<AiMealPlannerModalProps> = ({
     }
     return withoutAll.join(', ');
   }, [selectedCuisines, language]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
