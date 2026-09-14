@@ -27,6 +27,7 @@ interface DishesViewProps {
   dishes: Dish[];
   masterIngredients: MasterIngredient[];
   initialScope?: 'family' | 'system';
+  initialCuisine?: string;
   showSystemGuideHint?: boolean;
   onSaveDish: (dish: Dish) => void;
   onDeleteDish: (dishId: string) => void;
@@ -122,7 +123,8 @@ export const DishesView: React.FC<DishesViewProps> = ({
   onQuickPlanDish,
   isCreatorOpen,
   setIsCreatorOpen,
-  initialScope = 'family'
+  initialScope = 'family',
+  initialCuisine
 }) => {
   const { language, formatCategory, formatCuisine } = useLanguage();
   const [scope, setScope] = useState<'family' | 'system'>(initialScope);
@@ -132,7 +134,13 @@ export const DishesView: React.FC<DishesViewProps> = ({
   }, [initialScope]);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCuisine, setSelectedCuisine] = useState<string>('All Cuisines');
+  const [selectedCuisine, setSelectedCuisine] = useState<string>(initialCuisine || 'All Cuisines');
+
+  useEffect(() => {
+    if (initialCuisine) {
+      setSelectedCuisine(initialCuisine);
+    }
+  }, [initialCuisine]);
   const [selectedQuickFilter, setSelectedQuickFilter] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'timesPlanned' | 'prepTime' | 'name'>('timesPlanned');
   

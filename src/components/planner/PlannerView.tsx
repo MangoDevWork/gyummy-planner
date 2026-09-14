@@ -36,6 +36,7 @@ interface PlannerViewProps {
   onToggleFavoriteDish?: (dishId: string) => void;
   onGoToGrocery: (startDate: string, endDate: string) => void;
   onOpenPersonalisation?: () => void;
+  onNavigateToLibrary?: (cuisine: string) => void;
 }
 
 function ToolbarButton({
@@ -74,7 +75,8 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
   onToggleFamilyRecipe,
   onToggleFavoriteDish,
   onGoToGrocery,
-  onOpenPersonalisation
+  onOpenPersonalisation,
+  onNavigateToLibrary
 }) => {
   const { language, t, formatScheduleName, formatDayOfWeek, formatDate } = useLanguage();
   const [currentBaseDate, setCurrentBaseDate] = useState<Date>(new Date());
@@ -616,6 +618,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
       <AiMealPlannerModal
         isOpen={isAiPlannerOpen}
         onClose={() => setIsAiPlannerOpen(false)}
+        currentProfile={currentProfile}
         startDateISO={weekStartISO || todayISO}
         mealSchedules={mealSchedules}
         familyCookbookDishes={dishes.filter((d) => d.isFamilyRecipe !== false)}
@@ -627,6 +630,7 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
         onApplyMealPlan={handleApplyAiMealPlan}
         onGoToGrocery={onGoToGrocery}
         onOpenPersonalisation={onOpenPersonalisation}
+        onNavigateToLibrary={onNavigateToLibrary}
       />
     </div>
   );

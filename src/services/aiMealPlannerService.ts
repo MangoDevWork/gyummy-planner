@@ -195,6 +195,63 @@ export function detectStarchBuiltIn(dishes: Dish[]): boolean {
   return false;
 }
 
+export const CUISINE_ALIASES: Record<string, string[]> = {
+  'chinese': ['chinese', 'cantonese', 'sichuan', 'taiwanese', '中餐', '粤菜', '川菜', '鲁菜', '中国', '中华料理', '港式', '广府', '华裔', 'asian/chinese'],
+  'cantonese': ['cantonese', 'chinese', '粤菜', '中餐', '广府', '港式', '中华料理', '中国'],
+  'japanese': ['japanese', 'japan', '日料', '日式', '和风', '日本', 'teriyaki', 'ramen', 'udon', 'sushi', 'miso', 'yakitori'],
+  'korean': ['korean', 'korea', '韩料', '韩式', '韩国', 'bulgogi', 'kimchi', 'bibimbap'],
+  'asian': ['asian', 'chinese', 'cantonese', 'japanese', 'korean', 'thai', 'vietnamese', 'malaysian', 'indonesian', 'filipino', 'singapore', '亚洲', '中餐', '日料', '韩料', '泰式', '越式', '东南亚'],
+  'western': ['western', 'american', 'european', 'italian', 'french', 'british', 'australian', 'spanish', 'german', '西餐', '欧美', '美式', '意式', '法餐', 'pasta', 'burger', 'steak'],
+  'italian': ['italian', 'italy', 'italia', '意式', '意大利', '意餐', 'pasta', 'pizza', 'risotto', 'lasagna', 'bolognese'],
+  'american': ['american', 'usa', 'us', 'burger', 'bbq', '美式', '美国', 'cajun', 'tex-mex', 'fried chicken'],
+  'french': ['french', 'france', '法餐', '法式', '法国', 'butter', 'wine', 'quiche'],
+  'thai': ['thai', 'thailand', '泰式', '泰国', '泰餐', 'curry', 'pad thai', 'tom yum'],
+  'vietnamese': ['vietnamese', 'vietnam', '越式', '越南', 'pho', 'lemongrass', 'banh mi'],
+  'mexican': ['mexican', 'mexico', 'tex-mex', '墨西哥', 'taco', 'burrito', 'quesadilla', 'salsa', 'enchilada'],
+  'mediterranean': ['mediterranean', 'greek', 'greece', '地中海', '希腊', 'tzatziki'],
+  'indian': ['indian', 'india', 'curry', '印度', '咖喱', 'tikka', 'masala', 'naan'],
+  'other': ['other', '其他']
+};
+
+export function matchesCuisine(dish: Dish, selectedCuisine?: string): boolean {
+  if (!selectedCuisine || selectedCuisine === 'All Cuisines' || selectedCuisine === 'All' || selectedCuisine === 'Any Cuisine') {
+    return true;
+  }
+  const target = selectedCuisine.toLowerCase().trim();
+  const aliases = CUISINE_ALIASES[target] || [target];
+
+  const check = (val?: any): boolean => {
+    if (!val || typeof val !== 'string') return false;
+    const lower = val.toLowerCase().trim();
+    return aliases.some((a) => lower.includes(a) || a.includes(lower));
+  };
+
+  if (check(dish.cuisine)) return true;
+  if (Array.isArray(dish.tags) && dish.tags.some((t) => check(t))) return true;
+  if (check(dish.name)) return true;
+  return false;
+}
+
+export function countMatchingFridgeIngredients(dish: Dish, fridgeIngredients?: string[]): number {
+  if (!fridgeIngredients || fridgeIngredients.length === 0) return 0;
+  const keywords = fridgeIngredients.map((f) => f.toLowerCase().trim()).filter(Boolean);
+  if (keywords.length === 0) return 0;
+
+  const dishText = [
+    dish.name,
+    ...(dish.ingredients || []).map((i) => i.name),
+    ...(dish.tags || [])
+  ].join(' ').toLowerCase();
+
+  let count = 0;
+  for (const kw of keywords) {
+    if (dishText.includes(kw)) {
+      count++;
+    }
+  }
+  return count;
+}
+
 export interface AiPlannerOptions {
   mode: AiPlannerMode;
   focus: AiPlannerFocus;
@@ -204,6 +261,9 @@ export interface AiPlannerOptions {
   includedDays?: number[]; // [0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat]
   targetSlotId?: string; // fallback if mealSchedules empty: default 'dinner'
   mealSchedules?: MealScheduleConfig[]; // Configured meal schedules (e.g. Sat & Sun: Lunch + Dinner, Mon-Fri: Dinner)
+  selectedCuisine?: string; // Optional cuisine filter
+  fridgeExpiringIngredients?: string[]; // Ingredients user wants to use up
+  prioritizeExpiringEarlier?: boolean; // Place dishes with expiring ingredients into earlier days
   defaultStaple?: MealAccompaniment;
   spiceToleranceOverride?: 'none' | 'mild' | 'medium' | 'spicy';
   familyCookbookDishes: Dish[];
@@ -488,11 +548,32 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
   }
 
   // 4. Scoring Heuristic Function
-  const scoreDish = (dish: Dish, isWeekend: boolean): number => {
+  const scoreDish = (dish: Dish, isWeekend: boolean, dayIndex: number = 0): number => {
     let score = 100;
     const cookTime = dish.totalTimeMinutes || dish.prepTimeMinutes || 30;
     const protein = dish.nutrition?.protein || 24;
     const calories = dish.nutrition?.calories || 500;
+
+    // Optional Cuisine Filter boost / penalty
+    if (options.selectedCuisine && options.selectedCuisine !== 'All Cuisines' && options.selectedCuisine !== 'All' && options.selectedCuisine !== 'Any Cuisine') {
+      if (matchesCuisine(dish, options.selectedCuisine)) {
+        score += 160;
+      } else {
+        score -= 90;
+      }
+    }
+
+    // Fridge & Expiring Ingredients Overlap Boost
+    if (options.fridgeExpiringIngredients && options.fridgeExpiringIngredients.length > 0) {
+      const fridgeMatches = countMatchingFridgeIngredients(dish, options.fridgeExpiringIngredients);
+      if (fridgeMatches > 0) {
+        score += fridgeMatches * 130;
+        // Prioritize quicker-expiring ingredients earlier in the week (Days 0, 1, 2)
+        if (options.prioritizeExpiringEarlier && dayIndex < 3) {
+          score += fridgeMatches * 80;
+        }
+      }
+    }
 
     if (focus === 'quick') {
       if (cookTime <= 20) score += 60;
@@ -531,7 +612,8 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
     fallbackPool: Dish[],
     avoidIds: Set<string>,
     avoidProtein?: ProteinType,
-    isWeekend: boolean = false
+    isWeekend: boolean = false,
+    dayIndex: number = 0
   ): Dish | null => {
     // 1. Try pool without chosen IDs
     let available = pool.filter((d) => !avoidIds.has(d.id));
@@ -551,8 +633,16 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
 
     if (!available || available.length === 0) return null;
 
+    // If a specific cuisine is requested, prefer dishes matching it if available
+    if (options.selectedCuisine && options.selectedCuisine !== 'All Cuisines' && options.selectedCuisine !== 'All' && options.selectedCuisine !== 'Any Cuisine') {
+      const cuisineMatches = available.filter((d) => matchesCuisine(d, options.selectedCuisine));
+      if (cuisineMatches.length > 0) {
+        available = cuisineMatches;
+      }
+    }
+
     const scored = available.map((d) => {
-      let sc = scoreDish(d, isWeekend);
+      let sc = scoreDish(d, isWeekend, dayIndex);
       const prot = getPrimaryProteinCategory(d);
       if (avoidProtein && prot === avoidProtein) sc -= 60;
       return { dish: d, score: sc };
@@ -657,10 +747,18 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
       // Strict allergen filter check on primary pool
       primaryCandidatePool = primaryCandidatePool.filter(isDishSafe);
 
+      // If a specific cuisine is chosen, prefer dishes of that cuisine in the primary candidate pool
+      if (options.selectedCuisine && options.selectedCuisine !== 'All Cuisines' && options.selectedCuisine !== 'All' && options.selectedCuisine !== 'Any Cuisine') {
+        const cuisineMatching = primaryCandidatePool.filter((d) => matchesCuisine(d, options.selectedCuisine));
+        if (cuisineMatching.length > 0) {
+          primaryCandidatePool = cuisineMatching;
+        }
+      }
+
       if (primaryCandidatePool.length === 0) continue;
 
       const scoredPrimary = primaryCandidatePool.map((dish) => {
-        let finalScore = scoreDish(dish, isWeekend);
+        let finalScore = scoreDish(dish, isWeekend, i);
         const prot = getPrimaryProteinCategory(dish);
         if (previousProtein && prot === previousProtein) finalScore -= 40;
         else if (previousProtein && prot !== previousProtein) finalScore += 25;
@@ -715,7 +813,7 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
         }
 
         const avoidProtein = role === 'main_protein' ? Array.from(tableProteins)[0] : undefined;
-        const companionDish = pickFromPool(pool, fallbackPool, chosenDishIds, avoidProtein, isWeekend);
+        const companionDish = pickFromPool(pool, fallbackPool, chosenDishIds, avoidProtein, isWeekend, i);
 
         if (companionDish && isDishSafe(companionDish)) {
           dayDishes.push(companionDish);
@@ -931,6 +1029,22 @@ export function swapSingleMealDish(
   }
 
   if (candidates.length === 0) return null;
+
+  // Prioritize candidates matching selected cuisine if specified
+  if (options.selectedCuisine && options.selectedCuisine !== 'All Cuisines' && options.selectedCuisine !== 'All' && options.selectedCuisine !== 'Any Cuisine') {
+    const cuisineMatching = candidates.filter((d) => matchesCuisine(d, options.selectedCuisine));
+    if (cuisineMatching.length > 0) {
+      candidates = cuisineMatching;
+    }
+  }
+
+  // Prioritize candidates using fridge expiring ingredients
+  if (options.fridgeExpiringIngredients && options.fridgeExpiringIngredients.length > 0) {
+    const fridgeMatching = candidates.filter((d) => countMatchingFridgeIngredients(d, options.fridgeExpiringIngredients) > 0);
+    if (fridgeMatching.length > 0) {
+      candidates = fridgeMatching;
+    }
+  }
 
   const randomIndex = Math.floor(Math.random() * Math.min(8, candidates.length));
   const newDish = candidates[randomIndex] || candidates[0];
@@ -1156,6 +1270,22 @@ export function addDishToMeal(
   }
 
   if (candidates.length === 0) return null;
+
+  // Prioritize candidates matching selected cuisine if specified
+  if (options.selectedCuisine && options.selectedCuisine !== 'All Cuisines' && options.selectedCuisine !== 'All' && options.selectedCuisine !== 'Any Cuisine') {
+    const cuisineMatching = candidates.filter((d) => matchesCuisine(d, options.selectedCuisine));
+    if (cuisineMatching.length > 0) {
+      candidates = cuisineMatching;
+    }
+  }
+
+  // Prioritize candidates using fridge expiring ingredients
+  if (options.fridgeExpiringIngredients && options.fridgeExpiringIngredients.length > 0) {
+    const fridgeMatching = candidates.filter((d) => countMatchingFridgeIngredients(d, options.fridgeExpiringIngredients) > 0);
+    if (fridgeMatching.length > 0) {
+      candidates = fridgeMatching;
+    }
+  }
 
   const randomIndex = Math.floor(Math.random() * Math.min(6, candidates.length));
   const chosenDish = candidates[randomIndex] || candidates[0];

@@ -33,6 +33,8 @@ export function App() {
   const [isOnboardingGuideOpen, setIsOnboardingGuideOpen] = useState(false);
   const [isPersonalisationOpen, setIsPersonalisationOpen] = useState(false);
   const [isSystemGuideActive, setIsSystemGuideActive] = useState(false);
+  const [dishesViewInitialScope, setDishesViewInitialScope] = useState<'family' | 'system'>('family');
+  const [dishesViewInitialCuisine, setDishesViewInitialCuisine] = useState<string | undefined>(undefined);
   const [autoGenerateGroceryTrigger, setAutoGenerateGroceryTrigger] = useState(0);
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -629,6 +631,11 @@ export function App() {
                 onToggleFavoriteDish={handleToggleFavoriteDish}
                 onGoToGrocery={handleGoToGrocery}
                 onOpenPersonalisation={() => setIsPersonalisationOpen(true)}
+                onNavigateToLibrary={(cuisine) => {
+                  setDishesViewInitialScope('system');
+                  setDishesViewInitialCuisine(cuisine);
+                  setActiveTab('dishes');
+                }}
               />
             )}
 
@@ -641,7 +648,8 @@ export function App() {
                 familyPersonalisation={appData.familyPersonalisation}
                 dishes={appData.dishes}
                 masterIngredients={appData.masterIngredients || DEFAULT_MASTER_INGREDIENTS}
-                initialScope={isSystemGuideActive ? 'system' : 'family'}
+                initialScope={isSystemGuideActive ? 'system' : dishesViewInitialScope}
+                initialCuisine={dishesViewInitialCuisine}
                 onSaveDish={handleSaveDish}
                 onDeleteDish={handleDeleteDish}
                 onToggleFavoriteDish={handleToggleFavoriteDish}
