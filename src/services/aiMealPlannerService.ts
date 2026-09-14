@@ -213,23 +213,34 @@ export const CUISINE_ALIASES: Record<string, string[]> = {
   'other': ['other', '其他']
 };
 
-export function matchesCuisine(dish: Dish, selectedCuisine?: string): boolean {
-  if (!selectedCuisine || selectedCuisine === 'All Cuisines' || selectedCuisine === 'All' || selectedCuisine === 'Any Cuisine') {
+export function matchesCuisine(dish: Dish, selectedCuisines?: string[] | string): boolean {
+  if (!selectedCuisines) {
     return true;
   }
-  const target = selectedCuisine.toLowerCase().trim();
-  const aliases = CUISINE_ALIASES[target] || [target];
+  if (Array.isArray(selectedCuisines)) {
+    const active = selectedCuisines.filter((c) => c && c !== 'All Cuisines' && c !== 'All' && c !== 'Any Cuisine');
+    if (active.length === 0) return true;
+    return active.some((c) => matchesCuisine(dish, c));
+  }
+  if (typeof selectedCuisines === 'string') {
+    if (selectedCuisines === 'All Cuisines' || selectedCuisines === 'All' || selectedCuisines === 'Any Cuisine') {
+      return true;
+    }
+    const target = selectedCuisines.toLowerCase().trim();
+    const aliases = CUISINE_ALIASES[target] || [target];
 
-  const check = (val?: any): boolean => {
-    if (!val || typeof val !== 'string') return false;
-    const lower = val.toLowerCase().trim();
-    return aliases.some((a) => lower.includes(a) || a.includes(lower));
-  };
+    const check = (val?: any): boolean => {
+      if (!val || typeof val !== 'string') return false;
+      const lower = val.toLowerCase().trim();
+      return aliases.some((a) => lower.includes(a) || a.includes(lower));
+    };
 
-  if (check(dish.cuisine)) return true;
-  if (Array.isArray(dish.tags) && dish.tags.some((t) => check(t))) return true;
-  if (check(dish.name)) return true;
-  return false;
+    if (check(dish.cuisine)) return true;
+    if (Array.isArray(dish.tags) && dish.tags.some((t) => check(t))) return true;
+    if (check(dish.name)) return true;
+    return false;
+  }
+  return true;
 }
 
 export function countMatchingFridgeIngredients(dish: Dish, fridgeIngredients?: string[]): number {
@@ -252,6 +263,36 @@ export function countMatchingFridgeIngredients(dish: Dish, fridgeIngredients?: s
   return count;
 }
 
+export function getMatchingFridgeIngredients(dish: Dish, fridgeIngredients?: string[]): string[] {
+  if (!fridgeIngredients || fridgeIngredients.length === 0) return [];
+  const dishText = [
+    dish.name,
+    ...(dish.ingredients || []).map((i) => i.name),
+    ...(dish.tags || [])
+  ].join(' ').toLowerCase();
+
+  const matched: string[] = [];
+  for (const raw of fridgeIngredients) {
+    const kw = raw.toLowerCase().trim();
+    if (kw && dishText.includes(kw)) {
+      matched.push(raw);
+    }
+  }
+  return matched;
+}
+
+export function getEffectiveCuisines(options: { selectedCuisines?: string[] | string; selectedCuisine?: string }): string[] {
+  const c = options.selectedCuisines || options.selectedCuisine;
+  if (!c) return [];
+  if (Array.isArray(c)) {
+    return c.filter((x) => x && x !== 'All Cuisines' && x !== 'All' && x !== 'Any Cuisine');
+  }
+  if (typeof c === 'string' && c !== 'All Cuisines' && c !== 'All' && c !== 'Any Cuisine') {
+    return [c];
+  }
+  return [];
+}
+
 export interface AiPlannerOptions {
   mode: AiPlannerMode;
   focus: AiPlannerFocus;
@@ -261,7 +302,8 @@ export interface AiPlannerOptions {
   includedDays?: number[]; // [0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat]
   targetSlotId?: string; // fallback if mealSchedules empty: default 'dinner'
   mealSchedules?: MealScheduleConfig[]; // Configured meal schedules (e.g. Sat & Sun: Lunch + Dinner, Mon-Fri: Dinner)
-  selectedCuisine?: string; // Optional cuisine filter
+  selectedCuisine?: string; // Backwards-compatible single cuisine
+  selectedCuisines?: string[] | string; // Optional cuisine filter (supports multiple)
   fridgeExpiringIngredients?: string[]; // Ingredients user wants to use up
   prioritizeExpiringEarlier?: boolean; // Place dishes with expiring ingredients into earlier days
   defaultStaple?: MealAccompaniment;
@@ -555,8 +597,9 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
     const calories = dish.nutrition?.calories || 500;
 
     // Optional Cuisine Filter boost / penalty
-    if (options.selectedCuisine && options.selectedCuisine !== 'All Cuisines' && options.selectedCuisine !== 'All' && options.selectedCuisine !== 'Any Cuisine') {
-      if (matchesCuisine(dish, options.selectedCuisine)) {
+    const activeCuisines = getEffectiveCuisines(options);
+    if (activeCuisines.length > 0) {
+      if (matchesCuisine(dish, activeCuisines)) {
         score += 160;
       } else {
         score -= 90;
@@ -633,9 +676,10 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
 
     if (!available || available.length === 0) return null;
 
-    // If a specific cuisine is requested, prefer dishes matching it if available
-    if (options.selectedCuisine && options.selectedCuisine !== 'All Cuisines' && options.selectedCuisine !== 'All' && options.selectedCuisine !== 'Any Cuisine') {
-      const cuisineMatches = available.filter((d) => matchesCuisine(d, options.selectedCuisine));
+    // If specific cuisine(s) are requested, prefer dishes matching them if available
+    const activeCuisines = getEffectiveCuisines(options);
+    if (activeCuisines.length > 0) {
+      const cuisineMatches = available.filter((d) => matchesCuisine(d, activeCuisines));
       if (cuisineMatches.length > 0) {
         available = cuisineMatches;
       }
@@ -747,9 +791,10 @@ export function generateOfflineAiMealPlan(options: AiPlannerOptions): AiMealPlan
       // Strict allergen filter check on primary pool
       primaryCandidatePool = primaryCandidatePool.filter(isDishSafe);
 
-      // If a specific cuisine is chosen, prefer dishes of that cuisine in the primary candidate pool
-      if (options.selectedCuisine && options.selectedCuisine !== 'All Cuisines' && options.selectedCuisine !== 'All' && options.selectedCuisine !== 'Any Cuisine') {
-        const cuisineMatching = primaryCandidatePool.filter((d) => matchesCuisine(d, options.selectedCuisine));
+      // If specific cuisine(s) are chosen, prefer dishes of that cuisine in the primary candidate pool
+      const activeCuisines = getEffectiveCuisines(options);
+      if (activeCuisines.length > 0) {
+        const cuisineMatching = primaryCandidatePool.filter((d) => matchesCuisine(d, activeCuisines));
         if (cuisineMatching.length > 0) {
           primaryCandidatePool = cuisineMatching;
         }
@@ -1030,9 +1075,10 @@ export function swapSingleMealDish(
 
   if (candidates.length === 0) return null;
 
-  // Prioritize candidates matching selected cuisine if specified
-  if (options.selectedCuisine && options.selectedCuisine !== 'All Cuisines' && options.selectedCuisine !== 'All' && options.selectedCuisine !== 'Any Cuisine') {
-    const cuisineMatching = candidates.filter((d) => matchesCuisine(d, options.selectedCuisine));
+  // Prioritize candidates matching selected cuisine(s) if specified
+  const activeCuisines = getEffectiveCuisines(options);
+  if (activeCuisines.length > 0) {
+    const cuisineMatching = candidates.filter((d) => matchesCuisine(d, activeCuisines));
     if (cuisineMatching.length > 0) {
       candidates = cuisineMatching;
     }
@@ -1271,9 +1317,10 @@ export function addDishToMeal(
 
   if (candidates.length === 0) return null;
 
-  // Prioritize candidates matching selected cuisine if specified
-  if (options.selectedCuisine && options.selectedCuisine !== 'All Cuisines' && options.selectedCuisine !== 'All' && options.selectedCuisine !== 'Any Cuisine') {
-    const cuisineMatching = candidates.filter((d) => matchesCuisine(d, options.selectedCuisine));
+  // Prioritize candidates matching selected cuisine(s) if specified
+  const activeCuisines = getEffectiveCuisines(options);
+  if (activeCuisines.length > 0) {
+    const cuisineMatching = candidates.filter((d) => matchesCuisine(d, activeCuisines));
     if (cuisineMatching.length > 0) {
       candidates = cuisineMatching;
     }
